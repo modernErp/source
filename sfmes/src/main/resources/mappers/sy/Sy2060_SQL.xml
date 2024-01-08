@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- (권한)사업장 내역 조회 -->
+    <select id="selectSy2060_AuthBzplList" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT A.CORP_C
+		      , A.BZPL_C
+		      , A.BZPL_NM
+		      , B.USR_ID
+		      , B.BAS_BZPL_YN
+		      , CASE WHEN (B.USE_YN = '' OR B.USE_YN IS NULL OR B.USE_YN = 'N') THEN 'N'
+		             ELSE 'Y'
+		         END AS AUTH_YN
+		   FROM TB_CO_M_BZPL A  LEFT OUTER JOIN 
+		       (SELECT CORP_C 
+		             , USR_ID
+		             , BZPL_C 
+		             , BAS_BZPL_YN
+		             , USE_YN
+		          FROM TB_SY_D_USR_BZPLC
+		         WHERE USR_ID = #{USR_ID}) B ON (A.CORP_C = B.CORP_C AND A.BZPL_C = B.BZPL_C)
+		  WHERE A.CORP_C = #{CORP_C}
+		    AND A.USE_YN = 'Y'    
+    </select>
+    
+    <!-- 사용자역할추가 -->
+    <insert id="insertSy2060_BzplAuth" parameterType="LinkedHashMap">    
+		MERGE TB_SY_D_USR_BZPLC AS A 
+		USING (SELECT  #{CORP_C}      AS CORP_C
+		             , #{USR_ID}      AS USR_ID
+		             , #{BZPL_C}      AS BZPL_C
+		             , #{BAS_BZPL_YN} AS BAS_BZPL_YN
+		             , #{AUTH_YN}     AS USE_YN
+		         FROM  DUAL) AS B ON (A.CORP_C = B.CORP_C AND A.USR_ID = B.USR_ID AND A.BZPL_C = B.BZPL_C)
+		 WHEN MATCHED THEN
+		UPDATE 
+		   SET  BAS_BZPL_YN  = B.BAS_BZPL_YN
+		      , USE_YN       = B.USE_YN
+		      , LSCHG_DTM    = GETDATE()
+		      , LSCHG_ID     = #{GUSRID}
+		 WHEN NOT MATCHED THEN
+		INSERT (
+		        CORP_C
+		      , USR_ID
+		      , BZPL_C
+		      , BAS_BZPL_YN
+		      , USE_YN
+		      , FSRG_DTM
+		      , FSRG_ID
+		      , LSCHG_DTM
+		      , LSCHG_ID
+		       )
+		VALUES (
+		        B.CORP_C
+		      , B.USR_ID
+		      , B.BZPL_C
+		      , B.BAS_BZPL_YN
+		      , B.USE_YN
+		      , GETDATE()
+		      , #{GUSRID}
+		      , GETDATE()
+		      , #{GUSRID}
+		);    
+	</insert>
+</mapper>

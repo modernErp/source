@@ -1,0 +1,932 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 제품출고기본내역 사전 정합성 체크 -->
+    <select id="selectSe6020Valid" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectSe6020Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{RLTR_DT} = '' THEN '출고일자는 필수 입력항목입니다.'
+            WHEN #{TRPL_C} = '' THEN '거래처코드는 필수 입력항목입니다.'
+            WHEN #{RCPL_C} = '' THEN '수령처코드는 필수 입력항목입니다.'
+            WHEN #{DVT_DT} = '' THEN '배송일자는 필수 입력항목입니다.'
+            WHEN (#{DLR_REF_DSC} = '1' AND (#{DLR_DNTT_DT} = '' AND #{DLR_DNTT_SQNO} = '')) THEN '출고지시참조 시 출고지시(일자-순번)이 비어있습니다.' 
+            WHEN #{TR_BSN_DSC} = '' THEN '거래업무구분코드는 필수 입력항목입니다.'
+            WHEN #{GUSRID} = '' THEN '사용자ID는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG 
+    ]]>                  
+    </select>
+    
+    <!-- 제품출고상세내역 사전 정합성 체크 -->
+    <select id="selectSe6020ValidDet" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSe6020ValidDet */
+       CASE WHEN #{GDS_C} = '' THEN '물품코드는 필수 입력항목입니다.'
+            WHEN #{UNT_C} = '' THEN '관리단위코드는 필수 입력항목입니다.'
+            WHEN #{TR_UNT_C} = '' THEN '거래단위코드는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{DLR_QT}) = 0 THEN '수(중)량은 필수 입력항목입니다.'
+            WHEN #{WHSE_C} = '' THEN '창고코드는 필수 입력항목입니다.'
+            WHEN #{DEL_YN} NOT IN ('Y','N') THEN '삭제여부(Y.,N)가 형식에 맞지 않습니다. 입력값 : ' + #{DEL_YN}
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>     
+
+    <!-- 거래일련번호로 제품출고기본내역 조회 -->
+    <select id="selectSe6020_TR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_TR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_DT                                            /* 출고일자                  */
+             , A.DLR_SQNO                                          /* 출고일련번호              */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.RLTR_DT                                           /* 실거래일자                */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                  */
+             , A.DLR_STS_DSC                                       /* 출고상태구분코드          */
+             , A.DLR_REF_DSC                                       /* 출고참조구분코드          */
+             , A.RCPL_C                                            /* 수령처코드                */
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.RCPL_C
+               ) AS RCPL_NM                                        /* 수령처명                  */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드          */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , B.ODR_CUS_NM                                        /* 주문자명                  */ 
+             , B.ODR_CUS_TEL                                       /* 주문자연락처              */
+             , B.RCP_CUS_NM                                        /* 수령자명                  */ 
+             , B.RCP_CUS_TEL                                       /* 수령자연락처              */ 
+             , B.DVY_RQR_CNTN                                      /* 배송요청내용              */             
+             , A.DVY_VHC_DSC                                       /* 배송차량구분코드          */
+             , A.VHC_NO                                            /* 차량번호                  */
+             , A.DVY_CAFF_NM                                       /* 배송기사명                */
+             , A.DLR_DNTT_DT                                       /* 출고지시일자              */
+             , A.DLR_DNTT_SQNO                                     /* 출고지시일련번호          */
+             , A.SL_DT                                             /* 매출일자                  */
+             , A.SL_SQNO                                           /* 매출일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명              */
+          FROM TB_SE_M_DLR                A
+          LEFT OUTER JOIN TB_SE_M_DVY_CUS B
+            ON A.CORP_C           = B.CORP_C
+           AND A.BZPL_C           = B.BZPL_C
+           AND A.DVY_CUS_REG_DT   = B.DVY_CUS_REG_DT
+           AND A.DVY_CUS_REG_SQNO = B.DVY_CUS_REG_SQNO            
+         WHERE 1=1 
+           AND TR_SQNO            = #{TR_SQNO}
+    </select>
+
+    <!-- 제품출고내역찾기팝업 -->
+    <select id="selectSe6020_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_DT                                            /* 입출고일자                */
+             , A.DLR_SQNO                                          /* 입출고일련번호            */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.RLTR_DT                                           /* 실거래일자                */
+             , A.TRPL_C                                            /* 거래처코드                */
+             ,(SELECT TRPL_NM 
+                 FROM TB_CO_M_TRPL
+                WHERE 1 = 1
+                  AND CORP_C = A.CORP_C
+                  AND TRPL_C = A.TRPL_C
+              )AS TRPL_NM                                          /* 거리처명                  */
+             , A.RCPL_C                                            /* 수령처코드                */ 
+             ,(SELECT TRPL_NM 
+                 FROM TB_CO_M_TRPL
+                WHERE 1 = 1
+                  AND CORP_C = A.CORP_C
+                  AND TRPL_C = A.RCPL_C
+              )AS RCPL_NM                                          /* 수령처명                  */ 
+             , A.DLR_STS_DSC                                       /* 출고상태구분코드          */
+             , A.DLR_REF_DSC                                       /* 출고참조구분코드          */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드          */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , B.ODR_CUS_NM                                        /* 주문자명                  */ 
+             , B.ODR_CUS_TEL                                       /* 주문자연락처              */
+             , B.RCP_CUS_NM                                        /* 수령자명                  */ 
+             , B.RCP_CUS_TEL                                       /* 수령자연락처              */ 
+             , B.DVY_RQR_CNTN                                      /* 배송요청내용              */             
+             , A.DVY_VHC_DSC                                       /* 배송차량구분코드          */
+             , A.VHC_NO                                            /* 차량번호                  */
+             , A.DVY_CAFF_NM                                       /* 배송기사명                */
+             , A.DLR_DNTT_DT                                       /* 출고지시일자              */
+             , A.DLR_DNTT_SQNO                                     /* 출고지시일련번호          */
+             , A.SL_DT                                             /* 매출일자                  */ 
+             , A.SL_SQNO                                           /* 매출일련번호              */ 
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */                                           
+          FROM TB_SE_M_DLR                A 
+          LEFT OUTER JOIN TB_SE_M_DVY_CUS B
+            ON A.CORP_C           = B.CORP_C
+           AND A.BZPL_C           = B.BZPL_C
+           AND A.DVY_CUS_REG_DT   = B.DVY_CUS_REG_DT
+           AND A.DVY_CUS_REG_SQNO = B.DVY_CUS_REG_SQNO          
+         WHERE 1 = 1 
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.SLP_NML_YN   = #{SLP_NML_YN}
+      <choose>
+        <when test="DT_GUBUN == 1">            
+           AND A.DLR_DT BETWEEN #{ST_DT} AND #{ED_DT}                   
+        </when>
+        <when  test="DT_GUBUN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}         
+        </when>
+      </choose>            
+          <if test="DLR_STS_DSC != null and DLR_STS_DSC != ''">
+           AND A.DLR_STS_DSC = #{DLR_STS_DSC}
+          </if>                        
+          <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C       = #{TRPL_C}
+          </if>                    
+    </select>    
+    
+    <!-- 참조출고지시기본내역 조회 -->
+    <select id="selectSe6020_M_DLR" parameterType="LinkedHashMap" resultType="LinkedHashMap">   
+        SELECT /*+ selectSe6020_M_DLR */
+               A.CORP_C                                            /* 회사코드             */     
+             , A.BZPL_C                                            /* 사업장코드           */
+             , CONVERT(VARCHAR, GETDATE(), 112) AS DLR_DT          /* 전표일자             */
+             , CONVERT(VARCHAR, GETDATE(), 112) AS RLTR_DT         /* 출고일자             */
+             , '1' AS DLR_REF_DSC                                  /* 출고참조구분코드     */    
+             , A.DLR_DNTT_DT                                       /* 출고지시일자         */ 
+             , A.DLR_DNTT_SQNO                                     /* 출고지시일련번호     */    
+             , A.TRPL_C                                            /* 거래처코드           */ 
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명             */
+             , A.RCPL_C                                            /* 수령처코드           */ 
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.RCPL_C
+               ) AS RCPL_NM                                        /* 수령처명             */     
+             , '1' AS DLR_STS_DSC                                  /* 출고상태구분코드     */ 
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드     */ 
+             , A.DVY_DT                                            /* 배송일자             */ 
+             , '2' AS DVY_VHC_DSC                                  /* 배송차량구분         */ 
+             , A.DVYAA_INP_DSC                                     /* 대송지입력구분       */ 
+             , A.DVYAA_ZIP                                         /* 배송지우편번호       */ 
+             , A.DVYAA_ADR1                                        /* 배송지주소1          */ 
+             , A.DVYAA_ADR2                                        /* 베송지주소2          */ 
+             , B.ODR_CUS_NM                                        /* 주문자명             */ 
+             , B.ODR_CUS_TEL                                       /* 주문자연락처         */     
+             , B.RCP_CUS_NM                                        /* 수령자명             */ 
+             , B.RCP_CUS_TEL                                       /* 수령자연락처         */ 
+             , B.DVY_RQR_CNTN                                      /* 배송요청내용         */                   
+          FROM TB_SE_M_DLR_DNTT           A
+          LEFT OUTER JOIN TB_SE_M_DVY_CUS B
+            ON A.CORP_C           = B.CORP_C
+           AND A.BZPL_C           = B.BZPL_C
+           AND A.DVY_CUS_REG_DT   = B.DVY_CUS_REG_DT
+           AND A.DVY_CUS_REG_SQNO = B.DVY_CUS_REG_SQNO
+           AND B.DEL_YN           = 'N'
+         WHERE 1 = 1
+           AND A.CORP_C        = #{CORP_C}
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.DLR_DNTT_DT   = #{DLR_DNTT_DT}
+           AND A.DLR_DNTT_SQNO = #{DLR_DNTT_SQNO}
+           AND A.SLP_NML_YN    = #{SLP_NML_YN}    
+    </select>
+    
+    <!-- 참조출고지시상세내역 조회 -->
+    <select id="selectSe6020_D_DLR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_D_DLR */
+               A.CORP_C                                                     /* 회사코드                   */
+             , A.BZPL_C                                                     /* 사업장코드                 */
+             , A.DLR_DNTT_DT                                                /* 출고지시일자               */
+             , A.DLR_DNTT_SQNO                                              /* 출고지시일련번호           */
+             , A.DLR_DNTT_DSQNO                                             /* 출고지시상세일련번호       */
+             , A.GDS_C                                                      /* 물품코드                   */
+             , B.GDS_TP_DSC                                                 /* 물품구분코드             */
+             , B.GDS_DTL_NM                                                 /* 물품명                     */
+             , B.GDS_STD_NM                                                 /* 규격                       */
+             , B.UNT_C                                                      /* 관리단위                   */
+             , A.TR_UNT_C                                                   /* 거래단위코드               */    
+             , A.DLR_DNTT_QT AS DLR_QT                                      /* 출고수량                   */
+             , A.DLR_DNTT_BOX_QT AS DLR_BOX_QT                              /* 출고박스수량               */
+             , A.DLR_DNTT_UPR AS DLR_UPR                                    /* 출고단가                   */
+             , A.SPY_AM                                                     /* 공급금액                   */
+             , A.VAT                                                        /* 부가세                     */    
+             , A.DLR_DNTT_AM AS DLR_AM                                      /* 출고금액                   */
+             , A.QT_WT_DSC                                                  /* 수(중)량형구분코드         */
+             , A.WHT_QT                                                     /* 단량                       */    
+             , A.WHT_UNT_C                                                  /* 단량단위코드               */
+             , A.DLR_DNTT_WT AS DLR_WT                                      /* 출고중량                   */
+             , CASE WHEN C.DLR_BSC_WHSE_C = '' 
+                    THEN B.BAS_WHSE_C ELSE C.DLR_BSC_WHSE_C END AS WHSE_C   /* 창고코드                   */
+             , D.WHSE_NM                                                    /* 창고명                     */
+             , A.TXT_DSC                                                    /* 과세구분코드               */
+             , B.DSTR_TER_AMN_YN                                            /* 유통기한관리여부           */
+             , CASE WHEN B.DSTR_TER_AMN_YN = 'Y' THEN dbo.RTN_DSTR_PRD_DT(A.CORP_C, A.BZPL_C, A.GDS_C, A.DLR_DNTT_DT)
+                    ELSE ''
+               END                                AS   DSTR_TERDT           /* 유통기한일자                */
+             , B.HST_AMN_DSC                                                /* 이력관리구분코드           */             
+             , A.DEL_YN                                                     /* 삭제구분코드                */ 
+             , A.RMK_CNTN                                                   /* 비고내용                     */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM             /* 최초등록일시                */
+             , A.FSRG_ID                                                    /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM            /* 최종변경일시                */
+             , A.LSCHG_ID                                                   /* 최종변경자ID         */
+          FROM TB_SE_D_DLR_DNTT            A
+          LEFT OUTER JOIN TB_CO_M_GDS      B   
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+          LEFT OUTER JOIN TB_CO_M_BZPL_ENV C
+            ON A.CORP_C  = C.CORP_C 
+           AND A.BZPL_C  = C.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_WHSE     D
+            ON A.CORP_C  = D.CORP_C
+           AND A.BZPL_C  = D.BZPL_C
+           AND D.WHSE_C = CASE WHEN C.DLR_BSC_WHSE_C = '' THEN B.BAS_WHSE_C ELSE C.DLR_BSC_WHSE_C END
+         WHERE 1 = 1
+           AND A.CORP_C        = #{CORP_C}
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.DLR_DNTT_DT   = #{DLR_DNTT_DT}
+           AND A.DLR_DNTT_SQNO = #{DLR_DNTT_SQNO}
+           AND A.DEL_YN        = 'N'
+    </select>  
+    
+
+    <!-- 제품출고기본내역 의뢰일자 조회 -->
+    <select id="select_PDA_Sm1050_DLRDT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_PDA_Sm1050_DLRDT */
+               DLR_DNTT_DT
+             , CONVERT(varchar, CONVERT(date, DLR_DNTT_DT), 121) AS DLR_DNTT_NM
+          FROM (
+                SELECT 
+                       DISTINCT TOP 4
+                       A.DLR_DNTT_DT        /* 출고의뢰일자                  */
+                  FROM TB_SE_M_DLR_DNTT  A
+                 WHERE 1 = 1
+                   AND A.SLP_NML_YN   = 'Y'
+                   AND A.CORP_C       = #{CORP_C}
+                   AND A.BZPL_C       = #{BZPL_C}
+                <![CDATA[
+                   AND A.DLR_DNTT_DT <= CONVERT(varchar, GETDATE(), 112)
+                 ]]>
+                ORDER BY A.DLR_DNTT_DT DESC
+                ) A
+         ORDER BY DLR_DNTT_DT ASC
+    </select>
+
+    <!-- 제품출고기본내역 거래처 조회 -->
+    <select id="select_PDA_Sm1050_DLR_TRPL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_PDA_Sm1050_DLR_TRPL */
+               DISTINCT
+               A.TRPL_C                                            /* 사업장코드                 */
+             , B.TRPL_NM
+          FROM TB_SE_M_DLR_DNTT  A
+          LEFT OUTER JOIN TB_CO_M_TRPL  B
+            ON A.CORP_C    = B.CORP_C
+           AND A.TRPL_C    = B.TRPL_C
+           AND B.SL_CTR_YN = 'Y'
+         WHERE 1 = 1
+           AND A.CORP_C      = #{CORP_C}       
+           AND A.BZPL_C      = #{BZPL_C} 
+           AND A.DLR_DNTT_DT = #{DLR_DNTT_DT} 
+    </select>
+
+    <select id="select_PDA_Sm1050_DLR_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_PDA_Sm1050_DLR_GDS */
+               A.GDS_C                                            /* 물품코드                 */
+             , A.GDS_DTL_NM
+             , A.GDS_STD_NM
+          FROM TB_CO_M_GDS  A
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}       
+           AND A.BZPL_C   = #{BZPL_C} 
+           AND A.GDS_C    = #{GDS_C} 
+    </select>
+
+    <!-- 제출출고의뢰상세기본 조회 -->
+    <select id="select_PDA_Sm1050_DLR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH DLR_D_GDS AS 
+        (
+          SELECT X.CORP_C
+               , X.BZPL_C
+               , X.DLR_DNTT_DT
+               , X.DLR_DNTT_SQNO
+               , COUNT(DISTINCT Y.GDS_TP_DSC) AS GDS_TP_CNT
+               , COUNT(Y.GDS_C)               AS GDS_CNT
+            FROM TB_SE_D_DLR_DNTT  X
+           INNER JOIN TB_CO_M_GDS  Y
+              ON X.CORP_C    = Y.CORP_C
+             AND X.BZPL_C    = Y.BZPL_C
+             AND X.GDS_C     = Y.GDS_C
+           WHERE 1 = 1
+             AND X.CORP_C      = #{CORP_C}       
+             AND X.BZPL_C      = #{BZPL_C} 
+             AND X.DLR_DNTT_DT = #{DLR_DNTT_DT}
+           GROUP BY X.CORP_C
+                  , X.BZPL_C
+                  , X.DLR_DNTT_DT
+                  , X.DLR_DNTT_SQNO
+        )
+        SELECT /*+ select_PDA_Sm1050_DLR */
+               A.TRPL_C
+             , C.TRPL_NM
+             , A.RCPL_C
+             , D.TRPL_NM  AS RCPL_NM
+             , B.GDS_TP_CNT
+             , A.DLR_DNTT_SQNO
+          FROM TB_SE_M_DLR_DNTT A
+          INNER JOIN DLR_D_GDS  B
+             ON A.CORP_C        = B.CORP_C
+            AND A.BZPL_C        = B.BZPL_C
+            AND A.DLR_DNTT_DT   = B.DLR_DNTT_DT
+            AND A.DLR_DNTT_SQNO = B.DLR_DNTT_SQNO
+          INNER JOIN TB_CO_M_TRPL  C
+            ON A.CORP_C    = C.CORP_C
+           AND A.TRPL_C    = C.TRPL_C
+           AND C.SL_CTR_YN = 'Y'
+          LEFT OUTER JOIN TB_CO_M_TRPL  D
+            ON A.CORP_C    = D.CORP_C
+           AND A.RCPL_C    = D.TRPL_C
+         WHERE 1 = 1
+           AND A.CORP_C      = #{CORP_C}       
+           AND A.BZPL_C      = #{BZPL_C} 
+           AND A.DLR_DNTT_DT = #{DLR_DNTT_DT}
+           AND A.TRPL_C   LIKE #{TRPL_C}+'%'
+    </select>
+
+    <select id="select_PDA_DLR_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_PDA_DLR_GDS */
+               A.GDS_C                                            /* 물품코드                 */
+             , A.GDS_DTL_NM
+             , A.GDS_STD_NM
+          FROM TB_CO_M_GDS  A
+         WHERE 1             = 1
+           AND A.CORP_C      = #{CORP_C}       
+           AND A.BZPL_C      = #{BZPL_C} 
+           AND A.GDS_C       = #{GDS_C}
+           AND A.GDS_TP_DSC IN ('10', '20') 
+    </select>
+
+    <!-- 출고지시상세내역 조회 -->
+    <select id="select_Sm1050_DLR_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH DLR_SQNO AS 
+        (
+          SELECT X.CORP_C
+               , X.BZPL_C
+               , X.DLR_DNTT_DT
+               , X.DLR_DNTT_SQNO
+            FROM TB_SE_D_DLR_DNTT    X
+           WHERE 1 = 1
+             AND X.CORP_C       = #{CORP_C}       
+             AND X.BZPL_C       = #{BZPL_C}
+             AND X.GDS_C        = #{GDS_C}
+             AND X.DEL_YN       = 'N'
+             AND EXISTS ( SELECT DLR_DNTT_DT FROM TB_SE_M_DLR_DNTT
+                           WHERE 1 = 1
+                             AND CORP_C       = #{CORP_C}
+                             AND BZPL_C       = #{BZPL_C}
+                             AND RVO_DT      IS NULL
+                             AND DEL_YN       = 'N' )
+             AND X.DLR_DNTT_DT BETWEEN CONVERT(char(10), DATEADD(MM, -1, GETDATE()), 121) AND CONVERT(char(10), GETDATE(), 121)
+        ),
+        DLR_D_GDS AS 
+        (
+          SELECT X.CORP_C
+               , X.BZPL_C
+               , X.DLR_DNTT_DT
+               , X.DLR_DNTT_SQNO
+               , COUNT(DISTINCT Y.GDS_TP_DSC) AS GDS_TP_CNT
+            FROM TB_SE_D_DLR_DNTT  X
+           INNER JOIN DLR_SQNO     Z
+              ON X.CORP_C         = Z.CORP_C
+             AND X.BZPL_C         = Z.BZPL_C
+             AND X.DLR_DNTT_DT    = Z.DLR_DNTT_DT
+             AND X.DLR_DNTT_SQNO  = Z.DLR_DNTT_SQNO
+           INNER JOIN TB_CO_M_GDS  Y
+              ON X.CORP_C    = Y.CORP_C
+             AND X.BZPL_C    = Y.BZPL_C
+             AND X.GDS_C     = Y.GDS_C
+           WHERE 1 = 1
+           GROUP BY X.CORP_C
+                  , X.BZPL_C
+                  , X.DLR_DNTT_DT
+                  , X.DLR_DNTT_SQNO
+        )
+        SELECT /*+ select_Sm1050_DLR_GDS */
+               A.DLR_DNTT_DT            AS DLR_REF_DT
+             , A.DLR_DNTT_SQNO          AS DLR_REF_SQNO
+             , A.TRPL_C
+             , C.TRPL_NM
+             , A.RCPL_C
+             , D.TRPL_NM                AS RCPL_NM
+             , B.GDS_TP_CNT
+          FROM TB_SE_M_DLR_DNTT  A
+         INNER JOIN DLR_D_GDS    B
+             ON A.CORP_C          = B.CORP_C
+            AND A.BZPL_C          = B.BZPL_C
+            AND A.DLR_DNTT_DT     = B.DLR_DNTT_DT
+            AND A.DLR_DNTT_SQNO   = B.DLR_DNTT_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL  C
+            ON A.CORP_C    = C.CORP_C
+           AND A.TRPL_C    = C.TRPL_C
+           AND C.SL_CTR_YN = 'Y'
+          LEFT OUTER JOIN TB_CO_M_TRPL  D
+            ON A.CORP_C    = D.CORP_C
+           AND A.RCPL_C    = D.TRPL_C
+         WHERE 1 = 1
+    </select>
+
+    <!-- 제품출고기본내역 등록 시 중복체크 -->
+    <select id="selectSe6020Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe6020Cnt */
+               COUNT(1)
+          FROM TB_SE_M_DLR A
+         WHERE 1 = 1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DLR_DT            = #{DLR_DT}
+           AND A.DLR_SQNO          = DBO.SF_GET_NUMERIC(#{DLR_SQNO})
+           AND A.SLP_NML_YN        = #{SLP_NML_YN}
+    </select>
+    
+    <!-- 거래명세서출력 단가 체크 Y -->
+    <select id="selectSe6020_R_Y" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R */
+               D.TEL_NO                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일'     AS STR_DLR_DT       /* 출고일자             */
+             , D.BZMN_NO                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , D.BZPL_NM                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , D.REPM_NM                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , D.ADR1                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , D.BZTP_NM                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , D.BZC_NM                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.RCPL_C
+               )                                                                                              AS DVYPL_NM         /* 배송처               */
+             , A.DVYAA_ADR1+' '+A.DVYAA_ADR2                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , C.BZMN_NO                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , C.TRPL_NM                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , C.REPM_NM                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , A.DVYAA_ADR1+' '+A.DVYAA_ADR2                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , C.BZTP_NM                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , C.BZC_NM                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , (CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                        ELSE F.TRPL_GDS_C
+                END)                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , (CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                        ELSE F.TRPL_GDS_NM 
+                END)                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , B.GDS_C                                                                                                            /* 물품코드             */
+             , E.GDS_DTL_NM                                                                                                       /* 물품명               */
+             , E.GDS_STD_NM                                                                                                       /* 물품규격명           */
+             , B.DLR_QT                                                                                                           /* 수량                 */
+             , B.DLR_UPR                                                                                                          /* 단가                 */
+             , B.SPY_AM                                                                                                           /* 공급가액             */
+             , B.VAT                                                                                                              /* 세액                 */
+             , B.DLR_AM                                                                                                           /* 합계금액             */
+             , B.RMK_CNTN                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , A.RMK_CNTN                                                                                                         /* 특이사항             */
+             , B.DSTR_TERDT                                                                                                       /* 유통기한일자         */
+             , B.GDS_HST_NO                                                                                                       /* 물품이력번호         */
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+    </select>
+    
+    <!-- 거래명세서출력 단가 체크 N -->
+    <select id="selectSe6020_R_N" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R_N */
+               D.TEL_NO                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일'     AS STR_DLR_DT       /* 출고일자             */
+             , D.BZMN_NO                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , D.BZPL_NM                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , D.REPM_NM                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , D.ADR1                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , D.BZTP_NM                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , D.BZC_NM                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.RCPL_C
+               )                                                                                              AS DVYPL_NM         /* 배송처               */
+             , A.DVYAA_ADR1+' '+A.DVYAA_ADR2                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , C.BZMN_NO                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , C.TRPL_NM                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , C.REPM_NM                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , A.DVYAA_ADR1+' '+A.DVYAA_ADR2                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , C.BZTP_NM                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , C.BZC_NM                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , (CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                        ELSE F.TRPL_GDS_C
+                END)                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , (CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                        ELSE F.TRPL_GDS_NM 
+                END)                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , B.GDS_C                                                                                                            /* 물품코드             */
+             , E.GDS_DTL_NM                                                                                                       /* 물품명               */
+             , E.GDS_STD_NM                                                                                                       /* 물품규격명           */
+             , B.DLR_QT                                                                                                           /* 수량                 */
+             , B.RMK_CNTN                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , A.RMK_CNTN                                                                                                         /* 특이사항             */
+             , B.DSTR_TERDT                                                                                                       /* 유통기한일자         */
+             , B.GDS_HST_NO                                                                                                       /* 물품이력번호         */
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+    </select>
+    
+    <!-- 거래명세서출력 (물품별집계) 단가체크 Y -->
+    <select id="selectSe6020_R2_Y" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R2_Y */
+               MAX(D.TEL_NO)                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , MAX(SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일')     AS STR_DLR_DT       /* 출고일자             */
+             , MAX(D.BZMN_NO)                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , MAX(D.BZPL_NM)                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , MAX(D.REPM_NM)                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , MAX(D.ADR1)                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , MAX(D.BZTP_NM)                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , MAX(D.BZC_NM)                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , MAX(G.TRPL_NM)                                                                                      AS DVYPL_NM         /* 배송처               */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , MAX(C.BZMN_NO)                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , MAX(C.TRPL_NM)                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , MAX(C.REPM_NM)                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , MAX(C.BZTP_NM)                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , MAX(C.BZC_NM)                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                            ELSE F.TRPL_GDS_C
+                    END))                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                            ELSE F.TRPL_GDS_NM 
+                    END))                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , MAX(B.GDS_C)                                                                                        AS GDS_C            /* 물품코드             */
+             , MAX(E.GDS_DTL_NM)                                                                                   AS GDS_DTL_NM       /* 물품명               */
+             , MAX(E.GDS_STD_NM)                                                                                   AS GDS_STD_NM       /* 물품규격명           */
+             , SUM(B.DLR_QT)                                                                                       AS DLR_QT           /* 수량                 */
+             , MAX(B.DLR_UPR)                                                                                      AS DLR_UPR          /* 단가                 */
+             , SUM(B.SPY_AM)                                                                                       AS SPY_AM           /* 공급가액             */
+             , SUM(B.VAT)                                                                                          AS VAT              /* 세액                 */
+             , SUM(B.DLR_AM)                                                                                       AS DLR_AM           /* 합계금액             */
+             , MAX(B.RMK_CNTN)                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , MAX(A.RMK_CNTN)                                                                                     AS RMK_CNTN         /* 특이사항             */
+             , MAX(B.DSTR_TERDT)                                                                                   AS DSTR_TERDT       /* 유통기한일자       */
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         INNER JOIN TB_CO_M_TRPL           G  
+            ON A.CORP_C = G.CORP_C
+           AND A.RCPL_C = G.TRPL_C   
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+         GROUP BY
+               B.GDS_C
+    </select>
+
+    <select id="selectSe6020_R3_Y" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R3_Y */
+               MAX(D.TEL_NO)                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , MAX(SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일')     AS STR_DLR_DT       /* 출고일자             */
+             , MAX(D.BZMN_NO)                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , MAX(D.BZPL_NM)                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , MAX(D.REPM_NM)                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , MAX(D.ADR1)                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , MAX(D.BZTP_NM)                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , MAX(D.BZC_NM)                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , MAX(G.TRPL_NM)                                                                                      AS DVYPL_NM         /* 배송처               */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , MAX(C.BZMN_NO)                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , MAX(C.TRPL_NM)                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , MAX(C.REPM_NM)                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , MAX(C.BZTP_NM)                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , MAX(C.BZC_NM)                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                            ELSE F.TRPL_GDS_C
+                    END))                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                            ELSE F.TRPL_GDS_NM 
+                    END))                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , MAX(B.GDS_C)                                                                                        AS GDS_C            /* 물품코드             */
+             , MAX(E.GDS_DTL_NM)                                                                                   AS GDS_DTL_NM       /* 물품명               */
+             , MAX(E.GDS_STD_NM)                                                                                   AS GDS_STD_NM       /* 물품규격명           */
+             , SUM(B.DLR_QT)                                                                                       AS DLR_QT           /* 수량                 */
+             , MAX(B.DLR_UPR)                                                                                      AS DLR_UPR          /* 단가                 */
+             , SUM(B.SPY_AM)                                                                                       AS SPY_AM           /* 공급가액             */
+             , SUM(B.VAT)                                                                                          AS VAT              /* 세액                 */
+             , SUM(B.DLR_AM)                                                                                       AS DLR_AM           /* 합계금액             */
+             , MAX(B.RMK_CNTN)                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , MAX(A.RMK_CNTN)                                                                                     AS RMK_CNTN         /* 특이사항             */
+             , MAX(B.DSTR_TERDT)                                                                                   AS DSTR_TERDT       /* 유통기한일자         */
+             , MAX(B.GDS_HST_NO)                                                                                   AS GDS_HST_NO       /* 물품이력번호         */
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         INNER JOIN TB_CO_M_TRPL           G  
+            ON A.CORP_C = G.CORP_C
+           AND A.RCPL_C = G.TRPL_C   
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+         GROUP BY
+               B.GDS_C
+             , B.GDS_HST_NO
+    </select>
+    
+    
+    <!-- 거래명세서출력 (물품별집계) 단가체크 N -->
+    <select id="selectSe6020_R2_N" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R2_N */
+               MAX(D.TEL_NO)                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , MAX(SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일')     AS STR_DLR_DT       /* 출고일자             */
+             , MAX(D.BZMN_NO)                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , MAX(D.BZPL_NM)                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , MAX(D.REPM_NM)                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , MAX(D.ADR1)                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , MAX(D.BZTP_NM)                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , MAX(D.BZC_NM)                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , MAX(G.TRPL_NM)                                                                                      AS DVYPL_NM         /* 배송처               */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , MAX(C.BZMN_NO)                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , MAX(C.TRPL_NM)                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , MAX(C.REPM_NM)                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , MAX(C.BZTP_NM)                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , MAX(C.BZC_NM)                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                            ELSE F.TRPL_GDS_C
+                    END))                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                            ELSE F.TRPL_GDS_NM 
+                    END))                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , MAX(B.GDS_C)                                                                                        AS GDS_C            /* 물품코드             */
+             , MAX(E.GDS_DTL_NM)                                                                                   AS GDS_DTL_NM       /* 물품명               */
+             , MAX(E.GDS_STD_NM)                                                                                   AS GDS_STD_NM       /* 물품규격명           */
+             , SUM(B.DLR_QT)                                                                                       AS DLR_QT           /* 수량                 */
+             , MAX(B.RMK_CNTN)                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , MAX(A.RMK_CNTN)                                                                                     AS RMK_CNTN         /* 특이사항             */
+             , MAX(B.DSTR_TERDT)                                                                                   AS DSTR_TERDT       /* 유통기한일자       */
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         INNER JOIN TB_CO_M_TRPL           G  
+            ON A.CORP_C = G.CORP_C
+           AND A.RCPL_C = G.TRPL_C   
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+         GROUP BY
+               B.GDS_C
+    </select>
+
+    <!-- 거래명세서출력 (물품별, 이력번호별) 단가체크 N -->
+    <select id="selectSe6020_R3_N" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe6020_R3_N */
+               MAX(D.TEL_NO)                                                                                       AS BUYPL_TEL        /* 전화번호             */
+             , MAX(SUBSTRING(A.DLR_DT, 1, 4)+'년'+SUBSTRING(A.DLR_DT, 5, 2)+'월'+SUBSTRING(A.DLR_DT, 7, 2)+'일')     AS STR_DLR_DT       /* 출고일자             */
+             , MAX(D.BZMN_NO)                                                                                      AS BUYPL_BZMN_NO    /* 공급자-사업자번호    */
+             , MAX(D.BZPL_NM)                                                                                      AS BUYPL_NM         /* 공급자-상호          */
+             , MAX(D.REPM_NM)                                                                                      AS BUYPL_REPMNM     /* 공급자-대표자명      */
+             , MAX(D.ADR1)                                                                                         AS BUYPL_ADDR1      /* 공급자-주소          */
+             , MAX(D.BZTP_NM)                                                                                      AS BUYPL_BZTPNM     /* 공급자-업태          */
+             , MAX(D.BZC_NM)                                                                                       AS BUYPL_BZCNM      /* 공급자-업종          */
+             , MAX(G.TRPL_NM)                                                                                      AS DVYPL_NM         /* 배송처               */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS DVYPL_ADDR1      /* 배송처주소           */
+             , MAX(C.BZMN_NO)                                                                                      AS SLPL_BZMN_NO     /* 공급받는자-사업자번호*/
+             , MAX(C.TRPL_NM)                                                                                      AS SLPL_NM          /* 공급받는자-상호      */
+             , MAX(C.REPM_NM)                                                                                      AS SLPL_REPMNM      /* 공급받는자-대표자명  */
+             , MAX(A.DVYAA_ADR1+' '+A.DVYAA_ADR2)                                                                  AS SLPL_ADDR1       /* 공급받는자-주소      */
+             , MAX(C.BZTP_NM)                                                                                      AS SLPL_BZTPNM      /* 공급받는자-업태      */
+             , MAX(C.BZC_NM)                                                                                       AS SLPL_BZCNM       /* 공급받는자-업종      */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN B.GDS_C
+                                                            ELSE F.TRPL_GDS_C
+                    END))                                                                                          AS TRPL_GDS_C       /* 거래처용_물품코드             */
+             , MAX((CASE ISNULL(F.TRPL_GDS_C, 'Y') WHEN 'Y' THEN E.GDS_DTL_NM
+                                                            ELSE F.TRPL_GDS_NM 
+                    END))                                                                                          AS TRPL_GDS_DTL_NM  /* 거래처용_물품명               */
+             , MAX(B.GDS_C)                                                                                        AS GDS_C            /* 물품코드             */
+             , MAX(E.GDS_DTL_NM)                                                                                   AS GDS_DTL_NM       /* 물품명               */
+             , MAX(E.GDS_STD_NM)                                                                                   AS GDS_STD_NM       /* 물품규격명           */
+             , SUM(B.DLR_QT)                                                                                       AS DLR_QT           /* 수량                 */
+             , MAX(B.RMK_CNTN)                                                                                     AS D_RMK_CNTN       /* 비고내용             */
+             , MAX(A.RMK_CNTN)                                                                                     AS RMK_CNTN         /* 특이사항             */
+             , MAX(B.DSTR_TERDT)                                                                                   AS DSTR_TERDT       /* 유통기한일자         */
+             , MAX(B.GDS_HST_NO)                                                                                   AS GDS_HST_NO       /* 물품이력번호         */ 
+          FROM TB_SE_M_DLR                 A 
+         INNER JOIN TB_SE_D_DLR            B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.DLR_DT   = B.DLR_DT
+           AND A.DLR_SQNO = B.DLR_SQNO
+          LEFT OUTER JOIN TB_CO_M_TRPL     C
+            ON A.CORP_C   = C.CORP_C
+           AND A.TRPL_C   = C.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_BZPL     D
+            ON A.CORP_C   = D.CORP_C
+           AND A.BZPL_C   = D.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_GDS      E
+            ON B.CORP_C   = E.CORP_C
+           AND B.BZPL_C   = E.BZPL_C
+           AND B.GDS_C    = E.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL_GDS F
+            ON A.CORP_C = F.CORP_C
+           AND A.BZPL_C = F.BZPL_C
+           AND C.TRPL_C = F.TRPL_C
+           AND E.GDS_C  = F.GDS_C
+         INNER JOIN TB_CO_M_TRPL           G  
+            ON A.CORP_C = G.CORP_C
+           AND A.RCPL_C = G.TRPL_C   
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.DLR_DT   = #{DLR_DT}
+           AND A.DLR_SQNO = #{DLR_SQNO}
+         GROUP BY
+               B.GDS_C
+             , B.GDS_HST_NO
+    </select>
+
+        
+    <!-- 매출에서 제품출고기본내역 수정 -->
+    <update id="updateSe6020_M_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSe6020_M_STS */ TB_SE_M_DLR
+           SET DLR_STS_DSC  = #{DLR_STS_DSC}                      /* 출고상태구분코드           */
+             , SL_DT        = #{SL_DT}                            /* 매출일자                   */  
+             , SL_SQNO      = #{SL_SQNO}                          /* 매출일련번호               */
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND DLR_DT       = #{DLR_DT}           
+           AND DLR_SQNO     = #{DLR_SQNO}
+    </update>
+    
+    <!-- 매출에서 출고상세내역 금액수정 -->
+    <update id="updateSe6020_D_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSe6020_D_STS */ TB_SE_D_DLR
+           SET DLR_UPR      = #{DLR_UPR}                          /* 출고단가                   */
+             , SPY_AM       = #{SPY_AM}                           /* 공급가액                   */      
+             , VAT          = #{VAT}                              /* 세액                       */
+             , DLR_AM       = #{DLR_AM}                           /* 출고금액                   */ 
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND DLR_DT       = #{DLR_DT}           
+           AND DLR_SQNO     = #{DLR_SQNO}
+           AND DLR_DSQNO    = #{DLR_DSQNO}
+    </update> 
+      
+</mapper>

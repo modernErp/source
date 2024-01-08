@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_CORP" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_CORP */ TB_CO_M_CORP
+        (
+              CORP_C              /* 회사코드             */
+            , CORP_NM             /* 회사명               */
+            , CORP_ABR_NM         /* 회사약어명           */
+            , CORP_ENM            /* 회사영문명           */
+            , BZMN_NM             /* 사업자명             */
+            , BZMN_NO             /* 사업자번호           */
+            , COP_NO              /* 법인번호             */
+            , REPM_NM             /* 대표자명             */
+            , BZC_NM              /* 업종명               */
+            , BZTP_NM             /* 업태명               */
+            , ZIP                 /* 우편번호             */
+            , ADR1                /* 주소1                */
+            , ADR2                /* 주소2                */
+            , TEL_NO              /* 전화번호             */
+            , FAX_NO              /* 팩스번호             */
+            , HOMEPG_URL          /* 홈페이지             */
+            , REP_EMAIL           /* 대표eMail            */
+            , CONN_INF            /* 접속정보             */
+            , CTR_AM              /* 계약금               */
+            , CTR_CNTN            /* 계약내용             */
+            , SYS_ST_DT           /* 시스템개설일자       */
+            , MNG_CORP_C          /* 주관회사코드         */
+            , MTNRW_ST_DT         /* 유지보수시작일자     */
+            , MTNRW_ED_DT         /* 유지보수종료일자     */
+            , MTNRW_APL_DSC       /* 유지보수적용구분코드 */
+            , MTNRW_AM            /* 유지보수금액         */
+            , MTNRW_PAY_DT        /* 최종유지보수납부일   */
+            , EMP_CNT             /* 종업원수             */
+            , AMN_CHR_DEPT_NM     /* 관리담당부서명       */
+            , CHRR_NM             /* 담당자명             */
+            , CHRR_TEL            /* 담당자전화번호       */
+            , CHRR_EMAIL          /* 담당자eMail          */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{S_CORP_C}
+            , #{CORP_NM}
+            , #{CORP_ABR_NM}
+            , #{CORP_ENM}
+            , #{BZMN_NM}
+            , REPLACE(#{BZMN_NO}, '-','')
+            , REPLACE(#{COP_NO}, '-','')
+            , #{REPM_NM}
+            , #{BZC_NM}
+            , #{BZTP_NM}
+            , #{ZIP}
+            , #{ADR1}
+            , #{ADR2}
+            , REPLACE(#{TEL_NO}, '-','')
+            , REPLACE(#{FAX_NO}, '-','')
+            , #{HOMEPG_URL}
+            , #{REP_EMAIL}
+            , #{CONN_INF}
+            , DBO.SF_GET_NUMERIC(#{CTR_AM})
+            , #{CTR_CNTN}
+            , #{SYS_ST_DT}
+            , #{MNG_CORP_C}
+            , #{MTNRW_ST_DT}
+            , #{MTNRW_ED_DT}
+            , #{MTNRW_APL_DSC}
+            , DBO.SF_GET_NUMERIC(#{MTNRW_AM})
+            , #{MTNRW_PAY_DT}
+            , DBO.SF_GET_NUMERIC(#{EMP_CNT})
+            , #{AMN_CHR_DEPT_NM}
+            , #{CHRR_NM}
+            , REPLACE(#{CHRR_TEL}, '-','')
+            , #{CHRR_EMAIL}
+            , #{RMK_CNTN}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_CORP" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_CORP */ TB_CO_M_CORP
+           SET 
+               CORP_C              = #{S_CORP_C}                          /* 회사코드             */
+             , CORP_NM             = #{CORP_NM}                           /* 회사명               */
+             , CORP_ABR_NM         = #{CORP_ABR_NM}                       /* 회사약어명           */
+             , CORP_ENM            = #{CORP_ENM}                          /* 회사영문명           */
+             , BZMN_NM             = #{BZMN_NM}                           /* 사업자명             */
+             , BZMN_NO             = REPLACE(#{BZMN_NO}, '-','')          /* 사업자번호           */
+             , COP_NO              = REPLACE(#{COP_NO}, '-','')           /* 법인번호             */
+             , REPM_NM             = #{REPM_NM}                           /* 대표자명             */
+             , BZC_NM              = #{BZC_NM}                            /* 업종명               */
+             , BZTP_NM             = #{BZTP_NM}                           /* 업태명               */
+             , ZIP                 = #{ZIP}                               /* 우편번호             */
+             , ADR1                = #{ADR1}                              /* 주소1                */
+             , ADR2                = #{ADR2}                              /* 주소2                */
+             , TEL_NO              = REPLACE(#{TEL_NO}, '-','')           /* 전화번호             */
+             , FAX_NO              = REPLACE(#{FAX_NO}, '-','')           /* 팩스번호             */
+             , HOMEPG_URL          = #{HOMEPG_URL}                        /* 홈페이지             */
+             , REP_EMAIL           = #{REP_EMAIL}                         /* 대표eMail            */
+             , CONN_INF            = #{CONN_INF}                          /* 접속정보             */
+             , CTR_AM              = DBO.SF_GET_NUMERIC(#{CTR_AM})        /* 계약금               */
+             , CTR_CNTN            = #{CTR_CNTN}                          /* 계약내용             */
+             , SYS_ST_DT           = #{SYS_ST_DT}                         /* 시스템개설일자       */
+             , MNG_CORP_C          = #{MNG_CORP_C}                        /* 주관회사코드         */
+             , MTNRW_ST_DT         = #{MTNRW_ST_DT}                       /* 유지보수시작일자     */
+             , MTNRW_ED_DT         = #{MTNRW_ED_DT}                       /* 유지보수종료일자     */
+             , MTNRW_APL_DSC       = #{MTNRW_APL_DSC}                     /* 유지보수적용구분코드 */
+             , MTNRW_AM            = DBO.SF_GET_NUMERIC(#{MTNRW_AM})      /* 유지보수금액         */
+             , MTNRW_PAY_DT        = #{MTNRW_PAY_DT}                      /* 최종유지보수납부일   */
+             , EMP_CNT             = #{EMP_CNT}                           /* 종업원수             */
+             , AMN_CHR_DEPT_NM     = #{AMN_CHR_DEPT_NM}                   /* 관리담당부서명       */
+             , CHRR_NM             = #{CHRR_NM}                           /* 담당자명             */
+             , CHRR_TEL            = REPLACE(#{CHRR_TEL}, '-','')         /* 담당자전화번호       */
+             , CHRR_EMAIL          = #{CHRR_EMAIL}                        /* 담당자eMail          */
+             , RMK_CNTN            = #{RMK_CNTN}                          /* 비고내용             */
+             , USE_YN              = #{USE_YN}                            /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                          /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                          /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                          /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                            /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                            /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{S_CORP_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_CORP" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_CORP */ FROM TB_CO_M_CORP
+         WHERE 1=1 
+           AND CORP_C              = #{S_CORP_C}
+    </delete>
+
+    <select id="select_TB_CO_M_CORP" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_CORP */
+               A.CORP_C                                                                             /* 회사코드             */
+             , A.CORP_NM                                                                            /* 회사명               */
+             , A.CORP_ABR_NM                                                                        /* 회사약어명           */
+             , A.CORP_ENM                                                                           /* 회사영문명           */
+             , A.BZMN_NM                                                                            /* 사업자명             */
+             , A.BZMN_NO                                                                            /* 사업자번호           */
+             , A.COP_NO                                                                             /* 법인번호             */
+             , A.REPM_NM                                                                            /* 대표자명             */
+             , A.BZC_NM                                                                             /* 업종명               */
+             , A.BZTP_NM                                                                            /* 업태명               */
+             , A.ZIP                                                                                /* 우편번호             */
+             , A.ADR1                                                                               /* 주소1                */
+             , A.ADR2                                                                               /* 주소2                */
+             , A.TEL_NO                                                                             /* 전화번호             */
+             , A.FAX_NO                                                                             /* 팩스번호             */
+             , A.HOMEPG_URL                                                                         /* 홈페이지             */
+             , LEFT(A.REP_EMAIL, CHARINDEX('@', A.REP_EMAIL + '@')-1) AS REP_EMAIL                  /* 대표eMail            */
+             , RIGHT(A.REP_EMAIL, LEN(A.REP_EMAIL)-CHARINDEX('@', A.REP_EMAIL)+1) AS REP_EMAIL1     /* 대표eMail주소        */ 
+             , A.CONN_INF                                                                           /* 접속정보             */
+             , A.CTR_AM                                                                             /* 계약금               */
+             , A.CTR_CNTN                                                                           /* 계약내용             */
+             , A.SYS_ST_DT                                                                          /* 시스템개설일자       */
+             , A.MNG_CORP_C                                                                         /* 주관회사코드         */
+             , (SELECT X.CORP_NM
+                  FROM TB_CO_M_CORP X
+                 WHERE X.CORP_C = A.MNG_CORP_C
+                ) AS MNG_CORP_NM                                                                    /* 주관회사명           */
+             , A.MTNRW_ST_DT                                                                        /* 유지보수시작일자     */
+             , A.MTNRW_ED_DT                                                                        /* 유지보수종료일자     */
+             , A.MTNRW_APL_DSC                                                                      /* 유지보수적용구분코드 */
+             , A.MTNRW_AM                                                                           /* 유지보수금액         */
+             , A.MTNRW_PAY_DT                                                                       /* 최종유지보수납부일   */
+             , A.EMP_CNT                                                                            /* 종업원수             */
+             , A.AMN_CHR_DEPT_NM                                                                    /* 관리담당부서명       */
+             , A.CHRR_NM                                                                            /* 담당자명             */
+             , A.CHRR_TEL                                                                           /* 담당자전화번호       */
+             , LEFT(A.CHRR_EMAIL, CHARINDEX('@', A.CHRR_EMAIL + '@')-1) AS CHRR_EMAIL               /* 담당자 이메일        */
+             , RIGHT(A.CHRR_EMAIL, LEN(A.CHRR_EMAIL)-CHARINDEX('@', A.CHRR_EMAIL)+1) AS CHRR_EMAIL1 /* 담당자 이메일주소    */
+             , A.RMK_CNTN                                                                           /* 비고내용             */
+             , A.USE_YN                                                                             /* 사용여부             */
+             , A.ETC_DSC1                                                                           /* 기타구분1            */
+             , A.ETC_DSC2                                                                           /* 기타구분2            */
+             , A.ETC_DSC3                                                                           /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM                                     /* 최초등록일시         */
+             , A.FSRG_ID                                                                            /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                                                 /* 최초등록자명         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM                                    /* 최종변경일시         */
+             , A.LSCHG_ID                                                                           /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                                                               /* 최종변경자명         */
+          FROM TB_CO_M_CORP A
+         WHERE 1=1 
+           AND A.CORP_C            = #{S_CORP_C}
+    </select>
+</mapper>

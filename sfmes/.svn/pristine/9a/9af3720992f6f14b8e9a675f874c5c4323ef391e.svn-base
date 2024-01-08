@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_BZPL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_BZPL */ TB_CO_M_BZPL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , BZPL_NM             /* 사업장명             */
+            , BZPL_ABR_NM         /* 사업장약어명         */            
+            , TXBZ_RPT_FORM_C     /* 사업장세무신고형태코 */
+            , BZMN_NM             /* 사업자명             */
+            , BZMN_NO             /* 사업자번호           */
+            , COP_NO              /* 법인번호             */
+            , REPM_NM             /* 대표자명             */            
+            , BZC_NM              /* 업종명               */
+            , BZTP_NM             /* 업태명               */            
+            , ZIP                 /* 우편번호             */
+            , ADR1                /* 주소1                */
+            , ADR2                /* 주소2                */
+            , TEL_NO              /* 전화번호             */
+            , FAX_NO              /* 팩스번호             */
+            , MBCO_DSC            /* 본지사구분코드       */
+            , CLSD_DT             /* 폐업일자             */
+            , ELTTX_RMS_EMAIL     /* 전자세금계산서수신이 */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{S_CORP_C}
+            , #{BZPL_C}
+            , #{BZPL_NM}
+            , #{BZPL_ABR_NM}            
+            , #{TXBZ_RPT_FORM_C}
+            , #{BZMN_NM}
+            , #{BZMN_NO}
+            , #{COP_NO}
+            , #{REPM_NM}            
+            , #{BZC_NM}
+            , #{BZTP_NM}            
+            , #{ZIP}
+            , #{ADR1}
+            , #{ADR2}
+            , #{TEL_NO}
+            , #{FAX_NO}
+            , #{MBCO_DSC}
+            , #{CLSD_DT}
+            , #{ELTTX_RMS_EMAIL}
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_BZPL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_BZPL */ TB_CO_M_BZPL
+           SET 
+               CORP_C              = #{CORP_C}                                       /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                       /* 사업장코드           */
+             , BZPL_NM             = #{BZPL_NM}                                      /* 사업장명             */
+             , BZPL_ABR_NM         = #{BZPL_ABR_NM}                                  /* 사업장약어명         */             
+             , TXBZ_RPT_FORM_C     = #{TXBZ_RPT_FORM_C}                              /* 사업장세무신고형태코 */
+             , BZMN_NM             = #{BZMN_NM}                                      /* 사업자명             */
+             , BZMN_NO             = REPLACE(#{BZMN_NO}, '-','')                     /* 사업자번호           */
+             , COP_NO              = REPLACE(#{COP_NO}, '-','')                      /* 법인번호             */
+             , REPM_NM             = #{REPM_NM}                                      /* 대표자명             */             
+             , BZC_NM              = #{BZC_NM}                                       /* 업종명               */
+             , BZTP_NM             = #{BZTP_NM}                                      /* 업태명               */             
+             , ZIP                 = #{ZIP}                                          /* 우편번호             */
+             , ADR1                = #{ADR1}                                         /* 주소1                */
+             , ADR2                = #{ADR2}                                         /* 주소2                */        
+             , TEL_NO              = REPLACE(#{TEL_NO}, '-','')                      /* 전화번호             */
+             , FAX_NO              = REPLACE(#{FAX_NO}, '-','')                      /* 팩스번호             */
+             , MBCO_DSC            = #{MBCO_DSC}                                     /* 본지사구분코드       */
+             , CLSD_DT             = #{CLSD_DT}                                      /* 폐업일자             */
+             , ELTTX_RMS_EMAIL     = CONCAT(#{ELTTX_RMS_EMAIL},#{ELTTX_RMS_EMAIL1})  /* 전자세금계산서수신메일 */
+             , USE_YN              = #{USE_YN}                                       /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                                     /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                                     /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                                     /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                                       /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                       /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_BZPL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_BZPL */ FROM TB_CO_M_BZPL
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_CO_M_BZPL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_BZPL */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.BZPL_NM                                           /* 사업장명             */
+             , A.BZPL_ABR_NM                                       /* 사업장약어명         */             
+             , A.TXBZ_RPT_FORM_C                                   /* 사업장세무신고형태코 */
+             , A.BZMN_NM                                           /* 사업자명             */
+             , A.BZMN_NO                                           /* 사업자번호           */
+             , A.COP_NO                                            /* 법인번호             */
+             , A.REPM_NM                                           /* 대표자명             */             
+             , A.BZC_NM                                            /* 업종명               */
+             , A.BZTP_NM                                           /* 업태명               */             
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.TEL_NO                                            /* 전화번호             */
+             , A.FAX_NO                                            /* 팩스번호             */
+             , A.MBCO_DSC                                          /* 본지사구분코드       */
+             , A.CLSD_DT                                           /* 폐업일자             */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이 */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_BZPL A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+    </select>
+</mapper>

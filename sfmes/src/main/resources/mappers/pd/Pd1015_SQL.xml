@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+    
+    <!--  BOM 기본 조회  -->
+    <select id="selectPd1015_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd1015_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.QLT_ISP_YN                                        /* 품질검사여부              */
+             , A.BSC_BOM_YN                                        /* 기본BOM여부               */
+             , A.PD_PRW_EXPL                                       /* 생산공정설명              */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , A.BAS_QT                                            /* 기준량                    */
+             , A.GDS_UNT_C                                         /* 물품단위코드              */
+             , A.BAS_WT                                            /* 기준중량                  */
+             , A.PD_YLD                                            /* 생산수율                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , B.GDS_NM                                            /* 물품명                    */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B.GDS_ENM                                           /* 물품영문명                */
+             , B.GDS_STD_NM                                        /* 물품규격명                */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.GDS_LCLC                                          /* 물품대분류코드            */
+             , B.GDS_MCLC                                          /* 물품중분류코드            */
+             , B.GDS_SCLC                                          /* 물품소분류코드            */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.PART_C                                            /* 표준부위코드              */
+             , B.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , B.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , B.GDS_WT                                            /* 물품중량(Kg)              */
+             , B.BAS_WHSE_C                                        /* 기본창고코드              */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.OPDAA_DSC                                         /* 원산지구분코드            */
+             , B.PDAA_C                                            /* 산지코드                  */
+             , B.MFT_TRPL_NM                                       /* 제조원명                  */
+             , B.SEL_TRPL_NM                                       /* 판매원명                  */
+             , B.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , B.HS_C                                              /* HS코드                    */
+             , B.ERP_GDS_C                                         /* ERP품목코드               */
+             , B.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , B.PD_LINE_C                                         /* 주생산라인코드            */
+             , B.BAS_BOM_C                                         /* 기본BOM코드               */
+             , B.USE_YN                                            /* 사용여부                  */
+             , A.SNS_CNTN                                          /* 적요내용                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분3                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+          FROM TB_PD_M_BOM_MFC A
+             , TB_CO_M_GDS     B
+         WHERE 1=1  
+           AND A.CORP_C            = B.CORP_C  
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.GDS_C             = B.GDS_C 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+        <if test="GDS_C != '' and GDS_C != null" >
+           AND A.GDS_C             = #{GDS_C}
+        </if>
+        <if test="GDS_TP_DSC != '' and GDS_TP_DSC != null" >
+           AND B.GDS_TP_DSC        = #{GDS_TP_DSC}
+        </if>
+        <if test="MFC_DSC != '' and MFC_DSC != null" >
+           AND A.MFC_DSC            = #{MFC_DSC}
+        </if>
+        <if test="BSC_BOM_YN != '' and BSC_BOM_YN != null" >
+           AND A.BSC_BOM_YN         = #{BSC_BOM_YN}
+        </if>
+    </select>
+
+    <!--  BOM 상세내역 포함 조회  -->
+    <select id="selectPd1015_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd1015_02 */
+               A.CORP_C                                             /* 회사코드                  */
+             , A.BZPL_C                                             /* 사업장코드                */
+             , A.GDS_C                                              /* 물품코드                  */
+             , A.BOM_C                                              /* BOM코드                   */
+             , A.MFC_DSC                                            /* 가공구분코드              */
+             , A.QLT_ISP_YN                                         /* 품질검사여부              */
+             , A.BSC_BOM_YN                                         /* 기본BOM여부               */
+             , A.PD_PRW_EXPL                                        /* 생산공정설명              */
+             , A.PD_LINE_C                                          /* 생산라인코드              */
+             , A.BAS_QT                                             /* 기준량                    */
+             , A.GDS_UNT_C                                          /* 물품단위코드              */
+             , A.BAS_WT                                             /* 기준중량                  */
+             , A.PD_YLD                                             /* 생산수율                  */
+             , A.WHSE_C                                             /* 창고코드                  */
+             , B1.GDS_NM                                            /* 물품명                    */
+             , B1.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B1.GDS_ENM                                           /* 물품영문명                */
+             , B1.GDS_STD_NM                                        /* 물품규격명                */
+             , B1.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B1.GDS_LCLC                                          /* 물품대분류코드            */
+             , B1.GDS_MCLC                                          /* 물품중분류코드            */
+             , B1.GDS_SCLC                                          /* 물품소분류코드            */
+             , B1.TXT_DSC                                           /* 과세구분코드              */
+             , B1.PART_C                                            /* 표준부위코드              */
+             , B1.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , B1.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , B1.UNT_C                                             /* 단위코드                  */
+             , B1.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , B1.GDS_WT                                            /* 물품중량(Kg)              */
+             , B1.BAS_WHSE_C                                        /* 기본창고코드              */
+             , B1.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B1.OPDAA_DSC                                         /* 원산지구분코드            */
+             , B1.PDAA_C                                            /* 산지코드                  */
+             , B1.MFT_TRPL_NM                                       /* 제조원명                  */
+             , B1.SEL_TRPL_NM                                       /* 판매원명                  */
+             , B1.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , B1.HS_C                                              /* HS코드                    */
+             , B1.ERP_GDS_C                                         /* ERP품목코드               */
+             , B1.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , B1.PD_LINE_C                                         /* 주생산라인코드            */
+             , B1.BAS_BOM_C                                         /* 기본BOM코드               */
+             , B1.USE_YN                                            /* 사용여부                  */
+             , A.SNS_CNTN                                           /* 적요내용                  */
+             , A.RMK_CNTN                                           /* 비고내용                  */
+             , A.USE_YN                                             /* 사용여부                  */
+             , C.MTRL_SQNO                                          
+             , C.MTRL_GDS_C
+             , B2.GDS_NM       AS MTRL_GDS_NM
+             , B2.GDS_DTL_NM   AS MTRL_GDS_DTL_NM                   /* 물품명상세(물품+규격)     */
+             , B2.GDS_STD_NM   AS MTRL_GDS_STD_NM                   /* 물품규격명                */
+             , B2.GDS_TP_DSC   AS MTRL_GDS_TP_DSC                   /* 물품유형구분코드          */
+             , B2.TXT_DSC      AS MTRL_TXT_DSC                      /* 과세구분코드              */
+             , B2.QT_WT_DSC    AS MTRL_QT_WT_DSC                    /* 수(중)량형구분코드        */
+             , B2.UNT_C        AS MTRL_UNT_C                        /* 단위코드                  */
+             , C.MTRL_BOM_C
+             , C.GDS_UNT_C
+             , C.PTIN_QT
+             , C.PTIN_WT
+             , C.PTIN_YLD
+             , C.LSTR
+             , C.NED_WT
+             , C.MXT_RTO
+             , C.PD_YLD_OBJ_YN
+             , C.WHSE_C
+             , C.ACP_MTR_DSC
+          FROM TB_PD_M_BOM_MFC   A    /* 생산_BOM제품기본 */    
+             , TB_CO_M_GDS       B1
+             , TB_PD_D_BOM_MTRL  C    /* 생산_BOM자재상세 */
+             , TB_CO_M_GDS       B2
+         WHERE 1=1  
+           AND A.CORP_C            = B1.CORP_C  
+           AND A.BZPL_C            = B1.BZPL_C
+           AND A.GDS_C             = B1.GDS_C 
+           AND A.CORP_C            = C.CORP_C  
+           AND A.BZPL_C            = C.BZPL_C
+           AND A.GDS_C             = C.GDS_C 
+           AND A.BOM_C             = C.BOM_C
+           AND C.CORP_C            = B2.CORP_C  
+           AND C.BZPL_C            = B2.BZPL_C
+           AND C.MTRL_GDS_C        = B2.GDS_C 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND C.USE_YN            = 'Y'
+        <if test="GDS_C != '' and GDS_C != null" >
+           AND A.GDS_C             = #{GDS_C}
+        </if>
+        <if test="GDS_TP_DSC != '' and GDS_TP_DSC != null" >
+           AND B1.GDS_TP_DSC        = #{GDS_TP_DSC}
+        </if>
+        <if test="MFC_DSC != '' and MFC_DSC != null" >
+           AND A.MFC_DSC            = #{MFC_DSC}
+        </if>
+        <if test="BSC_BOM_YN != '' and BSC_BOM_YN != null" >
+           AND A.BSC_BOM_YN         = #{BSC_BOM_YN}
+        </if>
+    </select>
+
+</mapper>

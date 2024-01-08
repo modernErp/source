@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_L_MSG_SND" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_L_MSG_SND */ TB_CO_L_MSG_SND
+        (
+              CORP_C              /* 회사코드             */
+            , SND_SQNO            /* 발신순번             */
+            , BZPL_C              /* 사업장코드           */
+            , DEPT_C              /* 부서코드             */
+            , MSG_NO              /* 메시지번호           */
+            , SMS_SND_DSC         /* SMS발신구분코드      */
+            , SNDMN_ID            /* 발신자ID             */
+            , SND_TEL_NO          /* 발신전화번호         */
+            , RMS_NM              /* 수신자명             */
+            , RMS_ID              /* 수신자ID             */
+            , RMS_MP_NO           /* 수신휴대전화번호     */
+            , DCZ_NO              /* 결재번호             */
+            , MSG_TIT             /* 메시지제목           */
+            , MSG_CNTN            /* 메시지내용           */
+            , TMS_KEY             /* 전송KEY              */
+            , SND_DT              /* 발신일자             */
+            , SND_DTM             /* 발신일시             */
+            , SND_PRC_RZT_DSC     /* 발신처리결과구분코드 */
+            , PARA_VAL1           /* 파라미터값1          */
+            , PARA_VAL2           /* 파라미터값2          */
+            , PARA_VAL3           /* 파라미터값3          */
+            , PARA_VAL4           /* 파라미터값4          */
+            , PARA_VAL5           /* 파라미터값5          */
+            , PARA_VAL6           /* 파라미터값6          */
+            , PARA_VAL7           /* 파라미터값7          */
+            , PARA_VAL8           /* 파라미터값8          */
+            , PARA_VAL9           /* 파라미터값9          */
+            , PARA_VAL10          /* 파라미터값10         */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{SND_SQNO}
+            , #{BZPL_C}
+            , #{DEPT_C}
+            , #{MSG_NO}
+            , #{SMS_SND_DSC}
+            , #{SNDMN_ID}
+            , #{SND_TEL_NO}
+            , #{RMS_NM}
+            , #{RMS_ID}
+            , #{RMS_MP_NO}
+            , #{DCZ_NO}
+            , #{MSG_TIT}
+            , #{MSG_CNTN}
+            , #{TMS_KEY}
+            , #{SND_DT}
+            , #{SND_DTM}
+            , #{SND_PRC_RZT_DSC}
+            , #{PARA_VAL1}
+            , #{PARA_VAL2}
+            , #{PARA_VAL3}
+            , #{PARA_VAL4}
+            , #{PARA_VAL5}
+            , #{PARA_VAL6}
+            , #{PARA_VAL7}
+            , #{PARA_VAL8}
+            , #{PARA_VAL9}
+            , #{PARA_VAL10}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_L_MSG_SND" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_L_MSG_SND */ TB_CO_L_MSG_SND
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , SND_SQNO            = #{SND_SQNO}              /* 발신순번             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DEPT_C              = #{DEPT_C}                /* 부서코드             */
+             , MSG_NO              = #{MSG_NO}                /* 메시지번호           */
+             , SMS_SND_DSC         = #{SMS_SND_DSC}           /* SMS발신구분코드      */
+             , SNDMN_ID            = #{SNDMN_ID}              /* 발신자ID             */
+             , SND_TEL_NO          = #{SND_TEL_NO}            /* 발신전화번호         */
+             , RMS_NM              = #{RMS_NM}                /* 수신자명             */
+             , RMS_ID              = #{RMS_ID}                /* 수신자ID             */
+             , RMS_MP_NO           = #{RMS_MP_NO}             /* 수신휴대전화번호     */
+             , DCZ_NO              = #{DCZ_NO}                /* 결재번호             */
+             , MSG_TIT             = #{MSG_TIT}               /* 메시지제목           */
+             , MSG_CNTN            = #{MSG_CNTN}              /* 메시지내용           */
+             , TMS_KEY             = #{TMS_KEY}               /* 전송KEY              */
+             , SND_DT              = #{SND_DT}                /* 발신일자             */
+             , SND_DTM             = #{SND_DTM}               /* 발신일시             */
+             , SND_PRC_RZT_DSC     = #{SND_PRC_RZT_DSC}       /* 발신처리결과구분코드 */
+             , PARA_VAL1           = #{PARA_VAL1}             /* 파라미터값1          */
+             , PARA_VAL2           = #{PARA_VAL2}             /* 파라미터값2          */
+             , PARA_VAL3           = #{PARA_VAL3}             /* 파라미터값3          */
+             , PARA_VAL4           = #{PARA_VAL4}             /* 파라미터값4          */
+             , PARA_VAL5           = #{PARA_VAL5}             /* 파라미터값5          */
+             , PARA_VAL6           = #{PARA_VAL6}             /* 파라미터값6          */
+             , PARA_VAL7           = #{PARA_VAL7}             /* 파라미터값7          */
+             , PARA_VAL8           = #{PARA_VAL8}             /* 파라미터값8          */
+             , PARA_VAL9           = #{PARA_VAL9}             /* 파라미터값9          */
+             , PARA_VAL10          = #{PARA_VAL10}            /* 파라미터값10         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND SND_SQNO            = #{SND_SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_L_MSG_SND" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_L_MSG_SND */ FROM TB_CO_L_MSG_SND
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND SND_SQNO            = #{SND_SQNO}
+    </delete>
+
+    <select id="select_TB_CO_L_MSG_SND" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_L_MSG_SND */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.SND_SQNO                                          /* 발신순번                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DEPT_C                                            /* 부서코드                  */
+             , A.MSG_NO                                            /* 메시지번호                */
+             , A.SMS_SND_DSC                                       /* SMS발신구분코드           */
+             , A.SNDMN_ID                                          /* 발신자ID                  */
+             , A.SND_TEL_NO                                        /* 발신전화번호              */
+             , A.RMS_NM                                            /* 수신자명                  */
+             , A.RMS_ID                                            /* 수신자ID                  */
+             , A.RMS_MP_NO                                         /* 수신휴대전화번호          */
+             , A.DCZ_NO                                            /* 결재번호                  */
+             , A.MSG_TIT                                           /* 메시지제목                */
+             , A.MSG_CNTN                                          /* 메시지내용                */
+             , A.TMS_KEY                                           /* 전송KEY                   */
+             , A.SND_DT                                            /* 발신일자                  */
+             , A.SND_DTM                                           /* 발신일시                  */
+             , A.SND_PRC_RZT_DSC                                   /* 발신처리결과구분코드      */
+             , A.PARA_VAL1                                         /* 파라미터값1               */
+             , A.PARA_VAL2                                         /* 파라미터값2               */
+             , A.PARA_VAL3                                         /* 파라미터값3               */
+             , A.PARA_VAL4                                         /* 파라미터값4               */
+             , A.PARA_VAL5                                         /* 파라미터값5               */
+             , A.PARA_VAL6                                         /* 파라미터값6               */
+             , A.PARA_VAL7                                         /* 파라미터값7               */
+             , A.PARA_VAL8                                         /* 파라미터값8               */
+             , A.PARA_VAL9                                         /* 파라미터값9               */
+             , A.PARA_VAL10                                        /* 파라미터값10              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_L_MSG_SND A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.SND_SQNO          = #{SND_SQNO}
+    </select>
+</mapper>

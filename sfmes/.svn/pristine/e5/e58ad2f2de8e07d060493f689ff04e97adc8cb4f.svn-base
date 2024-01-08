@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <select id="selectCo2020List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo2020List */
+              A.CORP_C                                           /* 회사코드         */
+            , A.BAS_DT                                           /* 기준일자         */
+            , A.BAS_YY                                           /* 기준년도         */
+            , A.BAS_MM                                           /* 기준월           */
+            , A.BAS_DD                                           /* 기준일           */
+            , A.BIZ_WEEK_BAS_YY                                  /* 영업주차기준년도 */
+            , A.BIZ_WEEK                                         /* 영업주차         */
+            , A.CDR_WEEK                                         /* 달력주차         */
+            , A.DOW_C                                            /* 요일코드         */
+            , A.DOW_NM                                           /* 요일명           */
+            , A.HLDY_YN                                          /* 휴일여부         */
+            , A.HLDY_NM                                          /* 휴일명           */
+            , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM     /* 최초등록일자     */
+            , A.FSRG_ID                                          /* 최초등록자ID     */
+            , CONVERT(CHAR(23), A.LSCHG_DTM, 20)  AS LSCHG_DTM   /* 최종수정일자     */
+            , A.LSCHG_ID                                         /* 최종수정자ID     */
+         FROM TB_CO_M_BAS_DT A
+        WHERE 1 = 1
+          AND A.CORP_C = #{CORP_C}
+        <if test = "WEEK_DSC != null and WEEK_DSC != ''">        /* 연도기준 유무확인            */
+            <choose>                 
+                <when test="WEEK_DSC == 1">                      /* 연도기준이 달력기준일 경우   */
+                    AND A.BAS_YY BETWEEN #{F_STYEAR} AND #{F_EDYEAR}
+                </when>
+                <when test="WEEK_DSC == 2">                      /* 연도기준이 영업일기준일 경우 */
+                    AND A.BIZ_WEEK_BAS_YY BETWEEN #{F_STYEAR} AND #{F_EDYEAR}
+                </when>
+            </choose>
+        </if>
+        <if test = "F_HLDY_YN != null and F_HLDY_YN != ''">      /* 휴일여부 유무확인             */
+            AND A.HLDY_YN = #{F_HLDY_YN}
+        </if>
+    </select>
+     
+    <select id="selectCo2020_Basyy" parameterType="LinkedHashMap" resultType="LinkedHashMap">    
+        SELECT /*+ selectCo2020_Basyy */
+               DISTINCT (BAS_YY) AS BAS_YY                        /* 기준년도                      */
+          FROM TB_CO_M_BAS_DT
+         WHERE 1 = 1
+           AND CORP_C = #{CORP_C}
+    </select>
+    
+    <select id="selectCo2020_weekBasyy" parameterType="LinkedHashMap" resultType="LinkedHashMap">    
+        SELECT /*+ selectCo2020_weekBasyy */
+               DISTINCT (BIZ_WEEK_BAS_YY) AS BIZ_WEEK_BAS_YY      /* 영업주차기준년도              */
+          FROM TB_CO_M_BAS_DT
+         WHERE 1 = 1
+           AND CORP_C = #{CORP_C}
+    </select>
+
+    <update id="updateCo2020" parameterType="LinkedHashMap">
+        UPDATE TB_CO_M_BAS_DT /*+ updateCo2020 */
+           SET
+               HLDY_YN   = #{HLDY_YN}         /* 휴일여부     */
+             , HLDY_NM   = #{HLDY_NM}         /* 휴일명       */     
+             , LSCHG_DTM = GETDATE()          /* 최종변경일시 */
+             , LSCHG_ID  = #{GUSRID}          /* 최종변경자ID */
+         WHERE 1 = 1
+           AND CORP_C    = #{CORP_C}
+           AND BAS_DT    = #{BAS_DT}
+    </update>
+</mapper>

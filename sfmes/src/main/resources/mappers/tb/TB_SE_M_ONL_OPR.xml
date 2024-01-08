@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_ONL_OPR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_ONL_OPR */ TB_SE_M_ONL_OPR
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , RG_DT               /* 등록일자             */
+            , RG_SQNO             /* 등록일련번호         */
+            , RG_DSQNO            /* 등록상세일련번호     */
+            , TRPL_C              /* 거래처코드           */
+            , OPR_DT              /* 주문일자             */
+            , OPR_NO              /* 주문번호             */
+            , TRPL_GDS_C          /* 거래처물품코드       */
+            , TRPL_GDS_NM         /* 거래처물품명         */
+            , GDS_C               /* 물품코드             */
+            , OPR_QT              /* 주문수량             */
+            , OPR_UPR             /* 주문단가             */
+            , OPR_AM              /* 주문금액             */
+            , DVYAA_ZIP           /* 배송지우편번호       */
+            , DVYAA_ADR1          /* 배송지주소1          */
+            , DVYAA_ADR2          /* 배송지주소2          */
+            , DVY_CUS_REG_DT      /* 배송고객등록일자     */
+            , DVY_CUS_REG_SQNO    /* 배송고객등록일련번호 */
+            , RVO_DT              /* 수주일자             */
+            , RVO_SQNO            /* 수주일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{RG_DT}
+            , #{RG_SQNO}
+            , (
+               SELECT ISNULL(MAX(RG_DSQNO),0)+1
+                 FROM TB_SE_M_ONL_OPR
+                WHERE 1 = 1
+                  AND CORP_C  = #{CORP_C}
+                  AND BZPL_C  = #{BZPL_C}
+                  AND RG_DT   = #{RG_DT}
+                  AND RG_SQNO = #{RG_SQNO} 
+              )
+            , #{TRPL_C}
+            , REPLACE(#{OPR_DT},'-','')
+            , #{OPR_NO}
+            , #{TRPL_GDS_C}
+            , #{TRPL_GDS_NM}
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{OPR_QT})
+            , DBO.SF_GET_FLOAT(#{OPR_UPR})
+            , DBO.SF_GET_NUMERIC(#{OPR_AM})
+            , REPLACE(#{DVYAA_ZIP}, '-', '')
+            , #{DVYAA_ADR1}
+            , #{DVYAA_ADR2}
+            , #{DVY_CUS_REG_DT}
+            , DBO.SF_GET_NUMERIC(#{DVY_CUS_REG_SQNO})
+            , #{RVO_DT}
+            , DBO.SF_GET_NUMERIC(#{RVO_SQNO})
+            , #{RMK_CNTN}
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_ONL_OPR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_ONL_OPR */ TB_SE_M_ONL_OPR
+           SET 
+               CORP_C              = #{CORP_C}                                      /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                      /* 사업장코드           */
+             , RG_DT               = #{RG_DT}                                       /* 등록일자             */
+             , RG_SQNO             = #{RG_SQNO}                                     /* 등록일련번호         */
+             , RG_DSQNO            = #{RG_DSQNO}                                    /* 등록상세일련번호     */
+             , TRPL_C              = #{TRPL_C}                                      /* 거래처코드           */
+             , OPR_DT              = #{OPR_DT}                                      /* 주문일자             */
+             , OPR_NO              = #{OPR_NO}                                      /* 주문번호             */
+             , TRPL_GDS_C          = #{TRPL_GDS_C}                                  /* 거래처물품코드       */
+             , TRPL_GDS_NM         = #{TRPL_GDS_NM}                                 /* 거래처물품명         */
+             , GDS_C               = #{GDS_C}                                       /* 물품코드             */
+             , OPR_QT              = DBO.SF_GET_FLOAT(#{OPR_QT})                    /* 주문수량             */
+             , OPR_UPR             = DBO.SF_GET_FLOAT(#{OPR_UPR})                   /* 주문단가             */
+             , OPR_AM              = DBO.SF_GET_NUMERIC(#{OPR_AM})                  /* 주문금액             */
+             , DVYAA_ZIP           = #{DVYAA_ZIP}                                   /* 배송지우편번호       */  
+             , DVYAA_ADR1          = #{DVYAA_ADR1}                                  /* 배송지주소1          */
+             , DVYAA_ADR2          = #{DVYAA_ADR2}                                  /* 배송지주소2          */
+             , DVY_CUS_REG_DT      = #{DVY_CUS_REG_DT}                              /* 배송고객등록일자     */
+             , DVY_CUS_REG_SQNO    = DBO.SF_GET_NUMERIC(#{DVY_CUS_REG_SQNO})        /* 배송고객등록일련번호 */
+             , RVO_DT              = #{RVO_DT}                                      /* 수주일자             */
+             , RVO_SQNO            = DBO.SF_GET_NUMERIC(#{RVO_SQNO})                /* 수주일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}                                    /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                                      /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                                    /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                                    /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                                    /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                                      /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                      /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}        
+           AND BZPL_C              = #{BZPL_C}
+           AND RG_DT               = #{RG_DT}
+           AND RG_SQNO             = #{RG_SQNO}
+           AND RG_DSQNO            = #{RG_DSQNO}           
+    </update>
+
+    <delete id="delete_TB_SE_M_ONL_OPR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_ONL_OPR */ FROM TB_SE_M_ONL_OPR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND RG_DSQNO            = #{RG_DSQNO}
+           AND RG_DT               = #{RG_DT}
+           AND RG_SQNO             = #{RG_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_M_ONL_OPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_ONL_OPR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RG_DT                                             /* 등록일자                  */
+             , A.RG_SQNO                                           /* 등록일련번호              */
+             , A.RG_DSQNO                                          /* 등록상세일련번호          */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.OPR_DT                                            /* 주문일자                  */
+             , A.OPR_NO                                            /* 주문번호                  */
+             , A.TRPL_GDS_C                                        /* 거래처물품코드            */
+             , A.TRPL_GDS_NM                                       /* 거래처물품명              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.OPR_QT                                            /* 주문수량                  */
+             , A.OPR_UPR                                           /* 주문단가                  */
+             , A.OPR_AM                                            /* 주문금액                  */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */ 
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */ 
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */ 
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , A.RVO_DT                                            /* 수주일자                  */
+             , A.RVO_SQNO                                          /* 수주일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_ONL_OPR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.RG_DT             = #{RG_DT}
+           AND A.RG_SQNO           = #{RG_SQNO}
+           AND A.RG_DSQNO          = #{RG_DSQNO}           
+    </select>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <!-- 창고내역 조회 -->
+    <select id="selectCo1035List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo1035List */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.WHSE_C                                            /* 창고코드             */
+             , A.WHSE_NM                                           /* 창고명               */
+             , A.WHSE_CFC                                          /* 창고분류코드         */
+             , A.WHSE_DSC                                          /* 창고구분코드         */
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.CHRR_NM                                           /* 담당자명             */
+             , A.CHRR_TELNO                                        /* 담당자전화번호       */
+             , A.CHRG_DEPT_C                                       /* 담당부서코드         */
+             , A.MINUS_YN                                          /* 음수재고허용여부     */
+             , A.USE_YN                                            /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름       */
+          FROM TB_CO_M_WHSE A
+         WHERE 1=1
+          AND CORP_C        = #{CORP_C}
+          AND BZPL_C        = #{BZPL_C} 
+        <!--  AND WHSE_CFC      = '01'      -->              
+        <if test="WHSE_DSC != null and WHSE_DSC != ''">
+            AND WHSE_DSC    = #{WHSE_DSC}                   
+        </if>
+        <if test="USE_YN != null and USE_YN != ''">
+            AND USE_YN         = #{USE_YN}
+        </if>
+        <if test='searchKeyword != null and searchKeyword != ""'>
+            <choose>
+                <when test='searchCondition == ""'>
+                    AND UPPER(A.WHSE_C + A.WHSE_NM) LIKE UPPER('%' + #{searchKeyword} + '%')    
+                </when>
+                <when test='searchCondition == "1"'>
+                    AND UPPER(A.WHSE_C) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+                <when test='searchCondition == "2"'>
+                    AND UPPER(A.WHSE_NM) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+            </choose>
+        </if>
+    </select>
+    
+    <!-- 창고찾기팝업내역 조회 -->
+    <select id="selectCo1030ListP01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectCo1030ListP01 */
+              A.BZPL_C                                                             /* 사업장코드                            */
+            , B.BZPL_NM                                                            /* 사업장명                              */ 
+            , A.WHSE_C                                                             /* 창고코드                              */
+            , A.WHSE_NM                                                            /* 창고명                                */
+            , A.ZIP                                                                /* 우편번호                              */
+            , A.ADR1                                                               /* 주소1                                 */
+            , A.ADR2                                                               /* 주소2                                 */
+            , A.CHRR_NM                                                            /* 담당자명                              */
+            , A.CHRR_TELNO                                                         /* 담당자전화번호                        */
+            , A.CHRG_DEPT_C                                                        /* 담당 부서명                           */
+            , A.WHSE_CFC                                                           /* 창고분류코드                          */
+            , A.WHSE_DSC                                                           /* 창고구분코드                          */
+            , A.MINUS_YN                                                           /* 음수재고허용여부                      */
+            , A.USE_YN                                                             /* 사용여부                              */
+            , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      				   /* 최초등록일시                          */
+             , A.FSRG_ID                                          				   /* 최초등록자ID                          */
+             , A.FSRG_ID AS FSRG_NM                                                /* 최초등록자이름                        */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM                     /* 최종변경일시                          */
+             , A.LSCHG_ID                                                          /* 최종변경자ID                          */
+             , A.LSCHG_ID AS LSCHG_NM                                              /* 최종변경자이름                        */
+         FROM  TB_CO_M_WHSE A RIGHT OUTER JOIN TB_CO_M_BZPL B 
+           on  A.BZPL_C = B.BZPL_C
+           WHERE 1 = 1
+             AND A.CORP_C        = #{CORP_C}
+             AND A.BZPL_C        = #{P_BAS_BZPL_C}
+        <!-- AND A.WHSE_CFC      = '01'   --> 
+        <if test="WHSE_DSC != null and WHSE_DSC != ''">
+            AND A.WHSE_DSC    = #{WHSE_DSC}                             
+        </if>
+        <if test="USE_YN != null and USE_YN != ''">
+            AND A.USE_YN         = #{USE_YN}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test='searchCondition == ""'>
+                    AND UPPER(A.WHSE_C + A.WHSE_NM) LIKE UPPER('%' + #{searchKeyword} + '%')      /* 검색조건 : 전체     */
+                </when>
+                <when test="searchCondition == 1">
+                    AND A.WHSE_C LIKE '%' + #{searchKeyword} + '%' 
+                </when>
+                <when test="searchCondition == 2">
+                    AND A.WHSE_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>       
+    </select>
+    
+    <!--창고 변경 이력 조회 -->    
+    <select id="selectCo1035ListP01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_L_WHSE */
+               A.CORP_C                                            /* 회사코드             */
+             , A.HST_SQNO                                          /* 이력일련번호         */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.WHSE_C                                            /* 창고코드             */
+             , A.WHSE_NM                                           /* 창고명               */
+             , A.WHSE_CFC                                          /* 창고분류코드         */
+             , A.WHSE_DSC                                          /* 창고구분코드         */
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.CHRR_NM                                           /* 담당자명             */
+             , A.CHRR_TELNO                                        /* 담당자전화번호       */
+             , A.CHRG_DEPT_C                                       /* 담당부서코드         */
+             , A.MINUS_YN                                          /* 음수재고허용여부     */
+             , A.USE_YN                                            /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+    			 WHERE 1=1 
+      			   AND A.CORP_C   = X.CORP_C
+      			   AND A.FSRG_ID  = X.USR_ID)     AS FSRG_NM       /* 최초등록자이름        */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시          */
+             , A.LSCHG_ID                                          /* 최종변경자ID          */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+   				 WHERE 1=1 
+      			   AND A.CORP_C   = X.CORP_C
+     		       AND A.LSCHG_ID  = X.USR_ID)    AS LSCHG_NM       /* 최종변경자이름        */
+          FROM
+            TB_CO_L_WHSE A
+         WHERE 1 = 1
+         AND CORP_C          = #{CORP_C}
+         AND A.BZPL_C        = #{P_BZPL_C}        
+         AND A.WHSE_CFC      = '01'
+        <if test='WHSE_DSC != null and WHSE_DSC != ""'>
+            AND A.WHSE_DSC    = #{WHSE_DSC}
+        </if>
+        <if test='USE_YN != null and USE_YN != ""'>
+            AND A.USE_YN         = #{USE_YN}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test='searchCondition == ""'>
+                    AND UPPER(A.WHSE_C + A.WHSE_NM) LIKE UPPER('%' + #{searchKeyword} + '%')      /* 검색조건 : 전체     */
+                </when>
+                <when test='searchCondition == 1'>
+                    AND A.WHSE_C LIKE '%' + #{searchKeyword} + '%' 
+                </when>
+                <when test='searchCondition == 2'>
+                    AND A.WHSE_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+		<if test='ST_DT != null and ST_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[>=]]> #{ST_DT}
+        </if>
+        <if test='ED_DT != null and ED_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[<=]]> #{ED_DT}
+        </if>
+    </select>
+    
+  
+</mapper>

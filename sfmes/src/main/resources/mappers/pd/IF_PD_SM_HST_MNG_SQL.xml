@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_01" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_01 */ 
+               COUNT(1) AS CNT 
+          FROM TB_CO_M_SRS_HST_NO 
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STR_DT}
+           AND STR_SQNO            = #{OLD_STR_SQNO}
+           AND SRA_HST_NO          = #{SRA_HST_NO}
+         <if test='DLR_YN != null and DLR_YN == "Y"'>
+           AND DLR_WT              > 0
+          </if>   
+           AND DEL_YN              = 'N'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_02" parameterType="LinkedHashMap" resultType="string">
+        WITH BUDL_TMP AS ( SELECT SUM(A.BUDL_CNT) AS BUDL_CNT
+                                , SUM(A.BUDL_CNT) AS DLR_CNT
+                            FROM (
+                                    SELECT  
+                                           COUNT(1) AS BUDL_CNT
+                                         , 0        AS DLR_CNT 
+                                      FROM TB_CO_D_SRA_HST_BNDNO 
+                                     WHERE 1=1 
+                                       AND CORP_C              = #{CORP_C}
+                                       AND BZPL_C              = #{BZPL_C}
+                                       AND STR_DT              = #{OLD_STR_DT}
+                                       AND STR_SQNO            = #{OLD_STR_SQNO}
+                                       AND SRA_HST_NO         IN ( SELECT GDS_HST_NO
+                                                                     FROM TB_SM_D_GDS_RL_STDV
+                                                                    WHERE 1=1 
+                                                                      AND CORP_C       = #{CORP_C}
+                                                                      AND BZPL_C       = #{BZPL_C}
+                                                                      AND STDV_DT      = #{OLD_STDV_DT}
+                                                                      AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                                                      AND STDV_DSC     = #{STDV_DSC} )
+                                     UNION ALL
+                                     SELECT  
+                                           0 AS BUDL_CNT
+                                         , COUNT(1) AS DLR_CNT 
+                                      FROM TB_CO_M_SRS_HST_NO 
+                                     WHERE 1=1 
+                                       AND CORP_C              = #{CORP_C}
+                                       AND BZPL_C              = #{BZPL_C}
+                                       AND STR_DT              = #{OLD_STR_DT}
+                                       AND STR_SQNO            = #{OLD_STR_SQNO}
+                                       AND SRA_HST_NO         IN ( SELECT GDS_HST_NO
+                                                                     FROM TB_SM_D_GDS_RL_STDV
+                                                                    WHERE 1=1 
+                                                                      AND CORP_C       = #{CORP_C}
+                                                                      AND BZPL_C       = #{BZPL_C}
+                                                                      AND STDV_DT      = #{OLD_STDV_DT}
+                                                                      AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                                                      AND STDV_DSC     = #{STDV_DSC} )
+                                       AND DLR_DT             != ''    
+                                       AND DEL_YN              = 'N'
+                                 ) A 
+                         )
+        <![CDATA[
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_02 */
+               CASE WHEN BUDL_CNT > 0 THEN '삭제 물품의 축산물이력번호가 묶음번호로 존재합니다.'
+                    WHEN DLR_CNT  > 0 THEN '이미 출고된 축산물이력번호가 존재합니다.'
+                    ELSE 'OK' END AS RESULT_MSG      
+          FROM BUDL_TMP              
+         WHERE 1 = 1         
+       ]]>          
+    </select>
+
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_03" parameterType="LinkedHashMap" resultType="int">
+        WITH HST_BNDLNO AS 
+        (
+          SELECT  
+                 DISTINCT
+                 CORP_C
+               , BZPL_C
+               , CRT_DT
+               , BUDL_NO 
+            FROM TB_CO_D_SRA_HST_BNDNO 
+           WHERE 1=1 
+             AND CORP_C              = #{CORP_C}
+             AND BZPL_C              = #{BZPL_C}
+             AND STR_DT              = #{OLD_STR_DT}
+             AND STR_SQNO            = #{OLD_STR_SQNO}
+             AND SRA_HST_NO          = #{SRA_HST_NO}
+         )
+          SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_03 */ 
+                COUNT(1) AS CNT 
+            FROM TB_CO_M_SRA_HST_BNDNO  A
+                 INNER JOIN  HST_BNDLNO  B
+                 ON  A.CORP_C        = B.CORP_C
+                 AND A.BZPL_C        = B.BZPL_C
+                 AND A.CRT_DT        = B.CRT_DT
+                 AND A.BUDL_NO       = B.BUDL_NO
+           WHERE 1=1 
+             AND A.RPT_YN        = 'Y'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_04" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_04 */ 
+               A.STR_DT
+             , A.STR_SQNO
+             , A.SRA_HST_NO
+             , A.SRS_DSC
+             , A.STR_WHSE_C
+             , A.MFC_DSC
+             , A.SRA_SEX_C
+             , A.STD_PAT_C
+             , A.STR_WT
+             , A.GRD_C
+             , A.IMPORT_DSC
+             , A.BL_NO
+          FROM TB_CO_M_SRS_HST_NO A
+           WHERE 1=1 
+             AND A.CORP_C      = #{CORP_C}
+             AND A.BZPL_C      = #{BZPL_C}
+             AND A.SRA_HST_NO  = #{GDS_HST_NO}
+             AND A.DLR_YN      = 'N'
+             AND A.DEL_YN      = 'N'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_05" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_05 */ 
+               COUNT(B.BUDL_NO) AS CNT
+          FROM TB_CO_M_SRS_HST_NO     A
+             , TB_CO_D_SRA_HST_BNDNO  B
+         WHERE 1=1 
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}           
+           AND A.CORP_C      = B.CORP_C
+           AND A.BZPL_C      = B.BZPL_C
+           AND A.STR_DT      = B.STR_DT
+           AND A.STR_SQNO    = B.STR_SQNO
+           AND A.SRA_HST_NO  = B.SRA_HST_NO
+           AND B.BUDL_NO     = #{BUDL_NO} 
+           AND A.DLR_YN      = 'N'
+           AND A.DEL_YN      = 'N'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_06" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_06 */ 
+               COUNT(A.SRA_HST_NO) AS CNT
+          FROM TB_CO_M_SRS_HST_NO A
+           WHERE 1=1 
+             AND A.CORP_C      = #{CORP_C}
+             AND A.BZPL_C      = #{BZPL_C}
+             AND A.SRA_HST_NO  = #{GDS_HST_NO}
+             AND A.DLR_YN      = 'N'
+             AND A.DEL_YN      = 'N'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_07" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_07 */ 
+               COUNT(A.SRA_HST_NO) AS CNT
+          FROM TB_CO_M_SRS_HST_NO     A
+             , TB_CO_D_SRA_HST_BNDNO  B
+         WHERE 1=1 
+           AND A.CORP_C      = B.CORP_C
+           AND A.BZPL_C      = B.BZPL_C
+           AND A.STR_DT      = B.STR_DT
+           AND A.STR_SQNO    = B.STR_SQNO
+           AND A.SRA_HST_NO  = B.SRA_HST_NO 
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}           
+           AND B.BUDL_NO     = #{BUDL_NO} 
+           AND B.SRA_HST_NO  = #{GDS_HST_NO}
+           AND A.DLR_YN      = 'N'
+           AND A.DEL_YN      = 'N'
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_01" parameterType="LinkedHashMap" resultType="string">
+        SELECT /*+ select_TB_CO_M_GDS */
+               A.PART_C                     /* 표준부위코드              */
+          FROM TB_CO_M_GDS A
+         WHERE 1=1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.GDS_C   = #{GDS_C}
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_02" parameterType="LinkedHashMap" resultType="string">
+        SELECT COMN_C
+          FROM TB_SY_D_COMNC
+         WHERE 1=1
+           AND CORP_C       = #{CORP_C}
+           AND COMN_GRP_C   = 'GRD_C'
+           AND convert(varchar, COMN_CNM)     = convert(varchar, #{GRD_NM})    
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_03" parameterType="LinkedHashMap" resultType="string">
+        SELECT COMN_C
+          FROM TB_SY_D_COMNC
+         WHERE 1=1
+           AND CORP_C        = #{CORP_C}
+           AND COMN_GRP_C    = 'SRA_SEX_C'
+           AND COMN_CNM   LIKE '%'+#{SRA_SEX_NM}+'%'    
+    </select>
+
+    <select id="select_IF_PD_SM_HST_MNG_04" parameterType="LinkedHashMap" resultType="string">
+        SELECT /*+ select_TB_CO_M_GDS */
+               A.HST_AMN_DSC                     /* 이력관리구분코드        */
+          FROM TB_CO_M_GDS A
+         WHERE 1=1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.GDS_C   = #{GDS_C}
+    </select>
+    
+    <select id="select_IF_PD_SM_HST_MNG_05" parameterType="LinkedHashMap" resultType="string">
+        SELECT COMN_C
+          FROM TB_SY_D_COMNC
+         WHERE 1=1
+           AND CORP_C        = #{CORP_C}
+           AND COMN_GRP_C    = 'SRS_C'
+           AND COMN_CNM   LIKE '%'+#{lsTypeNm}+'%'    
+    </select>
+
+    <select id="select_update_IF_PD_SM_HST_MNG_02" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_update_IF_PD_SM_HST_MNG_02 */
+               COUNT(SRA_HST_NO)         
+          FROM TB_CO_M_SRS_HST_NO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STDV_DT}
+           AND STR_SQNO            = #{OLD_STDV_SQNO}
+       <choose>
+           <when test="STR_GBN_DSC == 'HST_NO'">            
+           AND SRA_HST_NO         IN (
+                                       SELECT GDS_HST_NO
+                                         FROM TB_SM_D_GDS_RL_STDV
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STDV_DT      = #{OLD_STDV_DT}
+                                          AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                          AND STDV_DSC     = #{STDV_DSC} 
+                                     )
+           </when>
+           <when test="STR_GBN_DSC == 'BUDL_NO'">
+           AND SRA_HST_NO         IN ( 
+                                       SELECT SRA_HST_NO
+                                         FROM TB_CO_D_SRA_HST_BNDNO
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND CRT_DT       = #{OLD_STDV_DT}
+                                          AND BUDL_NO      = (
+                                                               SELECT GDS_HST_NO
+                                                                 FROM TB_SM_D_GDS_RL_STDV
+                                                                WHERE 1=1 
+                                                                  AND CORP_C       = #{CORP_C}
+                                                                  AND BZPL_C       = #{BZPL_C}
+                                                                  AND STDV_DT      = #{OLD_STDV_DT}
+                                                                  AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                                                  AND STDV_DSC     = #{STDV_DSC} 
+                                                              )
+                                     )
+           </when>
+       </choose>
+           AND DEL_YN              = 'N'            
+    </select>
+
+    <select id="select_STRINFO_HST_NO_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_STRINFO_HST_NO_01 */ 
+               A.STR_DT
+             , A.STR_SQNO
+             , A.SRA_HST_NO
+             , A.SRS_DSC
+             , A.STR_WHSE_C
+             , A.MFC_DSC
+             , A.SRA_SEX_C
+             , A.STD_PAT_C
+             , A.STR_WT
+             , A.GRD_C
+             , A.IMPORT_DSC
+             , A.BL_NO
+          FROM TB_CO_M_SRS_HST_NO A
+           WHERE 1=1 
+             AND A.CORP_C      = #{CORP_C}
+             AND A.BZPL_C      = #{BZPL_C}
+             AND A.SRA_HST_NO  = #{GDS_HST_NO}
+             AND A.DLR_YN      = 'N'
+             AND A.DEL_YN      = 'N'
+    </select>
+    
+    <select id="select_STRINFO_HST_NO_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_STRINFO_HST_NO_02 */ 
+               B.CRT_DT
+             , ISNULL(C.IDVD_CN, 0) AS CNT
+             , A.STR_DT
+             , A.STR_SQNO
+             , B.BUDL_NO
+             , A.SRA_HST_NO
+             , A.SRS_DSC
+             , A.STR_WHSE_C
+             , A.MFC_DSC
+             , A.SRA_SEX_C
+             , A.STD_PAT_C
+             , A.STR_WT
+             , A.GRD_C
+             , A.IMPORT_DSC
+             , A.BL_NO
+          FROM TB_CO_M_SRS_HST_NO     A
+             , TB_CO_D_SRA_HST_BNDNO  B
+             , TB_CO_M_SRA_HST_BNDNO  C
+         WHERE 1=1 
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}           
+           AND A.CORP_C      = B.CORP_C
+           AND A.BZPL_C      = B.BZPL_C
+           AND A.STR_DT      = B.STR_DT
+           AND A.STR_SQNO    = B.STR_SQNO
+           AND C.CORP_C      = B.CORP_C
+           AND C.BZPL_C      = B.BZPL_C
+           AND C.STR_DT      = B.STR_DT
+           AND C.STR_SQNO    = B.STR_SQNO
+           AND B.BUDL_NO     = #{BUDL_NO}
+           AND B.SRA_HST_NO  = #{GDS_HST_NO} 
+           AND A.DLR_YN      = 'N'
+           AND A.DEL_YN      = 'N'
+    </select>
+    
+    <!--
+     ===========================================================
+          입고전표의 이력관리번호가 개체번호일때 START
+     ===========================================================
+     -->
+    <!-- Interface 작동시간을 이력번호관리기본 테이블에 Update -->
+    <update id="update_IF_PD_SM_HST_MNG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_IF_PD_SM_HST_MNG */ TB_CO_M_SRS_HST_NO
+           SET STR_SQNO   = ${STR_SQNO}
+             , IF_DTM     = GETDATE()
+             , LSCHG_DTM  = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID   = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1
+           AND CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND STR_DT     = #{STR_DT}
+           AND STR_SQNO   = #{STR_SQNO}
+           AND SRA_HST_NO = #{SRA_HST_NO}
+           AND DEL_YN     = 'Y'
+    </update>    
+
+    <!-- 출고시 출고된 이력관리기본 마스트테이블 자료를 UPDATE -->
+    <update id="update_IF_PD_SM_HST_MNG_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_IF_PD_SM_HST_MNG_01 */ TB_CO_M_SRS_HST_NO
+        <![CDATA[
+           SET DLR_DT       = (CASE WHEN #{DLR_WT} < 0 THEN '' ELSE #{RLTR_DT} END)                   /* 출고일자                */
+             , DLR_ID       = (CASE WHEN #{DLR_WT} < 0 THEN '' ELSE #{GUSRID}  END)                   /* 출고자ID         */
+             , DLR_YN       = (CASE WHEN (DLR_WT + + #{DLR_WT}) >= STR_WT THEN 'Y' ELSE 'N' END)      /* 출고여부                */
+        ]]>          
+             , DLR_WT       = DLR_WT + #{DLR_WT}       /* 출고중량               */
+             , LSCHG_DTM    = GETDATE()                /* 최종변경일시           */
+             , LSCHG_ID     = #{GUSRID}                /* 최종변경자ID      */
+         WHERE 1=1 
+           AND CORP_C      = #{CORP_C}
+           AND BZPL_C      = #{BZPL_C}
+           AND STR_DT      = #{STR_DT}
+           AND STR_SQNO    = #{STR_SQNO}
+           AND SRA_HST_NO  = #{SRA_HST_NO}
+           AND DLR_YN      = 'N'
+           AND DEL_YN      = 'N'
+    </update>    
+
+    <!-- 입고전표가 삭제되었을때 이력번호관리기본테이블 UPDATE -->
+    <delete id="delete_IF_PD_SM_HST_MNG_05" parameterType="LinkedHashMap">
+        DELETE /*+ delete_IF_PD_SM_HST_MNG_05 */ TB_CO_M_SRS_HST_NO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STDV_DT}
+           AND STR_SQNO            = #{OLD_STDV_SQNO}
+           AND SRA_HST_NO          = (
+                                       SELECT GDS_HST_NO
+                                         FROM TB_SM_D_GDS_RL_STDV
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STDV_DT      = #{OLD_STDV_DT}
+                                          AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                          AND STDV_DSC     = #{STDV_DSC}
+                                     )
+           AND DLR_YN              = 'N'
+           AND DEL_YN              = 'N'
+    </delete>
+
+    <!--
+     ===========================================================
+          입고전표의 이력관리번호가 개체번호일때 END
+     ===========================================================
+     -->
+
+    <!--
+     ===========================================================
+          입고전표의 이력관리번호가 묶음번호일때 START
+     ===========================================================
+     -->
+    <!-- 입고자료의 수정시 묶음번호 마스트테이블 자료 확인 -->
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_02_1" parameterType="LinkedHashMap" resultType="string">
+        WITH BUDL_TMP AS ( SELECT COUNT(1) AS DLR_CNT 
+                             FROM TB_CO_M_SRA_HST_BNDNO 
+                            WHERE 1=1 
+                              AND CORP_C              = #{CORP_C}
+                              AND BZPL_C              = #{BZPL_C}
+                              AND CRT_DT              = #{OLD_STDV_DT}
+                              AND BUDL_NO            IN ( SELECT GDS_HST_NO
+                                                            FROM TB_SM_D_GDS_RL_STDV
+                                                           WHERE 1=1 
+                                                             AND CORP_C       = #{CORP_C}
+                                                             AND BZPL_C       = #{BZPL_C}
+                                                             AND STDV_DT      = #{OLD_STDV_DT}
+                                                             AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                                             AND STDV_DSC     = #{STDV_DSC} )
+                              AND DLR_TOT_WT          > 0    
+                              AND USE_YN              = 'Y' 
+                         )
+        <![CDATA[
+        SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_02_1 */
+               CASE WHEN DLR_CNT  > 0 THEN '이미 출고된 축산물이력번호가 존재합니다.'
+                    ELSE 'OK' END AS RESULT_MSG      
+          FROM BUDL_TMP              
+         WHERE 1 = 1         
+       ]]>          
+    </select>
+
+    <select id="select_IF_PD_SM_HST_MNG_validCheck_03_1" parameterType="LinkedHashMap" resultType="int">
+          SELECT /*+ select_IF_PD_SM_HST_MNG_validCheck_03_1 */ 
+                COUNT(1) AS CNT 
+           FROM TB_CO_M_SRA_HST_BNDNO 
+          WHERE 1=1 
+            AND CORP_C              = #{CORP_C}
+            AND BZPL_C              = #{BZPL_C}
+            AND CRT_DT              = #{OLD_STDV_DT}
+            AND RPT_YN              = 'Y'
+            AND USE_YN              = 'Y'
+    </select>
+
+    <select id="select_IF_PD_SM_HST_MNG_06" parameterType="LinkedHashMap" resultType="string">
+        SELECT /*+ select_TB_CO_M_GDS */
+               A.SRS_DSC               /* 축종구분코드              */
+          FROM TB_CO_M_SRS_HST_NO A
+         WHERE 1=1 
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.SRA_HST_NO   = #{SRA_HST_NO}
+    </select>
+    
+    <!-- 출고시 출고된 자료중 출고중량을 묶음번호기본테이블에 UPDATE -->
+    <update id="update_IF_PD_SM_HST_MNG_BUDL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_IF_PD_SM_HST_MNG_BUDL */ TB_CO_M_SRA_HST_BNDNO
+           SET DLR_TOT_WT   = DLR_TOT_WT + #{DLR_WT}   /* 출고중량               */
+             , LSCHG_DTM    = GETDATE()                /* 최종변경일시           */
+             , LSCHG_ID     = #{GUSRID}                /* 최종변경자ID      */
+         WHERE 1=1
+           AND CORP_C            = #{CORP_C}
+           AND BZPL_C            = #{BZPL_C}
+           AND CRT_DT + BUDL_NO  = ( SELECT MIN(CRT_DT + BUDL_NO)
+		                               FROM TB_CO_D_SRA_HST_BNDNO
+		                              WHERE 1=1
+		                                AND CORP_C      = #{CORP_C}
+		                                AND BZPL_C      = #{BZPL_C}
+		                                AND SRA_HST_NO  = #{SRA_HST_NO} )
+           AND USE_YN      = 'Y'
+    </update>    
+
+    <!-- 입고전표가 삭제되었을때 이력번호관리기본테이블 UPDATE -->
+    <update id="update_IF_PD_SM_HST_MNG_02" parameterType="LinkedHashMap">
+        UPDATE /*+ update_IF_PD_SM_HST_MNG_02 */ TB_CO_M_SRS_HST_NO
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STDV_DT}
+           AND STR_SQNO            = #{OLD_STDV_SQNO}
+           AND DEL_YN              = 'N'
+           AND SRA_HST_NO          = ( SELECT GDS_HST_NO
+                                         FROM TB_SM_D_GDS_RL_STDV
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STDV_DT      = #{OLD_STDV_DT}
+                                          AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                          AND STDV_DSC     = #{STDV_DSC} )
+    </update>
+    
+    <!-- 입고전표가 삭제되었을때 이력번호관리기본테이블 UPDATE -->
+    <update id="update_IF_PD_SM_HST_MNG_03" parameterType="LinkedHashMap">
+        UPDATE /*+ update_IF_PD_SM_HST_MNG_03 */ TB_CO_M_SRS_HST_NO
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{STDV_DT}
+           AND STR_SQNO            = #{STDV_SQNO}
+           AND DEL_YN              = 'N'
+           AND SRA_HST_NO         IN ( 
+                                       SELECT SRA_HST_NO
+                                         FROM TB_CO_D_SRA_HST_BNDNO
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND CRT_DT       = #{STDV_DT}
+                                          AND BUDL_NO      = (
+						                                       SELECT GDS_HST_NO
+						                                         FROM TB_SM_D_GDS_RL_STDV
+						                                        WHERE 1=1 
+						                                          AND CORP_C       = #{CORP_C}
+						                                          AND BZPL_C       = #{BZPL_C}
+						                                          AND STDV_DT      = #{STDV_DT}
+						                                          AND STDV_SQNO    = #{STDV_SQNO}
+						                                          AND STDV_DSC     = #{STDV_DSC} 
+						                                      )
+                                     )
+
+    </update>
+
+    <!-- 입고전표가 수정되었을때 묶음번호 상세테이블 DELETE -->
+    <delete id="delete_IF_PD_SM_HST_MNG_01" parameterType="LinkedHashMap">
+        DELETE /*+ delete_IF_PD_SM_HST_MNG_01 */ TB_CO_D_SRA_HST_BNDNO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STDV_DT}
+           AND STR_SQNO            = #{OLD_STDV_SQNO}
+           AND BUDL_NO             = (
+                                       SELECT GDS_HST_NO
+                                         FROM TB_SM_D_GDS_RL_STDV
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STDV_DT      = #{OLD_STDV_DT}
+                                          AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                          AND STDV_DSC     = #{STDV_DSC} 
+                                     )          
+    </delete>
+    
+    <!-- 입고전표가 수정되었을때 묶음번호 기본테이블 DELETE -->
+    <delete id="delete_IF_PD_SM_HST_MNG_02" parameterType="LinkedHashMap">
+        DELETE /*+ delete_IF_PD_SM_HST_MNG_02 */ TB_CO_M_SRA_HST_BNDNO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND CRT_DT + BUDL_NO    = (
+                                       SELECT CRT_DT + GDS_HST_NO
+                                         FROM TB_SM_D_GDS_RL_STDV
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STDV_DT      = #{OLD_STDV_DT}
+                                          AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                          AND STDV_DSC     = #{STDV_DSC} 
+                                     )
+           AND RPT_YN              = 'Y'
+           AND USE_YN              = 'Y'
+    </delete>
+    
+    <!-- 입고전표가 수정되었을때 이력번호관리 기본테이블 DELETE -->
+    <delete id="delete_IF_PD_SM_HST_MNG_03" parameterType="LinkedHashMap">
+        DELETE /*+ delete_IF_PD_SM_HST_MNG_03 */ TB_CO_M_SRS_HST_NO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{OLD_STDV_DT}
+           AND STR_SQNO            = #{OLD_STDV_SQNO}
+           AND SRA_HST_NO         IN ( 
+                                       SELECT SRA_HST_NO
+                                         FROM TB_CO_D_SRA_HST_BNDNO
+                                        WHERE 1=1 
+                                          AND CORP_C       = #{CORP_C}
+                                          AND BZPL_C       = #{BZPL_C}
+                                          AND STR_DT       = #{OLD_STDV_DT}
+                                          AND BUDL_NO      = (
+                                                               SELECT GDS_HST_NO
+                                                                 FROM TB_SM_D_GDS_RL_STDV
+                                                                WHERE 1=1 
+                                                                  AND CORP_C       = #{CORP_C}
+                                                                  AND BZPL_C       = #{BZPL_C}
+                                                                  AND STDV_DT      = #{OLD_STDV_DT}
+                                                                  AND STDV_SQNO    = #{OLD_STDV_SQNO}
+                                                                  AND STDV_DSC     = #{STDV_DSC} 
+                                                              )
+                                     )
+           AND DLR_YN              = 'N'
+           AND DEL_YN              = 'N'
+    </delete>
+    <!--
+     ===========================================================
+          입고전표의 이력관리번호가 묶음번호일때 END
+     ===========================================================
+     -->
+
+    <!--
+     ===========================================================
+          입고전표의 TOTE_CODE 정보 관련
+     ===========================================================
+     -->
+    <select id="select_VMF_TOTE_CODES_validCheck_01" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ "select_VMF_TOTE_CODES_validCheck_01" */ 
+               COUNT(1) AS CNT 
+          FROM VMF_TOTE_CODES 
+         WHERE 1=1 
+           AND BZPLC_ID            = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+           AND ARTICLE_CODE        = #{GDS_C}
+    </select>
+    
+
+    <select id="select_TB_PD_M_TOTECD_validCheck_01" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_TB_PD_M_TOTECD_validCheck_01 */ 
+               COUNT(1) AS CNT 
+          FROM TB_PD_M_TOTECD 
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+    </select>
+    
+
+    <select id="select_TB_PD_D_TOTECD_validCheck_01" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_TB_PD_D_TOTECD_validCheck_01 */ 
+               COUNT(1) AS CNT 
+          FROM TB_PD_D_TOTECD_STDV  A
+         WHERE 1=1 
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.TOTE_CODE    = #{TOTE_CODE}
+           AND A.STDV_DT+CAST(A.STDV_SQNO AS varchar(5))+'I' = (SELECT MAX(STDV_DT+CAST(STDV_SQNO AS varchar(5)))+'I'
+						                                          FROM TB_PD_D_TOTECD_STDV
+						                                         WHERE 1 = 1
+													               AND CORP_C              = A.CORP_C
+													               AND BZPL_C              = A.BZPL_C
+													               AND TOTE_CODE           = A.TOTE_CODE
+														           AND STDV_DSC            = 'I' 
+														           AND SLP_NML_YN          = 'Y'     )
+           AND A.SLP_NML_YN   = 'Y'								     
+    </select>
+</mapper>

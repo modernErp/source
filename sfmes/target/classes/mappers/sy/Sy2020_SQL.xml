@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+    <select id="selectSy2020_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy2020_01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.PGM_ID                                            /* 프로그램ID           */
+             , A.BSN_DSC                                           /* 업무구분코드         */
+             , A.PGM_NM                                            /* 프로그램명           */
+             , A.PGM_WK_DSC                                        /* 프로그램작업구분코드 */
+             , A.PGM_EXPL                                          /* 프로그램설명         */
+             , A.PGM_EXE_PATH                                      /* 프로그램실행경로     */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.HLP_FILE_YN                                       /* 도움말파일여부       */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS  FSRG_DTM     /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS  LSCHG_DTM    /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_M_PGID A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+         <if test = "BSN_DSC != null and BSN_DSC != ''">
+           AND A.BSN_DSC           = #{BSN_DSC}
+         </if>
+         <if test = "PGM_WK_DSC != null and PGM_WK_DSC != ''">
+           AND A.PGM_WK_DSC        = #{PGM_WK_DSC}
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN            = #{USE_YN}
+         </if>
+         <if test = "searchKeyword != null and searchKeyword != ''"> /* 검색어 유무확인 */
+            <choose>
+                <when test="searchCondition == ''"> /* 검색조건이 전체인 경우 */
+                    AND (PGM_ID LIKE '%' + #{searchKeyword} + '%'
+                        OR PGM_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> /* 검색조건이 프로그램ID인 경우 */
+                    AND PGM_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> /* 검색조건이 프로그램명인 경우 */
+                    AND PGM_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>                
+            </choose>
+        </if>
+    </select>
+    
+    <!-- 2021.10.23 서광석
+         신규프로그램등록시 역할별프로그램 자동생성기능 추가          
+         -->
+    <insert id="insertSy2020_RolePgm" parameterType="LinkedHashMap">
+          INSERT INTO TB_SY_D_ROLE_PGM (
+                 CORP_C
+               , EMP_ROL_DSC
+               , PGM_ID
+               , PGM_AUTH
+               , DEL_YN
+               , FSRG_DTM
+               , FSRG_ID
+               , LSCHG_DTM
+               , LSCHG_ID
+          )
+          SELECT
+                 CORP_C
+               , COMN_C
+               , #{PGM_ID}
+               , 'W'
+               , 'N'
+               , GETDATE()
+               , #{GUSRID}
+               , GETDATE()
+               , #{GUSRID}
+            FROM TB_SY_D_COMNC
+           WHERE 1 = 1
+             AND CORP_C     = #{CORP_C}
+             AND COMN_GRP_C = 'EMP_ROL_DSC'
+             AND USE_YN     = 'Y'
+    </insert>   
+</mapper>

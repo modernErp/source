@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">
+
+    <!-- 발주현황(거래처) 거래처별내역 -->
+    <select id="selectBy2110_trpl_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		 SELECT /*+ selectBy2110_trpl_01 */
+		        A.TRPL_C                                 /* 거래처 코드*/
+		      , (SELECT TRPL_NM  
+		           FROM TB_CO_M_TRPL
+		          WHERE 1 = 1
+		            AND CORP_C = A.CORP_C
+		            AND TRPL_C = A.TRPL_C) AS TRPL_NM    /* 거래처명   */  
+		      , SUM(1)                     AS ODR_CNT    /* 발주건수   */
+		      , SUM(A.ODR_AM)              AS ODR_AM     /* 발주금액   */
+		   FROM TB_BY_M_ODR A
+ 		  WHERE 1 = 1
+		    AND A.DEL_YN   = 'N'
+		    AND A.CORP_C   = #{CORP_C}
+		    AND A.BZPL_C   = #{BZPL_C}
+		    AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+    <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+		    AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+	</if>
+		  GROUP BY A.CORP_C
+		      , A.BZPL_C        
+	          , A.TRPL_C   
+		  ORDER BY TRPL_NM
+    </select>  
+    
+    
+     <!-- 발주현황(거래처) 전표별내역 -->
+    <select id="selectBy2110_trpl_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectBy2110_trpl_02 */
+		       A.ODR_DT       /* 발주일자         */
+		     , A.ODR_SQNO     /* 발주일련번호     */
+		     , A.ODR_STS_DSC  /* 발주상태구분코드 */
+		     , A.DVY_DT       /* 배송일자         */
+		     , A.ODR_AM       /* 발주금액         */
+		     , A.RMK_CNTN     /* 비고             */
+		  FROM TB_BY_M_ODR A
+		 WHERE 1 = 1
+		   AND A.DEL_YN   = 'N'
+		   AND A.CORP_C   = #{CORP_C}
+		   AND A.BZPL_C   = #{BZPL_C}
+		   AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+    <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+		   AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+    </if>
+		   AND A.TRPL_C   = #{TRPL_C}
+    </select>
+    
+    <!-- 발주현황(거래처) 물품별내역 -->
+    <select id = "selectBy2110_trpl_03" parameterType = "LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT /*+ selectBy2110_trpl_03 */
+		       B.ODR_DSQNO      /* 발주상세일련번호 */
+		     , B.GDS_C          /* 물품코드         */
+		     , C.GDS_DTL_NM     /* 물품상세명       */
+		     , C.GDS_STD_NM     /* 물품규격         */
+		     , C.UNT_C          /* 관리단위         */           
+		     , B.ODR_QT         /* 발주수량         */
+		     , B.ODR_UPR        /* 발주단가         */
+		     , B.SPY_AM         /* 공금가액         */
+		     , B.VAT            /* 세액             */
+		     , B.ODR_AM         /* 발주금액         */
+		  FROM TB_BY_M_ODR A
+		     , TB_BY_D_ODR B LEFT OUTER JOIN TB_CO_M_GDS C 
+		    ON B.CORP_C      = C.CORP_C AND
+		       B.BZPL_C      = C.BZPL_C AND
+		       B.GDS_C       = C.GDS_C 
+		 WHERE 1 = 1
+		   AND A.CORP_C      = B.CORP_C
+		   AND A.BZPL_C      = B.BZPL_C
+		   AND A.ODR_DT      = B.ODR_DT
+		   AND A.ODR_SQNO    = B.ODR_SQNO     
+		   AND A.DEL_YN      = 'N'
+		   AND B.DEL_YN      = 'N'
+		   AND A.CORP_C      = #{CORP_C}
+		   AND A.BZPL_C      = #{BZPL_C}
+		   AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+		   AND A.ODR_DT      = #{ODR_DT}
+		   AND A.ODR_SQNO    = #{ODR_SQNO}
+		 ORDER BY B.ODR_DSQNO
+	 </select>
+	 
+     <!-- 발주현황(물품) 물품별내역 -->
+     <select id = "selectBy2110_gds_01" parameterType = "LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ selectBy2110_gds_01 */
+		       B.GDS_C                          /* 물품코드   */
+		     , MAX(C.GDS_DTL_NM) AS GDS_DTL_NM  /* 물품상세명 */
+		     , MAX(C.GDS_STD_NM) AS GDS_STD_NM  /* 물품규격   */
+		     , MAX(C.UNT_C)      AS UNT_C       /* 관리단위   */        
+		     , SUM(B.ODR_QT)     AS ODR_QT      /* 발주수량   */
+		     , SUM(B.SPY_AM)     AS SPY_AM      /* 공금가액   */
+		     , SUM(B.VAT)        AS VAT         /* 세액       */
+		     , SUM(B.ODR_AM)     AS ODR_AM      /* 합계금액   */
+		  FROM TB_BY_M_ODR A
+		     , TB_BY_D_ODR B LEFT OUTER JOIN TB_CO_M_GDS C 
+		    ON B.CORP_C   = C.CORP_C AND
+		       B.BZPL_C   = C.BZPL_C AND
+		       B.GDS_C    = C.GDS_C 
+		 WHERE 1 = 1
+		   AND A.CORP_C   = B.CORP_C
+		   AND A.BZPL_C   = B.BZPL_C
+		   AND A.ODR_DT   = B.ODR_DT
+		   AND A.ODR_SQNO = B.ODR_SQNO     
+		   AND A.DEL_YN   = 'N'
+		   AND B.DEL_YN   = 'N'
+		   AND A.CORP_C   = #{CORP_C}
+		   AND A.BZPL_C   = #{BZPL_C}
+		   AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+      <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+		   AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+      </if>
+		 GROUP BY B.GDS_C
+		 ORDER BY B.GDS_C
+     </select>
+     
+     <!-- 발주현황(물품) 거래처별내역 -->
+     <select id = "selectBy2110_gds_02" parameterType = "LinkedHashMap" resultType="LinkedHashMap">
+		SELECT  /*+ selectBy2110_gds_02 */
+		       A.TRPL_C                                                            /* 거래처코드 */
+		     , (SELECT TRPL_NM  
+		          FROM TB_CO_M_TRPL
+		         WHERE 1 = 1
+		           AND CORP_C = A.CORP_C
+		           AND TRPL_C = A.TRPL_C)                              AS TRPL_NM  /* 거래처명  */  
+		     , COUNT(DISTINCT B.ODR_DT + CONVERT(VARCHAR, B.ODR_SQNO)) AS ODR_CNT  /* 발주건수  */
+		     , SUM(B.ODR_AM)                                           AS ODR_AM   /* 발주금액  */
+		  FROM TB_BY_M_ODR A
+		     , TB_BY_D_ODR B 
+		 WHERE 1 = 1
+		   AND A.CORP_C   = B.CORP_C
+		   AND A.BZPL_C   = B.BZPL_C
+		   AND A.ODR_DT   = B.ODR_DT
+		   AND A.ODR_SQNO = B.ODR_SQNO     
+		   AND A.DEL_YN   = 'N'
+		   AND B.DEL_YN   = 'N'
+		   AND A.CORP_C   = #{CORP_C}
+		   AND A.BZPL_C   = #{BZPL_C}
+		   AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+		   AND B.GDS_C   = #{GDS_C}
+      <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+           AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+      </if>
+		 GROUP BY A.CORP_C
+		        , A.BZPL_C        
+		        , A.TRPL_C   
+		 ORDER BY TRPL_NM
+     </select>
+     
+     <!-- 발주현황(물품) 전표별내역 -->
+     <select id = "selectBy2110_gds_03" parameterType = "LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2110_gds_03 */  
+		       A.ODR_DT
+		     , A.ODR_SQNO
+		     , MAX(A.ODR_STS_DSC) AS ODR_STS_DSC
+		     , MAX(A.DVY_DT)      AS DVY_DT
+		     , SUM(B.ODR_AM)      AS ODR_AM
+		     , MAX(A.RMK_CNTN)    AS RMK_CNTN
+		  FROM TB_BY_M_ODR A
+		     , TB_BY_D_ODR B
+		 WHERE 1 = 1
+		   AND A.CORP_C      = B.CORP_C
+		   AND A.BZPL_C      = B.BZPL_C
+		   AND A.ODR_DT      = B.ODR_DT
+		   AND A.ODR_SQNO    = B.ODR_SQNO     
+		   AND A.DEL_YN      = 'N'
+		   AND B.DEL_YN      = 'N'
+		   AND A.CORP_C      = #{CORP_C}
+		   AND A.BZPL_C      = #{BZPL_C}
+		   AND A.TRPL_C      = #{TRPL_C}
+	   <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+		   AND A.ODR_STS_DSC = #{ODR_STS_DSC}
+	   </if>
+		   AND B.GDS_C       = #{GDS_C}
+		   AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+		 GROUP BY A.ODR_DT
+		        , A.ODR_SQNO
+		 ORDER BY A.ODR_DT
+		        , A.ODR_SQNO   
+     </select>
+</mapper>

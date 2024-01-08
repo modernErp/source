@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_ETR_MFC_OMTR_STDV" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_ETR_MFC_OMTR_STDV */ TB_PD_D_ETR_MFC_OMTR_STDV
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , ETR_MFC_RC_DT       /* 수탁가공접수일자     */
+            , ETR_MFC_RC_SQNO     /* 수탁가공접수일련번호 */
+            , OMTR_STDV_DT        /* 원부재료입출고일자   */
+            , OMTR_STDV_SQNO      /* 원부재료입출고일련번 */
+            , OMTR_STDV_DSC       /* 원부재료입출고구분코 */
+            , GDS_C               /* 물품코드             */
+            , WHSE_C              /* 창고코드             */
+            , SRA_HST_NO          /* 축산물이력번호      */
+            , STDV_QT             /* 입출고수량           */
+            , BOX_QT              /* BOX수량             */
+            , DNTT_DT             /* 작업지시일자         */
+            , DNTT_SQNO           /* 작업지시일련번호     */
+            , ACG_DT              /* 회계일자             */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{ETR_MFC_RC_DT}
+            , #{ETR_MFC_RC_SQNO}
+            , #{OMTR_STDV_DT}
+            , #{OMTR_STDV_SQNO}
+            , #{OMTR_STDV_DSC}
+            , #{GDS_C}
+            , #{WHSE_C}
+            , #{GDS_HST_NO}
+            , DBO.SF_GET_FLOAT(#{STDV_QT})
+            , DBO.SF_GET_NUMERIC(#{BOX_QT})
+            , #{DNTT_DT}
+            , #{DNTT_SQNO}
+            , #{ACG_DT}
+            , #{TR_BSN_DSC}
+            , #{TR_SQNO}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_ETR_MFC_OMTR_STDV" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_ETR_MFC_OMTR_STDV */ TB_PD_D_ETR_MFC_OMTR_STDV
+           SET 
+               GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , SRA_HST_NO          = #{GDS_HST_NO}            /* 축산물이력번호      */
+             , STDV_QT             = #{STDV_QT}               /* 입출고수량           */
+             , BOX_QT              = #{BOX_QT}                /* BOX수량             */
+             , DNTT_DT             = #{DNTT_DT}               /* 작업지시일자         */
+             , DNTT_SQNO           = #{DNTT_SQNO}             /* 작업지시일련번호     */
+             , ACG_DT              = #{ACG_DT}                /* 회계일자             */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ETR_MFC_RC_DT       = #{ETR_MFC_RC_DT}
+           AND ETR_MFC_RC_SQNO     = #{ETR_MFC_RC_SQNO}
+           AND GDS_C               = #{GDS_C}
+           AND OMTR_STDV_DSC       = #{OMTR_STDV_DSC}
+           AND OMTR_STDV_DT        = #{OMTR_STDV_DT}
+           AND OMTR_STDV_SQNO      = #{OMTR_STDV_SQNO}
+           AND OMTR_STDV_DSC       = #{OMTR_STDV_DSC}
+    </update>
+
+    <delete id="delete_TB_PD_D_ETR_MFC_OMTR_STDV" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_ETR_MFC_OMTR_STDV */ FROM TB_PD_D_ETR_MFC_OMTR_STDV
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ETR_MFC_RC_DT       = #{ETR_MFC_RC_DT}
+           AND ETR_MFC_RC_SQNO     = #{ETR_MFC_RC_SQNO}
+           AND GDS_C               = #{GDS_C}
+           AND OMTR_STDV_DSC       = #{OMTR_STDV_DSC}
+           AND OMTR_STDV_DT        = #{OMTR_STDV_DT}
+           AND OMTR_STDV_SQNO      = #{OMTR_STDV_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_D_ETR_MFC_OMTR_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_ETR_MFC_OMTR_STDV */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ETR_MFC_RC_DT                                     /* 수탁가공접수일자          */
+             , A.ETR_MFC_RC_SQNO                                   /* 수탁가공접수일련번호      */
+             , A.OMTR_STDV_DT                                      /* 원부재료입출고일자        */
+             , A.OMTR_STDV_SQNO                                    /* 원부재료입출고일련번호    */
+             , A.OMTR_STDV_DSC                                     /* 원부재료입출고구분코드    */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.SRA_HST_NO                                        /* 축산물이력번호          */
+             , A.STDV_QT                                           /* 입출고수량                */
+             , A.BOX_QT                                            /* BOX수량                  */
+             , A.DNTT_DT                                           /* 작업지시일자              */
+             , A.DNTT_SQNO                                         /* 작업지시일련번호          */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_ETR_MFC_OMTR_STDV A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.ETR_MFC_RC_DT     = #{ETR_MFC_RC_DT}
+           AND A.ETR_MFC_RC_SQNO   = #{ETR_MFC_RC_SQNO}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.OMTR_STDV_DSC     = #{OMTR_STDV_DSC}
+           AND A.OMTR_STDV_DT      = #{OMTR_STDV_DT}
+           AND A.OMTR_STDV_SQNO    = #{OMTR_STDV_SQNO}
+    </select>
+</mapper>

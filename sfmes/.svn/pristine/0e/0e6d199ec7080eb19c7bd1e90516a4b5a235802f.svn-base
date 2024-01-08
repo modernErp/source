@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">
+ 
+    <select id = "search_sm1025_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ search_sm1025 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , A.DLR_RQT_STS_DSC                                   /* 출고의뢰상태구분코드      */
+             , A.DLR_RQT_REF_DSC                                   /* 출고의뢰참조구분코드      */    
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SM_M_DLR_RQT A
+         WHERE 1=1 
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+           AND A.DEL_YN          = #{DEL_YN}
+           AND A.DLR_RQT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test = "DLR_RQT_STS_DSC != null and DLR_RQT_STS_DSC != ''">
+           AND A.DLR_RQT_STS_DSC  = #{DLR_RQT_STS_DSC}
+        </if>
+        <if test = "DLR_RQT_REF_DSC != null and DLR_RQT_REF_DSC != ''">
+           AND A.DLR_RQT_REF_DSC  = #{DLR_RQT_REF_DSC}
+        </if>
+    </select>
+    
+    <select id="search_sm1025_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ search_sm1025_02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , A.DLR_RQT_DSQNO                                     /* 출고의뢰상세일련번호      */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_DTL_NM                                        /* 물품명                    */
+             , B.GDS_STD_NM                                        /* 물품규격명                */
+             , B.UNT_C                                             /* 관리단위                  */
+             , A.DLR_RQT_QT                                        /* 출고의뢰수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.CONDU_NO                                          /* 지육번호                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.STDV_WT                                           /* 입출고중량                */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SM_D_DLR_RQT A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C        = B.CORP_C
+           AND A.BZPL_C        = B.BZPL_C
+           AND A.GDS_C         = B.GDS_C
+         WHERE 1=1 
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.CORP_C        = #{CORP_C}
+           AND A.DLR_RQT_DT    = #{DLR_RQT_DT}
+           AND A.DLR_RQT_SQNO  = #{DLR_RQT_SQNO}
+           AND A.DEL_YN        = 'N'
+    </select>
+    
+    <select id="search_sm1025_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ search_sm1025_03 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , B.DLR_RQT_DSQNO                                     /* 출고의뢰상세일련번호      */
+             , A.DLR_RQT_STS_DSC                                   /* 출고의뢰상태구분코드      */
+             , A.DLR_RQT_REF_DSC                                   /* 출고의뢰참조구분코드      */
+             , B.GDS_C                                             /* 물품코드                  */
+             , C.GDS_DTL_NM                                        /* 물품명                    */
+             , C.GDS_STD_NM                                        /* 물품규격명                */
+             , C.UNT_C                                             /* 관리단위                  */
+             , B.DLR_RQT_QT                                        /* 출고의뢰수량              */
+             , B.TR_UNT_C                                          /* 거래단위코드              */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.GDS_HST_NO                                        /* 물품이력번호              */
+             , B.CONDU_NO                                          /* 지육번호                  */
+             , B.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , B.WHT_QT                                            /* 단량                      */
+             , B.WHT_UNT_C                                         /* 단량단위코드              */
+             , B.STDV_WT                                           /* 입출고중량                */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , B.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , B.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , B.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SM_M_DLR_RQT A
+          LEFT OUTER JOIN TB_SM_D_DLR_RQT B
+            ON A.CORP_C           = B.CORP_C
+           AND A.BZPL_C           = B.BZPL_C
+           AND A.DLR_RQT_DT       = B.DLR_RQT_DT
+           AND A.DLR_RQT_SQNO     = B.DLR_RQT_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON B.CORP_C           = C.CORP_C
+           AND B.BZPL_C           = C.BZPL_C
+           AND B.GDS_C            = C.GDS_C
+         WHERE 1=1 
+           AND A.CORP_C           = #{CORP_C}
+           AND A.BZPL_C           = #{BZPL_C}
+           AND A.DEL_YN           = #{DEL_YN}
+           AND B.DEL_YN           = 'N'
+           AND A.DLR_RQT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test = "DLR_RQT_STS_DSC != null and DLR_RQT_STS_DSC != ''">
+           AND A.DLR_RQT_STS_DSC  = #{DLR_RQT_STS_DSC}
+        </if>
+        <if test = "DLR_RQT_REF_DSC != null and DLR_RQT_REF_DSC != ''">
+           AND A.DLR_RQT_REF_DSC  = #{DLR_RQT_REF_DSC}
+        </if>
+    </select>
+</mapper>

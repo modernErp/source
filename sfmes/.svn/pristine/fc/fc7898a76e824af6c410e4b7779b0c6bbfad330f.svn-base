@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_WK_DNTT_MTRL_PRW" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_WK_DNTT_MTRL_PRW */ TB_PD_D_WK_DNTT_MTRL_PRW
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DNTT_DT             /* 지시일자             */
+            , DNTT_SQNO           /* 지시일련번호         */
+            , DNTT_DSQNO          /* 지시상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , PTIN_DNTT_QT        /* 투입지시량           */
+            , PTIN_GDS_UNT_C      /* 물품단위코드         */
+            , SRA_HST_NO          /* 축산물이력번호       */
+            , WHSE_C              /* 창고코드             */
+            , ACP_MTR_DSC         /* 인수재료구분코드     */
+            , PD_YLD_OBJ_YN       /* 생산수율대상여부     */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DNTT_DT}
+            , #{DNTT_SQNO}
+            , (SELECT ISNULL(MAX(DNTT_DSQNO),0)+1
+                 FROM TB_PD_D_WK_DNTT_MTRL_PRW
+                WHERE 1=1
+                  AND BZPL_C              = #{BZPL_C}
+                  AND CORP_C              = #{CORP_C}
+                  AND DNTT_DT             = #{DNTT_DT}
+                  AND DNTT_SQNO           = #{DNTT_SQNO})
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{PTIN_DNTT_QT})
+            , #{PTIN_GDS_UNT_C}
+            , #{SRA_HST_NO}
+            , #{WHSE_C}
+            , #{ACP_MTR_DSC}
+            , #{PD_YLD_OBJ_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_WK_DNTT_MTRL_PRW" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_WK_DNTT_MTRL_PRW */ TB_PD_D_WK_DNTT_MTRL_PRW
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DNTT_DT             = #{DNTT_DT}               /* 지시일자             */
+             , DNTT_SQNO           = #{DNTT_SQNO}             /* 지시일련번호         */
+             , DNTT_DSQNO          = #{DNTT_DSQNO}            /* 지시상세일련번호     */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , PTIN_DNTT_QT        = #{PTIN_DNTT_QT}          /* 투입지시량           */
+             , PTIN_GDS_UNT_C      = #{PTIN_GDS_UNT_C}        /* 물품단위코드         */
+             , SRA_HST_NO          = #{SRA_HST_NO}            /* 축산물이력번호       */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , ACP_MTR_DSC         = #{ACP_MTR_DSC}           /* 인수재료구분코드     */
+             , PD_YLD_OBJ_YN       = #{PD_YLD_OBJ_YN}         /* 생산수율대상여부     */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DSQNO          = #{DNTT_DSQNO}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+    </update>
+
+    <delete id="delete_TB_PD_D_WK_DNTT_MTRL_PRW" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_WK_DNTT_MTRL_PRW */ FROM TB_PD_D_WK_DNTT_MTRL_PRW
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DSQNO          = #{DNTT_DSQNO}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_D_WK_DNTT_MTRL_PRW" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_WK_DNTT_MTRL_PRW */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DSQNO                                        /* 지시상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.PTIN_DNTT_QT                                      /* 투입지시량                */
+             , A.PTIN_GDS_UNT_C                                    /* 물품단위코드              */
+             , A.SRA_HST_NO                                        /* 축산물이력번호            */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.ACP_MTR_DSC                                       /* 인수재료구분코드          */
+             , A.PD_YLD_OBJ_YN                                     /* 생산수율대상여부          */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_DNTT_MTRL_PRW A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DNTT_DSQNO        = #{DNTT_DSQNO}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+    </select>
+</mapper>

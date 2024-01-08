@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 배치수행결과내역 조회 -->
+    <select id="selectSy3040List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectSy3040List */
+               A.CORP_C                                                              /* 회사코드                         */
+             , A.INTF_ID                                                             /* 인터페이스ID                     */
+             , B.INTF_NM                                                             /* 인터페이스명                     */
+             , A.BAT_SQNO                                                            /* 배치일련번호                     */
+             , A.BAT_ST_DT                                                           /* 배치시작일자                     */
+             , A.BAT_ST_TM                                                           /* 배치시작시간                     */
+             , A.BAT_ST_DT + A.BAT_ST_TM AS BAT_ST_DTM                               /* 배치시작일시                     */
+             , A.BAT_ED_DT                                                           /* 배치종료일자                     */
+             , A.BAT_ED_TM                                                           /* 배치종료시간                     */
+             , A.BAT_ED_DT + A.BAT_ED_TM AS BAT_ED_DTM                               /* 배치종료일시                     */
+             , A.ERR_MSG                                                             /* 오류메세지                       */
+             , A.ERR_RSP_C                                                           /* 에러응답코드                     */
+             , A.RE_TMS_YN                                                           /* 재전송여부                       */
+             , A.INO_DSC                                                             /* 내외구분코드                     */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM                        /* 최초등록일시                     */
+             , A.FSRG_ID                                                             /* 최초등록자                       */
+             , (
+                SELECT X.USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.FSRG_ID
+               ) AS FSRG_NM                                                          /* 최초등록자명                     */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM                       /* 최종등록일시                     */
+             , A.LSCHG_ID                                                            /* 최종등록자                       */
+             , (
+                SELECT X.USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.LSCHG_ID
+               ) AS LSCHG_NM                                                         /* 최총변경자명                     */
+             , B.INTF_METH_DSC                                                       /* 연계방식구분(1:ERP 2:MCA 5:NICE) */
+             , B.INTF_BSN_DSC                                                        /* 연계업무                         */
+             , (CASE A.INO_DSC WHEN '1' THEN B.PATN_INTF_ID ELSE '-' END) AS SVC_ID  /* 연계서비스ID                     */
+          FROM TB_SY_L_BATCH A
+         INNER JOIN TB_SY_M_INTF  B ON A.CORP_C  = B.CORP_C AND A.INTF_ID = B.INTF_ID
+         WHERE 1 = 1
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BAT_ST_DT BETWEEN #{CRT_RQR_ST_DT} AND #{CRT_RQR_ED_DT}
+           <if test = "INTF_ID != null and INTF_ID != ''">             
+                AND A.INTF_ID     LIKE '%' + #{INTF_ID} + '%'                   
+           </if>               
+           <if test = "BSN_C != null and BSN_C != ''">             
+                AND B.INTF_BSN_DSC = #{BSN_C}                                     
+           </if>               
+           <if test = "ERR_RSP_C != null and ERR_RSP_C != ''">             
+                AND A.ERR_RSP_C    = #{ERR_RSP_C}                                  
+           </if>
+           <if test = "INO_DSC != null and INO_DSC != ''">             
+                AND A.INO_DSC      = #{INO_DSC}                                     
+           </if>     
+    </select>
+    
+    <!-- 배치 재전송상태 업데이트 -->
+    <update id="updateSy3040" parameterType="LinkedHashMap">
+     UPDATE TB_SY_L_BATCH /*+ updateSy3040 */
+        SET
+            RE_TMS_YN      = 'Y'
+          , LSCHG_DTM      = GETDATE()
+          , LSCHG_ID       = #{GUSRID} 
+      WHERE 1 = 1
+        AND CORP_C         = #{CORP_C} 
+        AND INTF_ID        = #{INTF_ID} 
+        AND BAT_SQNO       = #{BAT_SQNO} 
+    </update>
+
+
+</mapper>

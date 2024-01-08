@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_D_BSN_CTC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_D_BSN_CTC */ TB_CO_D_BSN_CTC
+        (
+              CORP_C              /* 회사코드             */
+            , BSN_CTC_SQNO        /* 업무연락일련번호     */
+            , RCST_ID             /* 접수자ID             */
+            , RC_STS_C            /* 접수상태코드         */
+            , RC_DTM              /* 접수일시             */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최초변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BSN_CTC_SQNO}
+            , #{RCST_ID}
+            , '1'
+            , NULL
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_D_BSN_CTC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_D_BSN_CTC */ TB_CO_D_BSN_CTC
+           SET 
+               RC_STS_C            = #{RC_STS_C}              /* 접수상태코드         */
+             , RC_DTM              = (CASE WHEN #{RC_STS_C} = '2' AND #{RC_DTM} = '' THEN GETDATE()
+                                           ELSE CONVERT(DATETIME, #{RC_DTM})
+                                       END)                                     
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최초변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BSN_CTC_SQNO        = #{BSN_CTC_SQNO}
+           AND RCST_ID             = #{RCST_ID}
+    </update>
+
+    <delete id="delete_TB_CO_D_BSN_CTC" parameterType="LinkedHashMap">
+        UPDATE /*+ delete_TB_CO_D_BSN_CTC */ FROM TB_CO_D_BSN_CTC
+           SET DEL_YN              = 'Y'
+             , LSCHG_DTM           = GETDATE()
+             , LSCHG_ID            = #{GUSRID}
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BSN_CTC_SQNO        = #{BSN_CTC_SQNO}
+           AND RCST_ID             = #{RCST_ID}
+    </delete>
+
+    <select id="select_TB_CO_D_BSN_CTC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_D_BSN_CTC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BSN_CTC_SQNO                                      /* 업무연락일련번호          */
+             , A.RCST_ID                                           /* 접수자ID                  */
+             , A.RC_STS_C                                          /* 접수상태코드              */
+             , A.RC_DTM                                            /* 접수일시                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최초변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_D_BSN_CTC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BSN_CTC_SQNO      = #{BSN_CTC_SQNO}
+           AND A.RCST_ID           = #{GUSRID}
+    </select>
+</mapper>

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- Validation Check -->
+    <select id="selectSe2020_Insert_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C}      = '' THEN '회사코드가 비어있습니다.'
+                    WHEN #{BZPL_C}      = '' THEN '사업장코드가 비어있습니다.'
+                    WHEN #{TRPL_C}      = '' THEN '거래처코드가 비어있습니다.'
+                    WHEN #{OPR_DT}      = '' THEN '주문일자가 비어있습니다.'
+                    WHEN #{OPR_NO}      = '' THEN '주문번호가 비어있습니다.'
+                    WHEN #{TRPL_GDS_C}  = '' THEN '거래처물품코드가 비어있습니다.'
+                    WHEN #{GDS_C}       = '' THEN '거래처물품연결등록화면에서해당 물품을 등록한 후 다시 진행할 수 있습니다.'
+                    WHEN #{OPR_QT}      = '' THEN '주문수량이 비어있습니다.'
+                    WHEN #{OPR_UPR}     = '' THEN '주문단가가 비어있습니다.'
+                    WHEN #{OPR_AM}      = '' THEN '주문금액이 비어있습니다.'
+                    WHEN #{ODR_CUS_NM}  = '' THEN '주문자 이름이 비어있습니다.'
+                    WHEN #{ODR_CUS_TEL} = '' THEN '주문자연락처가 비어있습니다.'
+                    WHEN #{RCP_CUS_NM}  = '' THEN '받는분 이름이 비어있습니다.'
+                    WHEN #{RCP_CUS_TEL} = '' THEN '받는분 연락처가 비어있습니다.'
+                    WHEN #{DVYAA_ZIP}   = '' THEN '우편번호가 비어있습니다.'
+                    WHEN #{DVYAA_ADR1}  = '' THEN '상위주소가 비어있습니다.'
+                    WHEN #{DVYAA_ADR2}  = '' THEN '하위주소가 비어있습니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>  
+
+    <!-- 온라인몰수주일괄등록내역 -->
+    <select id="selectSe2020_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe2020_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RG_DT                                             /* 등록일자                  */
+             , A.RG_SQNO                                           /* 등록일련번호              */
+             , A.RG_DSQNO                                          /* 등록상세일련번호          */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                  */
+             , A.OPR_DT                                            /* 주문일자                  */
+             , A.OPR_NO                                            /* 주문번호                  */
+             , A.TRPL_GDS_C                                        /* 거래처물품코드            */
+             , A.TRPL_GDS_NM                                       /* 거래처물품명              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , (
+                SELECT GDS_NM
+                  FROM TB_CO_M_GDS
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND GDS_C  = A.GDS_C 
+               ) AS GDS_NM                                         /* 물품명                    */     
+             , A.OPR_QT                                            /* 주문수량                  */
+             , A.OPR_UPR                                           /* 주문단가                  */
+             , A.OPR_AM                                            /* 주문금액                  */
+             , B.ODR_CUS_NM                                        /* 주문자명                  */  
+             , B.ODR_CUS_TEL                                       /* 주문자연락처              */  
+             , B.RCP_CUS_NM                                        /* 받는분명                  */
+             , B.RCP_CUS_TEL                                       /* 받는분연락처              */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */ 
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */ 
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */ 
+             , B.DVY_RQR_CNTN                                      /* 배송요청내용              */
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , A.RVO_DT                                            /* 수주일자                  */
+             , A.RVO_SQNO                                          /* 수주일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_ONL_OPR            A
+          LEFT OUTER JOIN TB_SE_M_DVY_CUS B
+            ON A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.DVY_CUS_REG_DT    = B.DVY_CUS_REG_DT
+           AND A.DVY_CUS_REG_SQNO  = B.DVY_CUS_REG_SQNO
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.RG_DT             = #{RG_DT}
+           AND A.RG_SQNO           = #{RG_SQNO}
+         <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C            = #{TRPL_C}
+         </if>  
+           AND A.DEL_YN            = #{DEL_YN}
+    </select>
+        
+    <!-- 수주일괄등록내역찾기팝업 -->    
+    <select id="selectSe2020_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe2020_02 */ 
+               A.CORP_C                                                 /* 회사코드                  */
+             , A.BZPL_C                                                 /* 사업장코드                */
+             , A.RG_DT                                                  /* 등록일자                  */
+             , A.RG_SQNO                                                /* 등록일련번호              */
+             , A.TRPL_C                                                 /* 거래처코드                */
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                             /* 거래처명                  */ 
+             , MAX(CONVERT(CHAR(23), A.FSRG_DTM, 20)) AS FSRG_DTM       /* 최초등록일시              */
+             , A.FSRG_ID                                                /* 최초등록자ID              */
+             , MAX(CONVERT(CHAR(23), A.LSCHG_DTM, 20)) AS LSCHG_DTM     /* 최종변경일시              */
+             , A.LSCHG_ID                                               /* 최종변경자ID              */
+          FROM TB_SE_M_ONL_OPR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.RG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+           AND A.DEL_YN            = 'N'
+         GROUP BY A.CORP_C
+                , A.BZPL_C
+                , A.RG_DT
+                , A.RG_SQNO
+                , A.TRPL_C
+                , A.FSRG_ID
+                , A.LSCHG_ID
+    </select>
+    
+    <!-- 거래처물품연결내역 Mapping 조회 -->    
+    <select id="selectSe2020_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectSe2020_03 */
+               A.CORP_C                                            /* 회사코드                 */
+             , A.TRPL_C                                            /* 거래처코드               */           
+             , A.GDS_C                                             /* 물품코드                 */ 
+             , ( 
+                SELECT GDS_NM
+                  FROM TB_CO_M_GDS
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND BZPL_C = #{BZPL_C}
+                   AND GDS_C  = A.GDS_C
+               ) AS GDS_NM                                         /* 물품명                  */   
+             , A.TRPL_GDS_C                                        /* 거래처물품코드          */
+             , A.TRPL_GDS_NM                                       /* 거래처물품명            */
+          FROM TB_CO_M_TRPL_GDS A
+         WHERE 1 = 1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.TRPL_C            = #{TRPL_C}
+           AND A.TRPL_GDS_C        = #{TRPL_GDS_C}
+           AND A.USE_YN            = 'Y'      
+           AND A.REG_SQNO = (
+                              SELECT MAX(REG_SQNO)
+                                FROM TB_CO_M_TRPL_GDS
+                               WHERE 1 = 1
+                                 AND CORP_C     = #{CORP_C}
+                                 AND BZPL_C     = #{BZPL_C}
+                                 AND TRPL_C     = #{TRPL_C}
+                                 AND TRPL_GDS_C = #{TRPL_GDS_C}
+                                 AND USE_YN     = 'Y'
+                             )    
+    </select>
+        
+    <!-- 매출거래처유무 -->
+    <select id="selectSe2020_trpl" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT COUNT(TRPL_C)
+          FROM TB_CO_M_TRPL
+         WHERE 1 = 1
+           AND SL_CTR_YN = 'Y'
+           AND TRPL_C    = #{TRPL_C}
+    </select>
+    
+    <!-- 수주기본내역생성 -->
+    <insert id="insertSe2020_TB_SE_M_RVO" parameterType="LinkedHashMap">
+          INSERT INTO /*+ insertSe2020_TB_SE_M_RVO */ TB_SE_M_RVO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , RVO_DT              /* 수주일자             */
+            , RVO_SQNO            /* 수주일련번호         */
+            , RVO_STS_DSC         /* 수주상태구분코드     */
+            , TRPL_C              /* 거래처코드           */
+            , ADJPL_C             /* 정산처코드           */
+            , RCPL_C              /* 수령처코드           */
+            , DVY_DT              /* 배송일자             */
+            , DVY_OBJ_DSC         /* 배송대상구분코드     */
+            , DVYAA_INP_DSC       /* 배송지입력구분코드   */
+            , DVYAA_ZIP           /* 배송지우편번호       */
+            , DVYAA_ADR1          /* 배송지주소1          */
+            , DVYAA_ADR2          /* 배송지주소2          */
+            , DVY_CUS_REG_DT      /* 배송고객등록일자     */
+            , DVY_CUS_REG_SQNO    /* 배송고객등록일련번호 */
+            , RVO_AM              /* 수주금액             */
+            , ONL_OPR_YN          /* 온라인주문여부       */
+            , RVO_CLO_DT          /* 수주마감일자         */
+            , RVO_CLO_SQNO        /* 수주마감일련번호     */
+            , DLR_DNTT_DT         /* 출고지시일자         */
+            , DLR_DNTT_SQNO       /* 출고지시일련번호     */
+            , WK_DNTT_DT          /* 작업지시일자         */ 
+            , WK_DNTT_SQNO        /* 작업지시일련번호     */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{RVO_DT}
+            , #{RVO_SQNO}
+            , '1'
+            , #{TRPL_C}
+            , #{TRPL_C}
+            , #{TRPL_C}
+            , REPLACE(#{OPR_DT},'-','')
+            , '2'
+            , '2'
+            , REPLACE(#{DVYAA_ZIP},'-','')
+            , #{DVYAA_ADR1}
+            , #{DVYAA_ADR2}
+            , #{DVY_CUS_REG_DT}
+            , DBO.SF_GET_NUMERIC(#{DVY_CUS_REG_SQNO}) 
+            , DBO.SF_GET_NUMERIC(#{OPR_AM})
+            , 'Y'
+            , #{RVO_CLO_DT}
+            , DBO.SF_GET_NUMERIC(#{RVO_CLO_SQNO})
+            , #{DLR_DNTT_DT}        
+            , DBO.SF_GET_NUMERIC(#{DLR_DNTT_SQNO})                
+            , #{WK_DNTT_DT}
+            , DBO.SF_GET_NUMERIC(#{WK_DNTT_SQNO})
+            , #{RMK_CNTN}
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        ) 
+    </insert>
+    
+    <insert id="insertSe2020_TB_SE_D_RVO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insertSe2020_TB_SE_D_RVO */ TB_SE_D_RVO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , RVO_DT              /* 수주일자             */
+            , RVO_SQNO            /* 수주일련번호         */
+            , RVO_DSQNO           /* 수주상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , RVO_QT              /* 수주수량             */
+            , RVO_BOX_QT          /* 수주박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , RVO_UPR             /* 수주단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , RVO_AM              /* 수주금액             */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , RVO_WT              /* 수주중량             */
+            , TXT_DSC             /* 과세구분코드         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT 
+               #{CORP_C}
+             , #{BZPL_C}
+             , #{RVO_DT}
+             , #{RVO_SQNO}
+             , (SELECT ISNULL(MAX(RVO_DSQNO),0)+1
+                  FROM TB_SE_D_RVO
+                 WHERE 1 = 1
+                   AND CORP_C   = #{CORP_C} 
+                   AND BZPL_C   = #{BZPL_C}
+                   AND RVO_DT   = #{RVO_DT}
+                   AND RVO_SQNO = #{RVO_SQNO}
+               ) 
+             , #{GDS_C}
+             , DBO.SF_GET_FLOAT(#{OPR_QT})
+             , DBO.SF_GET_FLOAT(#{RVO_BOX_QT})
+             , 'EA'
+             , DBO.SF_GET_FLOAT(#{OPR_UPR})
+             , DBO.SF_GET_NUMERIC(#{SPY_AM})
+             , DBO.SF_GET_NUMERIC(#{VAT})
+             , DBO.SF_GET_NUMERIC(#{OPR_AM})
+             , A.QT_WT_DSC
+             , DBO.SF_GET_NUMERIC(WHT_QT)
+             , A.WHT_UNT_C
+             , DBO.SF_GET_FLOAT(#{RVO_WT})
+             , A.TXT_DSC
+             , #{RMK_CNTN}
+             , 'N'
+             , #{ETC_DSC1}
+             , #{ETC_DSC2}
+             , #{ETC_DSC3}
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+         FROM TB_CO_M_GDS A
+        WHERE 1 = 1
+          AND A.CORP_C = #{CORP_C}
+          AND A.BZPL_C = #{BZPL_C}
+          AND A.GDS_C  = #{GDS_C}        
+    </insert>
+
+</mapper>

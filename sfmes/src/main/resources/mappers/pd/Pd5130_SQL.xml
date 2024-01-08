@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+    <!-- 위탁가공사업내역 조회 -->
+    <select id="selectPd5130_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRU_MFC_RC_DT                                     /* 위탁가공접수일자          */
+             , A.TRU_MFC_RC_SQNO                                   /* 위탁가공접수일련번호      */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , (SELECT
+                      TRPL_NM
+                FROM
+                      TB_CO_M_TRPL
+                WHERE CORP_C = A.CORP_C
+                  AND TRPL_C = A.TRPL_C) AS TRPL_NM                /* 거래처명                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , C.GDS_NM                                            /* 물품명                    */
+             , C.GDS_DTL_NM                                        /* 물품명                    */
+             , C.GDS_STD_NM                                        /* 물품규격                  */
+             , C.UNT_C                                             /* 물품단위코드              */
+             , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.TRU_RQR_QT                                        /* 위탁의뢰수량              */
+			 ,(CASE WHEN B.STDV_DSC = 'O' THEN (ISNULL(B.STDV_QT,0) * -1)
+                                          ELSE B.STDV_QT
+              END)                                AS   STDV_QT     /* 제품입출고수량            */
+             , B.MFS_STDV_DT                                       /* 제품입출고일자            */
+             , B.MFS_STDV_SQNO                                     /* 제품입출고일련번호        */
+             ,(CASE WHEN B.STDV_DSC = 'O' THEN (ISNULL(B.TRU_MFC_AM,0) * -1)
+                                          ELSE B.TRU_MFC_AM
+              END)                                AS   TRU_MFC_AM  /* 위탁가공금액              */
+             ,(CASE WHEN B.STDV_DSC = 'O' THEN (ISNULL(B.TRU_MFC_VAT,0) * -1)
+                                          ELSE B.TRU_MFC_VAT
+              END)                                AS   TRU_MFC_VAT /* 위탁가공부가세            */
+             , B.BOX_QT                                            /* BOX수량                   */
+             , B.ACG_DT                                            /* 회계일자                  */
+             , B.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , B.TR_SQNO                                           /* 거래일련번호              */
+             , B.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , B.FSRG_ID                                           /* 최초등록자ID              */
+             , B.FSRG_ID                          AS   FSRG_NM     /* 최초등록자이름            */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , B.LSCHG_ID                                          /* 최종변경자ID              */
+             , B.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자이름            */
+          FROM TB_PD_M_TRU_MFC_REQ A
+                LEFT JOIN TB_PD_D_TRU_MFC_MFS_STDV B
+                  ON A.CORP_C = B.CORP_C
+                 AND A.BZPL_C = B.BZPL_C
+                 AND A.TRU_MFC_RC_DT   = B.TRU_MFC_RC_DT
+                 AND A.TRU_MFC_RC_SQNO = B.TRU_MFC_RC_SQNO
+                LEFT JOIN TB_CO_M_GDS C
+                  ON A.CORP_C = C.CORP_C
+                 AND A.BZPL_C = C.BZPL_C
+                 AND A.GDS_C  = C.GDS_C
+         WHERE 1=1
+           AND A.CORP_C           = #{CORP_C}
+           AND A.BZPL_C           = #{BZPL_C}
+           AND A.DEL_YN           = 'N'
+        <if test='DATE_CHK == "1"'>
+           AND A.TRU_MFC_RC_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+        </if>
+        <if test='DATE_CHK == "2"'>   
+           AND B.ACG_DT           BETWEEN #{ST_DT} AND #{ED_DT}
+        </if>
+        <if test="TRPL_C != ''">   
+           AND A.TRPL_C           = #{TRPL_C}
+        </if>
+        <if test="DEL_YN != ''">   
+           AND B.DEL_YN           = #{DEL_YN}
+        </if>
+        <if test="GDS_C != ''">   
+           AND A.GDS_C            = #{GDS_C}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 위탁가공접수내역조회 -->
+    <select id="selectPd5120_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH TRU_MFC_OMTR_STDV AS 
+        (
+            SELECT CORP_C                                             /* 회사코드              */
+                 , BZPL_C                                             /* 사업장코드            */
+                 , TRU_MFC_RC_DT                                      /* 수탁가공접수일자      */
+                 , TRU_MFC_RC_SQNO                                    /* 수탁가공접수일련번호  */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN 1
+                       END)                 AS STDV_QT_IN_CNT         /* 원부재료인수 건수     */
+                 , SUM(CASE STDV_DSC WHEN 'O' THEN 1
+                       END)                 AS STDV_QT_OUT_CNT        /* 원부재료출고 건수     */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN STDV_AM
+                       END)                 AS STDV_AM_IN_SUM         /* 원부재료입고금액 합계 */
+                 , SUM(CASE STDV_DSC WHEN 'O' THEN STDV_AM
+                       END)                 AS STDV_AM_OUT_SUM        /* 원부재료출고금액 합계 */
+              FROM TB_PD_D_TRU_MFC_OMTR_STDV
+             WHERE 1=1
+               AND CORP_C = #{CORP_C}
+               AND BZPL_C = #{BZPL_C}
+               AND DEL_YN = 'N'
+             GROUP BY CORP_C
+                    , BZPL_C
+                    , TRU_MFC_RC_DT
+                    , TRU_MFC_RC_SQNO
+        ),
+        TRU_MFC_MFS_STDV AS
+        (
+            SELECT
+                   CORP_C                                             /* 회사코드             */
+                 , BZPL_C                                             /* 사업장코드           */
+                 , TRU_MFC_RC_DT                                      /* 수탁가공접수일자     */
+                 , TRU_MFC_RC_SQNO                                    /* 수탁가공접수일련번호 */
+                 , SUM(CASE STDV_DSC WHEN 'O' THEN STDV_QT
+                        END)                AS STDV_QT_OUT_SUM        /* 제품출고수량 합계    */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN STDV_QT
+                        END)                AS STDV_QT_IN_SUM         /* 제품입고수량 합계    */
+                 , SUM(CASE STDV_DSC WHEN 'O' THEN TRU_MFC_AM
+                        END)                AS TRU_MFC_AM_OUT_SUM     /* 제품출고금액 합계    */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN TRU_MFC_AM
+                        END)                AS TRU_MFC_AM_IN_SUM      /* 제품입고금액 합계    */
+                 , SUM(CASE STDV_DSC WHEN 'O' THEN TRU_MFC_VAT
+                        END)                AS TRU_MFC_VAT_OUT_SUM    /* 출고제품부가세 합계  */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN TRU_MFC_VAT
+                        END)                AS TRU_MFC_VAT_IN_SUM     /* 입고제품부가세 합계  */
+              FROM TB_PD_D_TRU_MFC_MFS_STDV
+             WHERE 1=1
+               AND CORP_C = #{CORP_C}
+               AND BZPL_C = #{BZPL_C}
+               AND DEL_YN = 'N'
+             GROUP BY CORP_C
+                    , BZPL_C
+                    , TRU_MFC_RC_DT
+                    , TRU_MFC_RC_SQNO
+        )
+        SELECT 
+		       A.CORP_C                                                                       /* 회사코드                  */
+             , A.BZPL_C                                                                       /* 사업장코드                */
+             , A.TRU_MFC_RC_DT                                                                /* 위탁가공접수일자          */
+             , A.TRU_MFC_RC_SQNO                                                              /* 위탁가공접수일련번호      */
+             , A.TRU_MFC_STS_DSC                                                              /* 위탁가공상태구분코드      */
+             , A.TRPL_C                                                                       /* 거래처코드                */
+             , (SELECT
+                      TRPL_NM
+                FROM
+                      TB_CO_M_TRPL
+                WHERE CORP_C = A.CORP_C
+                  AND TRPL_C = A.TRPL_C) AS TRPL_NM                                           /* 거래처명                  */
+             , A.GDS_C                                                                        /* 물품코드                  */
+             , D.GDS_DTL_NM                                                                   /* 물품명상세(물품명 + 규격) */
+             , D.GDS_STD_NM                                                                   /* 물품규격                  */
+             , D.UNT_C                                                                        /* 물품단위코드              */
+             , D.GDS_TP_DSC                                                                   /* 물품유형구분코드          */
+             , A.TRU_RQR_QT                                                                   /* 위탁의뢰수량              */
+             , A.TRU_MFC_AM                                                                   /* 위탁가공금액              */
+             , A.TRU_MFC_VAT                                                                  /* 위탁가공부가세            */
+			 , (ISNULL(B.STDV_QT_IN_SUM, 0) - ISNULL(B.STDV_QT_OUT_SUM, 0)) AS STDV_QT        /* 위탁제품 입고수량         */
+			 , (ISNULL(B.TRU_MFC_AM_IN_SUM, 0) - ISNULL(B.TRU_MFC_AM_OUT_SUM, 0)) AS MFC_AM   /* 위탁제품 입고금액         */
+			 , ISNULL(C.STDV_QT_IN_CNT, 0) AS STDV_QT_IN_CNT                                  /* 위탁재료 인수건수         */
+			 , ISNULL(C.STDV_QT_OUT_CNT, 0) AS STDV_QT_OUT_CNT                                /* 위탁재료 출고건수         */
+			 , (ISNULL(C.STDV_AM_OUT_SUM, 0) - ISNULL(C.STDV_AM_IN_SUM, 0)) AS STDV_AM        /* 재료비                    */
+          FROM TB_PD_M_TRU_MFC_REQ A
+               LEFT JOIN TRU_MFC_MFS_STDV B
+                 ON B.CORP_C          = A.CORP_C
+                AND B.BZPL_C          = A.BZPL_C
+                AND B.TRU_MFC_RC_DT   = A.TRU_MFC_RC_DT
+                AND B.TRU_MFC_RC_SQNO = A.TRU_MFC_RC_SQNO
+               LEFT JOIN TRU_MFC_OMTR_STDV  C
+                 ON C.CORP_C          = A.CORP_C
+                AND C.BZPL_C          = A.BZPL_C
+                AND C.TRU_MFC_RC_DT   = A.TRU_MFC_RC_DT
+                AND C.TRU_MFC_RC_SQNO = A.TRU_MFC_RC_SQNO
+               LEFT JOIN TB_CO_M_GDS D    
+                 ON D.CORP_C          = A.CORP_C
+                AND D.BZPL_C          = A.BZPL_C
+                AND D.GDS_C           = A.GDS_C
+         WHERE 1=1
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+           AND A.TRU_MFC_RC_DT   BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test="GDS_C != ''">
+           AND A.GDS_C           = #{GDS_C}
+        </if>
+        <if test="TRPL_C != ''">
+           AND A.TRPL_C          = #{TRPL_C}
+        </if>
+        <if test="TRU_MFC_STS_DSC != ''">
+           AND A.TRU_MFC_STS_DSC = #{TRU_MFC_STS_DSC}
+        </if>
+    </select>
+</mapper>

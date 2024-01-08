@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 수주대비(미)출고현황 -->
+    <select id="selectSe2120" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	        SELECT /*+ selectSe2120 */
+			       A.RVO_DT                      /* 수주일자         */
+			     , A.RVO_SQNO                    /* 수주일련번호     */
+			     , A.RVO_STS_DSC                 /* 수주상태구분코드 */
+			     , A.DLR_DNTT_DT                 /* 출고지시일자     */
+			     , A.DLR_DNTT_SQNO               /* 출고지시일련번호 */
+			     , A.DLR_DT                      /* 출고일자         */
+			     , A.DLR_SQNO                    /* 출고일련번호     */
+			     , A.GDS_C                       /* 물품코드         */
+			     , B.GDS_DTL_NM                  /* 물품상세명       */
+			     , B.GDS_STD_NM                  /* 물품규격명       */
+			     , B.UNT_C                       /* 관리단위         */
+			     , A.RVO_AM                      /* 수주금액         */
+			     , A.RVO_QT                      /* 수주수량(A)      */
+			     , A.DLR_DNTT_QT                 /* 출고지시수량(B)  */
+			     , A.DLR_QT                      /* 출고수량(C)      */
+			     , A.RVO_QT - A.DLR_QT AS CHR_QT /* 미출고수량(A-C)  */
+			     , A.ETC_DSC3                    /* 미출고내용  2022.04.18 나명우 추가         */
+			  FROM (
+			        SELECT
+			               A.CORP_C
+			             , A.BZPL_C
+			             , A.RVO_DT
+			             , A.RVO_SQNO
+			             , A.RVO_STS_DSC
+			             , A.DLR_DNTT_DT
+			             , A.DLR_DNTT_SQNO
+			             , B.DLR_DT
+			             , B.DLR_SQNO
+			             , A.GDS_C
+			             , A.RVO_AM
+			             , A.ETC_DSC3
+			             , ISNULL(A.RVO_QT     , 0) AS RVO_QT
+			             , ISNULL(B.DLR_DNTT_QT, 0) AS DLR_DNTT_QT  
+			             , ISNULL(B.DLR_QT     , 0) AS DLR_QT
+			          FROM (
+			                SELECT
+			                       A.CORP_C
+			                     , A.BZPL_C
+			                     , A.RVO_DT
+			                     , A.RVO_SQNO
+			                     , MAX(A.RVO_STS_DSC  ) AS RVO_STS_DSC
+			                     , MAX(A.DLR_DNTT_DT  ) AS DLR_DNTT_DT
+			                     , MAX(A.DLR_DNTT_SQNO) AS DLR_DNTT_SQNO
+			                     , B.GDS_C
+			                     , B.ETC_DSC3
+			                     , SUM(B.RVO_AM       ) AS RVO_AM
+			                     , SUM(B.RVO_QT       ) AS RVO_QT
+			                  FROM TB_SE_M_RVO A
+			                     , TB_SE_D_RVO B
+			                 WHERE 1 = 1
+			                   AND A.CORP_C      = B.CORP_C
+			                   AND A.BZPL_C      = B.BZPL_C
+			                   AND A.RVO_DT      = B.RVO_DT
+			                   AND A.RVO_SQNO    = B.RVO_SQNO
+			                   AND A.DEL_YN      = 'N'
+			                   AND B.DEL_YN      = 'N'
+			                   AND A.CORP_C      = #{CORP_C}
+			                   AND A.BZPL_C      = #{BZPL_C}
+			              <if test="RVO_STS_DSC != null and RVO_STS_DSC != ''">
+			                   AND A.RVO_STS_DSC = #{RVO_STS_DSC}  
+			              </if> 
+			              <if test="ONL_OPR_YN != null and ONL_OPR_YN != ''">
+			                   AND A.ONL_OPR_YN = #{ONL_OPR_YN}  
+			              </if>  
+			                   AND A.RVO_DT BETWEEN #{ST_DT} AND #{ED_DT}
+			                 GROUP BY A.CORP_C
+			                        , A.BZPL_C
+			                        , A.RVO_DT
+			                        , A.RVO_SQNO
+			                        , B.ETC_DSC3
+			                        , B.GDS_C
+			               ) A LEFT OUTER JOIN
+			               (SELECT
+			                       A.CORP_C
+			                     , A.BZPL_C
+			                     , A.DLR_DNTT_DT
+			                     , A.DLR_DNTT_SQNO
+			                     , B.GDS_C
+			                     , SUM(B.DLR_DNTT_QT) AS DLR_DNTT_QT
+			                     , A.DLR_DT    
+			                     , A.DLR_SQNO  
+			                     , (SELECT
+			                               SUM(DLR_QT) AS DLR_QT
+			                          FROM TB_SE_M_DLR X
+			                             , TB_SE_D_DLR Y
+			                         WHERE 1 = 1
+			                           AND X.CORP_C     = Y.CORP_C
+			                           AND X.BZPL_C     = Y.BZPL_C
+			                           AND X.DLR_DT     = Y.DLR_DT
+			                           AND X.DLR_SQNO   = Y.DLR_SQNO  
+			                           AND X.SLP_NML_YN = 'Y'
+			                           AND Y.DEL_YN     = 'N' 
+			                           AND X.CORP_C     = A.CORP_C
+			                           AND X.BZPL_C     = A.BZPL_C
+			                           AND X.DLR_DT     = A.DLR_DT
+			                           AND X.DLR_SQNO   = A.DLR_SQNO
+			                           AND Y.GDS_C      = B.GDS_C                  
+			                       ) DLR_QT
+			                  FROM TB_SE_M_DLR_DNTT A
+			                     , TB_SE_D_DLR_DNTT B
+			                 WHERE 1 = 1
+			                   AND A.CORP_C        = B.CORP_C
+			                   AND A.BZPL_C        = B.BZPL_C
+			                   AND A.DLR_DNTT_DT   = B.DLR_DNTT_DT
+			                   AND A.DLR_DNTT_SQNO = B.DLR_DNTT_SQNO
+			                   AND A.SLP_NML_YN    = 'Y'
+			                   AND B.DEL_YN        = 'N'
+			                   AND A.CORP_C        = #{CORP_C}
+			                   AND A.BZPL_C        = #{BZPL_C}
+			                   AND A.RVO_DT BETWEEN #{ST_DT} AND #{ED_DT}      
+			                 GROUP BY A.CORP_C
+			                        , A.BZPL_C
+			                        , A.DLR_DNTT_DT
+			                        , A.DLR_DNTT_SQNO
+			                        , A.DLR_DT
+			                        , A.DLR_SQNO
+			                        , B.GDS_C
+			               ) B
+			            ON A.CORP_C        = B.CORP_C        AND
+			               A.BZPL_C        = B.BZPL_C        AND
+			               A.DLR_DNTT_DT   = B.DLR_DNTT_DT   AND
+			               A.DLR_DNTT_SQNO = B.DLR_DNTT_SQNO AND
+			               A.GDS_C         = B.GDS_C
+			         WHERE 1 = 1
+			       ) A LEFT OUTER JOIN TB_CO_M_GDS B
+			    ON A.CORP_C = B.CORP_C AND
+			       A.BZPL_C = B.BZPL_C AND
+			       A.GDS_C  = B.GDS_C
+			 WHERE 1 = 1
+			 ORDER BY A.RVO_DT
+			        , A.RVO_SQNO
+			        , A.GDS_C
+     </select>
+     <!-- 미출고 대상 조회 2022.04.18 나명우 추가 -->
+    <select id="selectSe2120_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+            SELECT /*+ selectSe2120 */
+                   A.RVO_DT                      /* 수주일자         */
+                 , A.RVO_SQNO                    /* 수주일련번호     */
+                 , A.RVO_STS_DSC                 /* 수주상태구분코드 */
+                 , A.DLR_DNTT_DT                 /* 출고지시일자     */
+                 , A.DLR_DNTT_SQNO               /* 출고지시일련번호 */
+                 , A.DLR_DT                      /* 출고일자         */
+                 , A.DLR_SQNO                    /* 출고일련번호     */
+                 , A.GDS_C                       /* 물품코드         */
+                 , B.GDS_DTL_NM                  /* 물품상세명       */
+                 , B.GDS_STD_NM                  /* 물품규격명       */
+                 , B.UNT_C                       /* 관리단위         */
+                 , A.RVO_AM                      /* 수주금액         */
+                 , A.RVO_QT                      /* 수주수량(A)      */
+                 , A.DLR_DNTT_QT                 /* 출고지시수량(B)  */
+                 , A.DLR_QT                      /* 출고수량(C)      */
+                 , A.RVO_QT - A.DLR_QT AS CHR_QT /* 미출고수량(A-C)  */
+                 , A.ETC_DSC3
+           
+              FROM (
+                    SELECT
+                           A.CORP_C
+                         , A.BZPL_C
+                         , A.RVO_DT
+                         , A.RVO_SQNO
+                         , A.RVO_STS_DSC
+                         , A.DLR_DNTT_DT
+                         , A.DLR_DNTT_SQNO
+                         , B.DLR_DT
+                         , B.DLR_SQNO
+                         , A.GDS_C
+                         , A.RVO_AM
+                         , A.ETC_DSC3
+                         , ISNULL(A.RVO_QT     , 0) AS RVO_QT
+                         , ISNULL(B.DLR_DNTT_QT, 0) AS DLR_DNTT_QT  
+                         , ISNULL(B.DLR_QT     , 0) AS DLR_QT
+                     
+                      FROM (
+                            SELECT
+                                   A.CORP_C
+                                 , A.BZPL_C
+                                 , A.RVO_DT
+                                 , A.RVO_SQNO
+                                 , MAX(A.RVO_STS_DSC  ) AS RVO_STS_DSC
+                                 , MAX(A.DLR_DNTT_DT  ) AS DLR_DNTT_DT
+                                 , MAX(A.DLR_DNTT_SQNO) AS DLR_DNTT_SQNO
+                                 , B.GDS_C
+                                 , SUM(B.RVO_AM       ) AS RVO_AM
+                                 , SUM(B.RVO_QT       ) AS RVO_QT
+                                 , B.ETC_DSC3
+                            
+                              FROM TB_SE_M_RVO A
+                                 , TB_SE_D_RVO B
+                             WHERE 1 = 1
+                               AND A.CORP_C      = B.CORP_C
+                               AND A.BZPL_C      = B.BZPL_C
+                               AND A.RVO_DT      = B.RVO_DT
+                               AND A.RVO_SQNO    = B.RVO_SQNO
+                               AND A.DEL_YN      = 'N'
+                               AND B.DEL_YN      = 'N'
+                               AND A.CORP_C      = #{CORP_C}
+                               AND A.BZPL_C      = #{BZPL_C}
+                    
+                          
+                               AND A.RVO_DT      = #{RVO_DT}
+                             GROUP BY A.CORP_C
+                                    , A.BZPL_C
+                                    , A.RVO_DT
+                                    , A.RVO_SQNO
+                                    , B.ETC_DSC3
+                                    , B.GDS_C
+                                
+                           ) A LEFT OUTER JOIN
+                           (SELECT
+                                   A.CORP_C
+                                 , A.BZPL_C
+                                 , A.DLR_DNTT_DT
+                                 , A.DLR_DNTT_SQNO
+                                 , B.GDS_C
+                                 , SUM(B.DLR_DNTT_QT) AS DLR_DNTT_QT
+                                 , A.DLR_DT    
+                                 , A.DLR_SQNO  
+                                 , (SELECT
+                                           SUM(DLR_QT) AS DLR_QT
+                                      FROM TB_SE_M_DLR X
+                                         , TB_SE_D_DLR Y
+                                     WHERE 1 = 1
+                                       AND X.CORP_C     = Y.CORP_C
+                                       AND X.BZPL_C     = Y.BZPL_C
+                                       AND X.DLR_DT     = Y.DLR_DT
+                                       AND X.DLR_SQNO   = Y.DLR_SQNO  
+                                       AND X.SLP_NML_YN = 'Y'
+                                       AND Y.DEL_YN     = 'N' 
+                                       AND X.CORP_C     = A.CORP_C
+                                       AND X.BZPL_C     = A.BZPL_C
+                                       AND X.DLR_DT     = A.DLR_DT
+                                       AND X.DLR_SQNO   = A.DLR_SQNO
+                                       AND Y.GDS_C      = B.GDS_C                  
+                                   ) DLR_QT
+                              FROM TB_SE_M_DLR_DNTT A
+                                 , TB_SE_D_DLR_DNTT B
+                             WHERE 1 = 1
+                               AND A.CORP_C        = B.CORP_C
+                               AND A.BZPL_C        = B.BZPL_C
+                               AND A.DLR_DNTT_DT   = B.DLR_DNTT_DT
+                               AND A.DLR_DNTT_SQNO = B.DLR_DNTT_SQNO
+                               AND A.SLP_NML_YN    = 'Y'
+                               AND B.DEL_YN        = 'N'
+                               AND A.CORP_C        = #{CORP_C}
+                               AND A.BZPL_C        = #{BZPL_C}
+                               AND A.RVO_DT        = #{RVO_DT}      
+                             GROUP BY A.CORP_C
+                                    , A.BZPL_C
+                                    , A.DLR_DNTT_DT
+                                    , A.DLR_DNTT_SQNO
+                                    , A.DLR_DT
+                                    , A.DLR_SQNO
+                                    , B.GDS_C
+                           ) B
+                        ON A.CORP_C        = B.CORP_C        AND
+                           A.BZPL_C        = B.BZPL_C        AND
+                           A.DLR_DNTT_DT   = B.DLR_DNTT_DT   AND
+                           A.DLR_DNTT_SQNO = B.DLR_DNTT_SQNO AND
+                           A.GDS_C         = B.GDS_C
+                     WHERE 1 = 1
+                   ) A LEFT OUTER JOIN TB_CO_M_GDS B
+                ON A.CORP_C = B.CORP_C AND
+                   A.BZPL_C = B.BZPL_C AND
+                   A.GDS_C  = B.GDS_C
+             WHERE 1 = 1
+               AND A.RVO_SQNO        = #{RVO_SQNO}
+               
+               <if test="DLR_DT!= null and DLR_DT != ''">
+                    AND A.DLR_DT          = #{DLR_DT}
+               </if> 
+               <if test="DLR_SQNO!= null and DLR_SQNO != ''">
+                    AND A.DLR_SQNO        = #{DLR_SQNO}
+               </if> 
+             
+               AND A.GDS_C           = #{GDS_C}
+             ORDER BY A.RVO_DT
+                    , A.RVO_SQNO
+                    , A.GDS_C
+     </select>
+     
+     <!-- 수정내역 존재여부  2022.04.18 나명우 추가 -->
+     <select id="selectSe2120Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe2120Cnt */
+               COUNT(1)
+          FROM TB_SE_D_RVO A
+         WHERE 1 = 1 
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.RVO_DT   = #{RVO_DT}
+           AND A.RVO_SQNO = #{RVO_SQNO}
+           AND A.GDS_C    = #{GDS_C}   
+    </select>
+    <!-- 사용자 체크 2022.04.18 나명우 추가 -->
+    <select id="selectSe2120USRCHK" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ selectGe3010Cnt */
+               A.FSRG_ID
+          FROM TB_SE_D_RVO A
+         WHERE 1 = 1 
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.RVO_DT   = #{RVO_DT}
+           AND A.RVO_SQNO = #{RVO_SQNO}
+           AND A.GDS_C    = #{GDS_C}
+
+    </select>
+    <!-- 미출고 내용 수정 2022.04.18 나명우 추가 -->
+     <update id="update_TB_SE_M_RVO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_RVO */ TB_SE_D_RVO
+           SET 
+               CORP_C              = #{CORP_C}                                    /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                    /* 사업장코드           */
+             , RVO_DT              = #{RVO_DT}                                    /* 수주일자             */
+             , RVO_SQNO            = #{RVO_SQNO}                                  /* 수주일련번호         */
+            
+             , ETC_DSC3            = #{ETC_DSC3}                                  /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                                    /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND RVO_DT              = #{RVO_DT}
+           AND RVO_SQNO            = #{RVO_SQNO}
+           AND GDS_C               = #{GDS_C}
+    </update>
+</mapper>

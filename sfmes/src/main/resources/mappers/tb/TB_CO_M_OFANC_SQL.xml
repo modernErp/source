@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_OFANC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_OFANC */ TB_CO_M_OFANC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , OFANC_SQNO          /* 공지사항일련번호     */
+            , OFANC_DSC           /* 공지사항구분코드     */
+            , BLTN_RNGE_C         /* 게시범위코드         */
+            , TIT                 /* 제목                 */
+            , CNTN                /* 내용                 */
+            , INQCN               /* 조회수               */
+            , BLTN_ST_DT          /* 게시시작일자         */
+            , BLTN_ED_DT          /* 게시종료일자         */
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호     */
+            , POPU_YN             /* 팝업여부             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , (SELECT ISNULL(MAX(OFANC_SQNO)+1, 1) FROM TB_CO_M_OFANC)
+            , #{OFANC_DSC}
+            , #{BLTN_RNGE_C}
+            , #{TIT}
+            , #{CNTN}
+            , 0
+            , #{BLTN_ST_DT}
+            , #{BLTN_ED_DT}
+            , #{APD_FILE_AMN_NO}
+            , #{POPU_YN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_OFANC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_OFANC */ TB_CO_M_OFANC
+           SET 
+               OFANC_DSC           = #{OFANC_DSC}             /* 공지사항구분코드     */
+             , BLTN_RNGE_C         = #{BLTN_RNGE_C}           /* 게시범위코드         */
+             , TIT                 = #{TIT}                   /* 제목                 */
+             , CNTN                = #{CNTN}                  /* 내용                 */
+             , BLTN_ST_DT          = #{BLTN_ST_DT}            /* 게시시작일자         */
+             , BLTN_ED_DT          = #{BLTN_ED_DT}            /* 게시종료일자         */
+             , APD_FILE_AMN_NO     = #{APD_FILE_AMN_NO}       /* 첨부파일관리번호(tim */
+             , POPU_YN             = #{POPU_YN}               /* 팝업여부             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND OFANC_SQNO          = #{OFANC_SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_M_OFANC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_OFANC */ FROM TB_CO_M_OFANC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND OFANC_SQNO          = #{OFANC_SQNO}
+    </delete>
+
+    <select id="select_TB_CO_M_OFANC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_OFANC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.OFANC_SQNO                                        /* 공지사항일련번호          */
+             , A.OFANC_DSC                                         /* 공지사항구분코드          */
+             , A.BLTN_RNGE_C                                       /* 게시범위코드              */
+             , A.TIT                                               /* 제목                      */
+             , A.CNTN                                              /* 내용                      */
+             , A.INQCN                                             /* 조회수                    */
+             , A.BLTN_ST_DT                                        /* 게시시작일자              */
+             , A.BLTN_ED_DT                                        /* 게시종료일자              */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+             , A.POPU_YN                                           /* 팝업여부                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , CONVERT(VARCHAR, A.FSRG_DTM, 112)  AS   RG_DATE     /* 등록일자                  */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID                          AS   FSRG_NM     /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자명              */
+          FROM TB_CO_M_OFANC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{S_CORP_C}
+           AND A.BZPL_C            = #{S_BZPL_C}
+           AND A.OFANC_SQNO        = #{OFANC_SQNO}
+    </select>
+</mapper>

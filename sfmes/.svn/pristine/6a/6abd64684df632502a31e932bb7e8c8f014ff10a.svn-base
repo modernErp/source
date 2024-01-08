@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">
+
+    <!-- 수주내역 조회 -->
+    <select id="selectBy2310_1_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2310_1_01*/
+            RR.* , GG.*
+           FROM (
+               SELECT
+                    DD.GDS_C              AS GDS_C
+                  , DD.CORP_C 
+                  , DD.BZPL_C
+                  , SUM(DD.RVO_QT)        AS RVO_QT
+                  , SUM(DD.RVO_BOX_QT)    AS RVO_BOX_QT
+               FROM  TB_SE_D_RVO  DD
+                   , TB_SE_M_RVO  MM
+                WHERE (1=1)
+                    AND (MM.CORP_C      = #{CORP_C})
+                    AND (MM.BZPL_C      = #{BZPL_C})
+                    AND (MM.RVO_DT BETWEEN #{ST_DT} AND #{ED_DT})
+                    AND (MM.RVO_STS_DSC >= '2')
+                    AND (MM.DEL_YN = 'N')
+                    AND (DD.CORP_C      = MM.CORP_C)
+                    AND (DD.BZPL_C      = MM.BZPL_C)
+                    AND (DD.RVO_DT      = MM.RVO_DT)
+                    AND (DD.RVO_SQNO    = MM.RVO_SQNO)
+                    AND (DD.DEL_YN      = 'N')
+                GROUP BY
+                    DD.GDS_C
+                  , DD.CORP_C
+                  , DD.BZPL_C
+                ) RR
+                , TB_CO_M_GDS   GG
+               WHERE
+                    (GG.CORP_C      = RR.CORP_C)
+                AND (GG.BZPL_C      = RR.BZPL_C)
+                AND (GG.GDS_C       = RR.GDS_C)
+    </select>
+
+    <!-- 소요재료내역 조회 -->
+    <select id="selectBy2310_1_02" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_EXPAND_BOM_RVO_FM_TO ( /*+ selectBy2310_1_02*/
+        #{CORP_C, mode=IN, jdbcType=VARCHAR}
+      , #{BZPL_C, mode=IN, jdbcType=VARCHAR}
+      , #{RVO_DT_FM, mode=IN, jdbcType=VARCHAR}
+      , #{RVO_DT_TO, mode=IN, jdbcType=VARCHAR}
+      , #{DATA_RETURN, mode=IN, jdbcType=INTEGER}
+        )
+    }
+    </select>
+    
+    <!-- 발주내역 조회 -->
+    <select id="selectBy2310_1_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2310_1_03*/
+                D.GDS_C
+              , SUM(D.ODR_QT)       AS ODR_QT
+          FROM  TB_BY_D_ODR D
+              , TB_BY_M_ODR M
+          WHERE M.CORP_C           = #{CORP_C}
+            AND M.BZPL_C           = #{BZPL_C}
+            AND M.DEL_YN           = 'N'
+            AND M.DVY_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+            AND D.CORP_C           = M.CORP_C
+            AND D.BZPL_C           = M.BZPL_C
+            AND D.ODR_DT           = M.ODR_DT
+            AND D.ODR_SQNO         = M.ODR_SQNO
+            AND D.DEL_YN           = 'N'
+          GROUP BY D.GDS_C
+    </select>
+    
+    <!-- 팝업창 조회 -->
+    <select id="selectBy2310_1p01" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_EXPAND_BOM (
+         #{CORP_C, mode=IN, jdbcType=VARCHAR}
+       , #{BZPL_C, mode=IN, jdbcType=VARCHAR}
+       , #{PRD_GDS_C, mode=IN, jdbcType=VARCHAR}
+       , #{PRD_QT, mode=IN, jdbcType=NUMERIC}
+        )
+    }
+    </select>
+</mapper>   
+

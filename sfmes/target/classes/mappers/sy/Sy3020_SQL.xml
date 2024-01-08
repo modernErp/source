@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 연계전문내역 조회 -->
+    <select id="selectSy3020List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy3020List */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+             , A.INTF_NM                                           /* 인터페이스명         */
+             , A.INTF_BSN_DSC                                      /* 연계업무구분코드     */
+             , A.DOFE_DSC                                          /* 대내외구분코드       */
+             , A.INTF_FQ_DSC                                       /* 연계주기구분코드     */
+             , A.INTF_TP_DSC                                       /* 연계유형구분코드(온  */
+             , A.INTF_METH_DSC                                     /* 연계방식구분코드(ERP */
+             , A.SYS_SVC_ID                                        /* 시스템서비스ID       */
+             , A.FILE_PATH                                         /* 파일경로             */
+             , A.FILE_NM                                           /* 파일명               */
+             , A.PATN_SYS_NM                                       /* 상대시스템명         */
+             , A.PATN_DEPT_NM                                      /* 상대부서명           */
+             , A.PATN_CHRR_NM                                      /* 상대담당자명         */
+             , A.PATN_SVC_ID                                       /* 상대서비스ID         */
+             , A.PATN_INTF_ID                                      /* 상대인터페이스ID     */
+             , A.INTF_STOP_YN                                      /* 연계중지여부         */
+             , A.BAT_DSC                                           /* 배치구분             */
+             , A.BAT_CNT                                           /* 배치횟수             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+      		       AND A.CORP_C   = X.CORP_C
+                   AND A.FSRG_ID  = X.USR_ID)     AS FSRG_NM       /* 최초등록자이름       */ 
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.LSCHG_ID  = X.USR_ID)    AS LSCHG_NM      /* 최종변경자이름       */
+          FROM TB_SY_M_INTF A
+         WHERE 1=1 
+         <if test = "INTF_ID != null and INTF_ID != ''">
+            AND A.INTF_ID LIKE '%' + #{INTF_ID} + '%'           /* 인터페이스ID                     */
+         </if>
+         <if test = "INTF_NM != null and INTF_NM != ''">
+            AND A.INTF_NM LIKE '%' + #{INTF_NM} + '%'           /* 인터페이스명                     */
+         </if>
+         <if test = "INTF_BSN_DSC != null and INTF_BSN_DSC != ''">
+            AND A.INTF_BSN_DSC = #{INTF_BSN_DSC}                  /* 연계업무구분코드                 */
+         </if>         
+         <if test = "INTF_TP_DSC != null and INTF_TP_DSC != ''">
+            AND A.INTF_TP_DSC LIKE '%' + #{INTF_TP_DSC} + '%'   /* 연계유형구분코드(온라인/배치)    */
+         </if>
+         <if test = "SEARCH_NM != null and SEARCH_NM != ''">
+            AND UPPER(A.INTF_ID + A.INTF_NM) LIKE UPPER('%' + #{SEARCH_NM} + '%') /* 연계명/ID 검색  */
+         </if>
+    </select>
+</mapper>

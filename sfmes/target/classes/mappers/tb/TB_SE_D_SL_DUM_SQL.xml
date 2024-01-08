@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+
+    <insert id="insert_TB_SE_D_SL_DUM" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_D_SL_DUM */ TB_SE_D_SL_DUM
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRC_DT              /* 처리일자             */
+            , PRC_SQNO            /* 처리일련번호         */
+            , PRC_DSQNO           /* 처리상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , PRC_QT              /* 처리수량             */
+            , PRC_BOX_QT          /* 처리박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , PRC_UPR             /* 처리단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , PRC_AM              /* 처리금액             */
+            , WHSE_C              /* 창고코드             */
+            , DSTR_TERDT          /* 유통기한일자         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , TXT_DSC             /* 과세구분코드         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PRC_DT}
+            , #{PRC_SQNO}
+            , (
+               SELECT ISNULL(MAX(PRC_DSQNO),0)+1 
+                 FROM TB_SE_D_SL_DUM
+                WHERE 1 = 1
+                  AND CORP_C   = #{CORP_C}
+                  AND BZPL_C   = #{BZPL_C}
+                  AND PRC_DT   = #{PRC_DT}
+                  AND PRC_SQNO = #{PRC_SQNO}
+              )
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{PRC_QT})
+            , DBO.SF_GET_FLOAT(#{PRC_BOX_QT})
+            , #{TR_UNT_C}
+            , DBO.SF_GET_FLOAT(#{PRC_UPR})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{PRC_AM})
+            , #{WHSE_C}
+            , #{DSTR_TERDT}
+            , #{HST_AMN_DSC}
+            , #{GDS_HST_NO}
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_NUMERIC(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , #{TXT_DSC}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_D_SL_DUM" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_D_SL_DUM */ TB_SE_D_SL_DUM
+           SET 
+               CORP_C              = #{CORP_C}                                    /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                    /* 사업장코드           */
+             , PRC_DT              = #{PRC_DT}                                    /* 처리일자             */
+             , PRC_SQNO            = DBO.SF_GET_NUMERIC(#{PRC_SQNO})              /* 처리일련번호         */
+             , PRC_DSQNO           = DBO.SF_GET_NUMERIC(#{PRC_DSQNO})             /* 처리상세일련번호     */
+             , GDS_C               = #{GDS_C}                                     /* 물품코드             */
+             , PRC_QT              = DBO.SF_GET_FLOAT(#{PRC_QT})                  /* 처리수량             */
+             , PRC_BOX_QT          = DBO.SF_GET_FLOAT(#{PRC_BOX_QT})              /* 처리박스수량         */
+             , TR_UNT_C            = #{TR_UNT_C}                                  /* 거래단위코드         */
+             , PRC_UPR             = DBO.SF_GET_FLOAT(#{PRC_UPR})                 /* 처리단가             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})                /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})                   /* 부가세               */
+             , PRC_AM              = DBO.SF_GET_NUMERIC(#{PRC_AM})                /* 처리금액             */
+             , WHSE_C              = #{WHSE_C}                                    /* 창고코드             */
+             , DSTR_TERDT          = #{DSTR_TERDT}                                /* 유통기한일자         */
+             , HST_AMN_DSC         = #{HST_AMN_DSC}                               /* 이력관리구분코드     */
+             , GDS_HST_NO          = #{GDS_HST_NO}                                /* 물품이력번호         */
+             , QT_WT_DSC           = #{QT_WT_DSC}                                 /* 수(중)량형구분코드   */
+             , WHT_QT              = DBO.SF_GET_NUMERIC(#{WHT_QT})                /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                                 /* 단량단위코드         */
+             , TXT_DSC             = #{TXT_DSC}                                   /* 과세구분코드         */
+             , RMK_CNTN            = #{RMK_CNTN}                                  /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                                    /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                                    /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND PRC_DT              = #{PRC_DT}
+           AND PRC_SQNO            = #{PRC_SQNO}
+           AND PRC_DSQNO           = #{PRC_DSQNO}
+    </update>
+
+    <delete id="delete_TB_SE_D_SL_DUM" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_D_SL_DUM */ FROM TB_SE_D_SL_DUM
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND PRC_DT              = #{PRC_DT}
+           AND PRC_SQNO            = #{PRC_SQNO}
+           AND PRC_DSQNO           = #{PRC_DSQNO}
+    </delete>
+
+    <select id="select_TB_SE_D_SL_DUM" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_D_SL_DUM */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PRC_DT                                            /* 처리일자                  */
+             , A.PRC_SQNO                                          /* 처리일련번호              */
+             , A.PRC_DSQNO                                         /* 처리상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.PRC_QT                                            /* 처리수량                  */
+             , A.PRC_BOX_QT                                        /* 처리박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.PRC_UPR                                           /* 처리단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.PRC_AM                                            /* 처리금액                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.DSTR_TERDT                                        /* 유통기한일자              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_D_SL_DUM A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PRC_DT            = #{PRC_DT}
+           AND A.PRC_SQNO          = #{PRC_SQNO}
+           AND A.PRC_DSQNO         = #{PRC_DSQNO}
+    </select>
+    
+</mapper>

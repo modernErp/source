@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">
+
+    <select id="select_Sm6010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Sm6010_01 */
+               #{CRC_DT}                               AS CRC_DT
+             , ISNULL(MAX(CRC_SQNO), 0) + 1            AS CRC_SQNO
+             , Convert(varchar(10),GETDATE(),112)      AS ACG_DT
+             , Convert(varchar(10),GETDATE(),112)      AS RLTR_DT
+             , ''                                      AS TRPL_C
+             , ''                                      AS TRPL_NM
+             , ''                                      AS STDV_DSC
+             , 'Y'                                     AS SLP_NML_YN
+             , ''                                      AS MVE_RSN_CNTN
+             , ''                                      AS RMK_CNTN
+          FROM TB_SM_D_LED_FGS_CRC A
+         WHERE 1=1
+           AND A.CORP_C        = #{CORP_C}
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.CRC_DT        = Convert(varchar(10),GETDATE(),112) 
+    </select>
+
+</mapper>

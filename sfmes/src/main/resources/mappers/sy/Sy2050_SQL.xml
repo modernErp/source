@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 사용자정보내역 조회 -->
+    <select id="selectSy2050_UsrRole" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT  /*+ selectSy2050_UsrRole */
+		       A.USR_ID                                   /* 사용자아이디 */
+		     , A.USR_NM                                   /* 사용자명     */
+		     , A.BZPL_C                                   /* 사업장코드   */
+		     , (SELECT BZPL_NM                           
+		          FROM TB_CO_M_BZPL A1
+		         WHERE A.CORP_C = A1.CORP_C
+		           AND A.BZPL_C = A1.BZPL_C) AS BZPL_NM   /* 사업장이름   */
+		     , A.DEPT_C
+		     , (SELECT DEPT_NM
+		          FROM TB_CO_M_DEPT A2
+		         WHERE A.CORP_C = A2.CORP_C
+		           AND A.DEPT_C = A2.DEPT_C) AS DEPT_NM   /* 부서이름     */
+		     , A.USE_DSC
+		     , CASE WHEN B.USR_ID = '' OR B.USR_ID IS NULL THEN 'N'
+		            ELSE 'Y'
+		        END AS ROLE_YN
+		  FROM TB_SY_M_USR A LEFT OUTER JOIN 
+		       (SELECT USR_ID 
+		             , CORP_C
+		          FROM TB_SY_D_USR_ROLE
+		         WHERE CORP_C      = #{CORP_C}
+		           AND EMP_ROL_DSC = #{EMP_ROL_DSC}
+		         GROUP BY USR_ID, CORP_C) B ON (A.CORP_C = B.CORP_C AND A.USR_ID = B.USR_ID)
+		 WHERE A.USE_YN = 'Y'
+		   AND A.CORP_C = #{CORP_C}
+        <if test = "F_USE_DSC != null and F_USE_DSC != ''"> /* 사용자구분(내/외) */
+           AND A.USE_DSC = #{F_USE_DSC}
+        </if>   
+        <if test = "searchKeyword != null and searchKeyword != ''"> /* 검색어 유무확인 */
+            <choose>
+                <when test="searchCondition == ''"> /* 검색조건이 전체일 경우 */
+                    AND (A.USR_ID LIKE '%' + #{searchKeyword} + '%'     
+                         OR A.USR_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> /* 검색조건이 사용자ID인 경우 */
+                    AND A.USR_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> /* 검색조건이 사용자명인 경우 */
+                    AND A.USR_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+    </select> 
+    
+    <!-- 사용자역할추가 -->
+    <insert id="insertSy2050_UsrRole" parameterType="LinkedHashMap">
+		 MERGE TB_SY_D_USR_ROLE AS A
+		 USING (SELECT 
+		               #{CORP_C}      AS CORP_C        /* 회사코드     */
+		             , #{USR_ID}      AS USR_ID        /* 사용자ID     */
+		             , #{EMP_ROL_DSC} AS EMP_ROL_DSC   /* 직원역할구분 */
+		          FROM DUAL) AS B ON (A.CORP_C = B.CORP_C AND A.USR_ID = B.USR_ID AND A.EMP_ROL_DSC = B.EMP_ROL_DSC)
+		  WHEN MATCHED THEN DELETE
+		  WHEN NOT MATCHED THEN
+		INSERT (
+		       CORP_C
+		     , USR_ID
+		     , EMP_ROL_DSC
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		)
+		VALUES (
+		       B.CORP_C
+		     , B.USR_ID
+		     , B.EMP_ROL_DSC
+		     , GETDATE()
+		     , #{GUSRID}
+		     , GETDATE()
+		     , #{GUSRID}
+		);    
+    </insert> 
+    
+    <insert id="insertSy2050_Log" parameterType="LinkedHashMap">
+		INSERT 
+		  INTO TB_SY_L_USR_ROLE
+		  (
+		       CORP_C
+		     , USR_ID
+		     , EMP_ROL_DSC
+		     , HST_SQNO
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  )
+		SELECT 
+		       CORP_C
+		     , USR_ID
+		     , EMP_ROL_DSC
+		     , (SELECT ISNULL(MAX(HST_SQNO), 0) + 1 AS HST_SQNO FROM TB_SY_L_USR_ROLE)
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  FROM TB_SY_D_USR_ROLE
+		 WHERE 1=1
+		   AND CORP_C      = #{CORP_C}
+		   AND EMP_ROL_DSC = #{EMP_ROL_DSC}
+		   AND USR_ID      = #{USR_ID}
+    </insert> 
+</mapper>

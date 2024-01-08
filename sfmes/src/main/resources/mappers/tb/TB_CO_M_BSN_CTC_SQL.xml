@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_BSN_CTC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_BSN_CTC */ TB_CO_M_BSN_CTC
+        (
+              CORP_C              /* 회사코드             */
+            , BSN_CTC_SQNO        /* 업무연락일련번호     */
+            , BSN_CTC_DSC         /* 업무연락구분코드     */
+            , TIT                 /* 제목                 */
+            , CNTN                /* 내용                 */
+            , RQRMN_ID            /* 요청자ID             */
+            , RQR_DTM             /* 요청일시             */
+            , PZ_C                /* 직급코드             */
+            , PZ_NM               /* 직급명               */
+            , OFT_C               /* 직명코드             */
+            , OFT_NM              /* 직명                 */
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호(tim */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , ${BSN_CTC_SQNO}
+            , #{BSN_CTC_DSC}
+            , #{TIT}
+            , #{CNTN}
+            , #{RQRMN_ID}
+            , GETDATE()
+            , #{PZ_C}
+            , #{PZ_NM}
+            , #{OFT_C}
+            , #{OFT_NM}
+            , #{APD_FILE_AMN_NO}
+            , 'N'
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_BSN_CTC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_BSN_CTC */ TB_CO_M_BSN_CTC
+           SET 
+               BSN_CTC_DSC         = #{BSN_CTC_DSC}           /* 업무연락구분코드     */
+             , TIT                 = #{TIT}                   /* 제목                 */
+             , CNTN                = #{CNTN}                  /* 내용                 */
+             , APD_FILE_AMN_NO     = #{APD_FILE_AMN_NO}       /* 첨부파일관리번호(tim */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BSN_CTC_SQNO        = #{BSN_CTC_SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_M_BSN_CTC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_BSN_CTC */ FROM TB_CO_M_BSN_CTC
+         WHERE 1=1 
+           AND BSN_CTC_SQNO        = #{BSN_CTC_SQNO}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_CO_M_BSN_CTC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_BSN_CTC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BSN_CTC_SQNO                                      /* 업무연락일련번호          */
+             , A.BSN_CTC_DSC                                       /* 업무연락구분코드          */
+             , A.TIT                                               /* 제목                      */
+             , A.CNTN                                              /* 내용                      */
+             , A.RQRMN_ID                                          /* 요청자ID                  */
+             , A.RQRMN_ID                         AS   RQRMN_NM    /* 요청자ID                  */
+             , A.RQR_DTM                                           /* 요청일시                  */
+             , A.PZ_C                                              /* 직급코드                  */
+             , A.PZ_NM                                             /* 직급명                    */
+             , A.OFT_C                                             /* 직명코드                  */
+             , A.OFT_NM                                            /* 직명                      */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호(timestam */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_BSN_CTC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BSN_CTC_SQNO      = #{BSN_CTC_SQNO}
+    </select>
+</mapper>

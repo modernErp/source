@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 그룹코드내역 조회 -->
+    <select id="selectSy7010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy7010List */
+               A.REQ_DT                                        /* 요청일자       */
+             , A.REQ_SQNO                                      /* 일련번호       */
+             , A.CHG_NM                                        /* 요청자         */
+             , A.FILE_NM                                       /* 파일명         */
+             , A.FILE_EXE                                      /* 확장자         */
+             , A.FILE_PATH                                     /* 경로           */
+             , A.DPL_DATE                                      /* 반영일자       */
+             , A.DPL_NM                                        /* 반영자         */
+             , A.TEST_YN                                       /* 개발테스트여부 */
+             , A.DPL_YN                                        /* 반영여부       */
+             , A.CHG_INFO                                      /* 변경내용       */
+             , A.RMK_CNTN                                      /* 비고내용       */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM  /* 최초등록일시   */
+             , A.FSRG_ID                                       /* 최초등록자ID   */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM /* 최종변경일시   */
+             , A.LSCHG_ID                                      /* 최종변경자ID   */
+          FROM TB_SY_M_DPL_SRC_MNG A
+         WHERE 1 = 1 
+           AND A.DEL_YN = 'N'
+           AND A.REQ_DT BETWEEN #{ST_DT} AND #{ED_DT} 
+           <choose>
+                <when test='search_NM == 1'>
+                    AND A.CHG_NM     LIKE '%' + #{CHG_NM} + '%'
+                </when>
+                <when test='search_NM == 2'>
+                    AND A.DPL_NM     LIKE '%' + #{CHG_NM} + '%'
+                </when>
+           </choose>
+            <choose>
+                <when test='search_INFO == 1'>
+                    AND A.FILE_NM     LIKE '%' + #{FILE_NM} + '%'
+                </when>
+                <when test='search_INFO == 2'>
+                    AND A.CHG_INFO     LIKE '%' + #{FILE_NM} + '%'
+                </when>
+           </choose>
+           
+           
+           <if test = "DPL_YN != null and DPL_YN != ''">
+           AND A.DPL_YN     =    #{DPL_YN}
+           </if>
+                
+    </select>
+  
+    
+</mapper>

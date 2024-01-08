@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="Content-Script-Type" content="text/javascript"/>
+<meta http-equiv="Content-Style-Type" content="text/css"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>Google Chart for HTML5</title>
+<script src="//www.google.com/jsapi"></script>
+<script type="text/javascript">
+var param = window.location.search.substring(1);
+var vars = param.split('&');
+var arrSeq = vars[0].split('=');
+var chartType = 'corechart';
+if(vars.length>1) 
+{
+	var arrType = vars[1].split('=');
+	chartType = arrType[1];
+}
+google.setOnLoadCallback(darwChart);
+google.load('visualization', '1.0', {'packages':[chartType]});
+function darwChart()
+{
+	if(parent.Webcrea) 
+	{
+		var obj = parent.Webcrea.arrChart[arrSeq[1]];
+		if(!obj) return;
+		var height = obj.height;
+		var width = obj.width-1;
+
+		var chartKind = obj.chartKind;
+		var options = obj.options;
+		var data = obj.data;
+
+		var chartDiv = document.createElement('div');
+		chartDiv.setAttribute('id', 'chartDiv');
+		chartDiv.style.width = width + 'px';
+		chartDiv.style.height = height + 'px';
+		document.body.appendChild(chartDiv);
+
+		var chartApi = window['google']['visualization'][chartKind];
+		var chart = new chartApi(chartDiv);
+		chart.draw(google.visualization.arrayToDataTable(data), options);
+	}
+}
+</script>
+</head>
+<body topmargin=1 leftmargin=0 scroll="no">
+</body>
+</html>

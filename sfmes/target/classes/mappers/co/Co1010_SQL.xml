@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+   
+   <!-- 사업장내역 상세조회 -->
+   
+    <select id="selectCo1010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.BZPL_NM                                           /* 사업장명                  */
+             , A.BZPL_ABR_NM                                       /* 사업장약어명              */
+             , A.TXBZ_RPT_FORM_C                                   /* 세무신고형태코드          */
+             , A.BZMN_NM                                           /* 사업자명                  */
+             , A.BZMN_NO                                           /* 사업자번호                */
+             , A.COP_NO                                            /* 법인번호                  */
+             , A.REPM_NM                                           /* 대표자명                  */
+             , A.BZC_NM                                            /* 업종명                    */
+             , A.BZTP_NM                                           /* 업태명                    */
+             , A.ZIP                                               /* 우편번호                  */
+             , A.ADR1                                              /* 주소1                     */
+             , A.ADR2                                              /* 주소2                     */
+             , A.TEL_NO                                            /* 전화번호                  */
+             , A.FAX_NO                                            /* FAX번호                   */
+             , A.MBCO_DSC                                          /* 본지사구분코드            */
+             , A.CLSD_DT                                           /* 폐업일자                  */
+             , LEFT(A.ELTTX_RMS_EMAIL, CHARINDEX('@', A.ELTTX_RMS_EMAIL+'@')-1) AS ELTTX_RMS_EMAIL  /* 전자세금계산서수신이메일  */
+             , RIGHT(A.ELTTX_RMS_EMAIL, LEN(A.ELTTX_RMS_EMAIL)-CHARINDEX('@', A.ELTTX_RMS_EMAIL)+1) AS ELTTX_RMS_EMAIL1
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+             , B.SYS_OPEN_DT                                       /* 시스템오픈일자            */
+             , B.LS_PCS_DT                                         /* 최종원가계산일자          */
+             , B.LBRCS_DSBN_METH_C                                 /* 노무비배부방법코드        */
+             , B.MFT_XPN_DSBN_METH_C                               /* 제조경비배부방법코드      */
+             , B.CAM_ADT_DSBN_YN                                   /* 적수추가배부사용여부      */
+             , B.PLA_PCS_CHG_DSC                                   /* 예정원가변경구분코드      */
+             , B.PLA_PCS_AUT_DSC                                   /* 예정원가자동구분코드      */
+             , B.PD_QLTSP_ESS_YN                                   /* 생산품질검사필수여부      */
+             , B.VAT_ICL_YN                                        /* 부가세포함여부            */
+             , B.VAT_CAL_DSC                                       /* 부가세계산방식구분코드    */
+             , B.LFIC_BYTX_RT_USE_YN                               /* 의제매입세사용여부        */
+             , B.LFIC_BYTX_RT_N                                    /* 의제매입세율(분자)        */
+             , B.LFIC_BYTX_RT_D                                    /* 의제매입세율(분모)        */
+             , B.BZPL_STMP_FILE_PATH                               /* 사업장직인파일경로        */
+             , B.BZPL_STMP_FILE_NM                                 /* 사업장직인파일명          */
+             , B.ENV_EST_NUM_CNTN1                                 /* 환경설정숫자내용1         */
+             , B.ENV_EST_STR_CNTN1                                 /* 환경설정문자내용1         */
+             , B.ENV_EST_NUM_CNTN2                                 /* 환경설정숫자내용2         */
+             , B.ENV_EST_STR_CNTN2                                 /* 환경설정문자내용2         */
+             , B.ENV_EST_NUM_CNTN3                                 /* 환경설정숫자내용3         */
+             , B.ENV_EST_STR_CNTN3                                 /* 환경설정문자내용3         */
+             , B.ENV_EST_NUM_CNTN4                                 /* 환경설정숫자내용4         */
+             , B.ENV_EST_STR_CNTN4                                 /* 환경설정문자내용4         */
+             , B.ENV_EST_NUM_CNTN5                                 /* 환경설정숫자내용5         */
+             , B.ENV_EST_STR_CNTN5                                 /* 환경설정문자내용5         */
+             , B.GAP_ATTC_YN                                       /* GAP인증여부               */
+             , B.GAP_ATTC_NO                                       /* GAP인증번호               */
+             , B.HACCP_ATTC_YN                                     /* HACCP인증여부             */
+             , B.HACCP_ATTC_NO                                     /* HACCP인증번호             */
+             , B.RCGDWD_USE_YN                                     /* 인정감모율사용여부        */
+             , B.STR_BSC_WHSE_C                                    /* 입고기본창고코드          */
+             , ( SELECT WHSE_NM
+			       FROM TB_CO_M_WHSE X
+				  WHERE 1=1
+				    AND B.CORP_C = X.CORP_C
+					AND B.BZPL_C = X.BZPL_C
+					AND B.STR_BSC_WHSE_C = X.WHSE_C ) AS STR_BSC_WHSE_NM      /* 입고기본창고명       */
+             , B.DLR_BSC_WHSE_C                                    /* 출고기본창고코드          */
+             , ( SELECT WHSE_NM
+			       FROM TB_CO_M_WHSE X
+				  WHERE 1=1
+				    AND B.CORP_C = X.CORP_C
+					AND B.BZPL_C = X.BZPL_C
+					AND B.DLR_BSC_WHSE_C = X.WHSE_C ) AS DLR_BSC_WHSE_NM     /* 출고기본창고명       */
+             , B.SRA_HST_AMN_C                                     /* 축산이력관리코드          */
+             , B.BY_SPY_AM_RKON_BASCD                              /* 매입공급금액산정기준코드  */
+             , B.SE_SPY_AM_RKON_BASCD                              /* 매출공급금액산정기준코드  */
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , B.REP_BNK_C                                         /* 대표은행코드              */
+             , B.REP_ACNO                                          /* 대표계좌번호              */
+             , B.DPR_NM                                            /* 예금주명                  */
+          FROM 
+               TB_CO_M_BZPL A 
+             , TB_CO_M_BZPL_ENV B
+         WHERE 1 = 1
+           AND A.CORP_C = #{CORP_C}
+           AND A.BZPL_C = B.BZPL_C 
+           AND A.CORP_C = B.CORP_C
+    </select>
+    
+    <!--사업장환경설정 인정감모율 조회  -->
+    <select id="selectCo1010List03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ selectCo1010List03 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드     */
+             , A.RCGDWD_RT                                         /* 인정감모율           */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_RCGDWD A
+          WHERE 1=1 
+           AND A.BZPL_C            = #{P_BZPL_C}
+    </select>
+    
+     <!-- 인정감모율 유효성체크 -->
+    <select id="selectCo1010RCGDWD_PRCHK" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo1010RCGDWD_PRCHK */
+        	   A.BZPL_C                                                /* 사업장코드           */
+             , A.GDS_TP_DSC                                            /* 물품유형             */
+          FROM TB_CO_M_RCGDWD A
+         WHERE 1=1                       
+           AND A.GDS_TP_DSC            = #{GDS_TP_DSC}
+           AND A.BZPL_C                = #{BZPL_C}
+    </select>
+    
+    <!-- 사업장등록시 회사 주소 조회 -->
+    <select id="selectCo1010_CORP_C_ADR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    	SELECT 
+       		   ZIP
+	         , ADR1
+	         , ADR2
+	         , TEL_NO
+	         , FAX_NO
+          FROM TB_CO_M_CORP
+ 		 WHERE 1=1
+           AND CORP_C = #{CORP_C}           
+    </select>
+    
+    <!-- 사업장 환경 - 공정구분 조회 -->
+    <select id="selectCo1010_CORP_C_PRW_DSC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               ENV_EST_STR_CNTN1 AS PRW_DSC
+          FROM TB_CO_M_CORP
+         WHERE 1=1
+           AND CORP_C      = #{CORP_C}           
+           AND BZPL_C      = #{BZPL_C}
+    </select>
+    
+    <update id="update_trpl" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_TRPL */ TB_CO_M_TRPL
+           SET 
+               TRPL_NM     = #{BZPL_NM}        /* 거래처명        */
+             , REPM_NM     = #{REPM_NM}        /* 대표자명        */
+         WHERE 1=1 
+           AND TRPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </update>
+
+</mapper>

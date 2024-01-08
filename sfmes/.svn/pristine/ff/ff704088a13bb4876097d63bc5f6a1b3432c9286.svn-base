@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_TE_M_TEST_USR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_TE_M_TEST_USR */ TB_TE_M_TEST_USR
+        (
+              CORP_C              /* 회사코드             */
+            , USRID               /* 사용자아이디         */
+            , USRNM               /* 사용자명             */
+            , PW                  /* 암호화된비밀번호     */
+            , BZPL_C              /* 사업장코드           */
+            , DEPT_C              /* 부서코드             */
+            , PZ_C                /* 직급코드             */
+            , OFT_C               /* 직명코드             */
+            , LSCONNDTM           /* 최종접속일시         */
+            , LSCONNIP            /* 최종IP               */
+            , CONN_YN             /* 접속여부             */
+            , PW_CHG_DTM          /* 비밀번호변경일시     */
+            , LGIN_PROV_NT        /* 로그인시도횟수       */
+            , LOCK_YN             /* 잠김여부             */
+            , ACC_ST_DT           /* 계정시작일자         */
+            , ACC_ED_DT           /* 계정종료일자         */
+            , MPSVNO              /* 휴대전화서비스번호   */
+            , MPHNO               /* 휴대전화국번호       */
+            , MPSQNO              /* 휴대전화일련번호     */
+            , IN_HTEL             /* 내선전화서비스번호   */
+            , IN_ATEL             /* 내선전화국번호       */
+            , IN_STEL             /* 내선전화일련번호     */
+            , EMAIL_ADR           /* 이메일주소           */
+            , ANC_RMS_METH        /* 알림수신방법         */
+            , UYN                 /* 사용여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USRID}
+            , #{USRNM}
+            , #{PW}
+            , #{BZPL_C}
+            , #{DEPT_C}
+            , #{PZ_C}
+            , #{OFT_C}
+            , GETDATE()
+            , #{LSCONNIP}
+            , #{CONN_YN}
+            , GETDATE()
+            , #{LGIN_PROV_NT}
+            , #{LOCK_YN}
+            , #{ACC_ST_DT}
+            , #{ACC_ED_DT}
+            , #{MPSVNO}
+            , #{MPHNO}
+            , #{MPSQNO}
+            , #{IN_HTEL}
+            , #{IN_ATEL}
+            , #{IN_STEL}
+            , #{EMAIL_ADR}
+            , #{ANC_RMS_METH}
+            , #{UYN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+    
+    <update id="update_TB_TE_M_TEST_USR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_TE_M_TEST_USR */ TB_TE_M_TEST_USR
+           SET 
+               USRNM               = #{USRNM}                 /* 사용자명             */
+             , PW                  = #{PW}                    /* 암호화된비밀번호     */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DEPT_C              = #{DEPT_C}                /* 부서코드             */
+             , PZ_C                = #{PZ_C}                  /* 직급코드             */
+             , OFT_C               = #{OFT_C}                 /* 직명코드             */
+             , LSCONNDTM           = #{LSCONNDTM}             /* 최종접속일시         */
+             , LSCONNIP            = #{LSCONNIP}              /* 최종IP               */
+             , CONN_YN             = #{CONN_YN}               /* 접속여부             */
+             , PW_CHG_DTM          = #{PW_CHG_DTM}            /* 비밀번호변경일시     */
+             , LGIN_PROV_NT        = #{LGIN_PROV_NT}          /* 로그인시도횟수       */
+             , LOCK_YN             = #{LOCK_YN}               /* 잠김여부             */
+             , ACC_ST_DT           = #{ACC_ST_DT}             /* 계정시작일자         */
+             , ACC_ED_DT           = #{ACC_ED_DT}             /* 계정종료일자         */
+             , MPSVNO              = #{MPSVNO}                /* 휴대전화서비스번호   */
+             , MPHNO               = #{MPHNO}                 /* 휴대전화국번호       */
+             , MPSQNO              = #{MPSQNO}                /* 휴대전화일련번호     */
+             , IN_HTEL             = #{IN_HTEL}               /* 내선전화서비스번호   */
+             , IN_ATEL             = #{IN_ATEL}               /* 내선전화국번호       */
+             , IN_STEL             = #{IN_STEL}               /* 내선전화일련번호     */
+             , EMAIL_ADR           = #{EMAIL_ADR}             /* 이메일주소           */
+             , ANC_RMS_METH        = #{ANC_RMS_METH}          /* 알림수신방법         */
+             , UYN                 = #{UYN}                   /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USRID               = #{USRID}
+    </update>
+    
+    <delete id="delete_TB_TE_M_TEST_USR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_TE_M_TEST_USR */ FROM TB_TE_M_TEST_USR
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USRID               = #{USRID}
+    </delete>
+    
+    <select id="select_TB_TE_M_TEST_USR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_TE_M_TEST_USR */
+               A.CORP_C                                  /* 회사코드             */
+             , A.USRID                                   /* 사용자아이디         */
+             , A.USRNM                                   /* 사용자명             */
+             , A.PW                                      /* 암호화된비밀번호     */
+             , A.BZPL_C                                  /* 사업장코드           */
+             , A.DEPT_C                                  /* 부서코드             */
+             , A.PZ_C                                    /* 직급코드             */
+             , A.OFT_C                                   /* 직명코드             */
+             , A.LSCONNDTM                               /* 최종접속일시         */
+             , A.LSCONNIP                                /* 최종IP               */
+             , A.CONN_YN                                 /* 접속여부             */
+             , A.PW_CHG_DTM                              /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                            /* 로그인시도횟수       */
+             , A.LOCK_YN                                 /* 잠김여부             */
+             , A.ACC_ST_DT                               /* 계정시작일자         */
+             , A.ACC_ED_DT                               /* 계정종료일자         */
+             , A.MPSVNO                                  /* 휴대전화서비스번호   */
+             , A.MPHNO                                   /* 휴대전화국번호       */
+             , A.MPSQNO                                  /* 휴대전화일련번호     */
+             , A.IN_HTEL                                 /* 내선전화서비스번호   */
+             , A.IN_ATEL                                 /* 내선전화국번호       */
+             , A.IN_STEL                                 /* 내선전화일련번호     */
+             , A.EMAIL_ADR                               /* 이메일주소           */
+             , A.ANC_RMS_METH                            /* 알림수신방법         */
+             , A.UYN                                     /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM
+             , A.FSRG_ID                                 /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID                                /* 최종변경자ID         */
+          FROM TB_TE_M_TEST_USR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.USRID             = #{USRID}
+    </select>
+</mapper>

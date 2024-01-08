@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+	
+    <!-- 창고 등록시 사업장주소 조회 -->
+    <select id="selectCo1030_BZPL_C_ADR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    	SELECT 
+       		   ZIP
+	         , ADR1
+	         , ADR2
+          FROM TB_CO_M_BZPL
+ 		 WHERE 1=1
+           AND CORP_C = #{CORP_C}
+           AND BZPL_C = #{BZPL_C}
+    </select>
+    
+      <!-- 유효성체크 -->
+    <select id="selectCO1030_PRCHK" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCO1030_PRCHK */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.WHSE_C                                            /* 창고코드             */
+          FROM TB_CO_M_WHSE A
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}                       
+           AND A.WHSE_C            = #{WHSE_C}
+    </select>
+    
+    
+    <!-- 사업자명, 주소, 전화번호 수정 시 가상창고에 수정 -->
+    <update id="updateCo1030_V_Whse" parameterType="LinkedHashMap">
+        UPDATE /*+ updateCo1030_V_Whse */ TB_CO_M_WHSE
+           SET 
+               ZIP                 = #{ZIP}                   /* 우편번호             */
+             , ADR1                = #{ADR1}                  /* 주소1                */
+             , ADR2                = #{ADR2}                  /* 주소2                */
+             , CHRR_NM             = #{BZMN_NM}               /* 담당자명             */
+             , CHRR_TELNO          = #{TEL_NO}                /* 담당자전화번호       */            
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND WHSE_CFC            = '02'
+    </update>
+</mapper>

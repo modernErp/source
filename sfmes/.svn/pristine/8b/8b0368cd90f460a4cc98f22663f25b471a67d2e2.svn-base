@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 거래처별매출현황 -->
+    <select id="selectSe3110_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ selectSe3110_01 */
+		       MAX(A.TRPL_C)  AS TRPL_C                                   /* 거래처코드               */
+		     , MAX(B.TRPL_NM) AS TRPL_NM                                  /* 거래처명                 */
+		     , MAX(A.ADJPL_C) AS ADJPL_C                                  /* 정산처코드               */
+		     , MAX(C.TRPL_NM) AS ADJPL_NM                                 /* 정산처명                 */
+		     , SUM(A.SPY_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS SPY_AM                           /* 공급가액                 */
+		     , SUM(A.VAT     * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS VAT                              /* 세액                     */
+		     , SUM(A.SL_AM   * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS SL_AM                            /* 매출금액                 */
+		     , SUM(A.CSH_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS CSH_AM                           /* 현금                     */
+		     , SUM(A.CRE_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS CRE_AM                           /* 외상                     */
+		     , SUM(A.TFR_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS TFR_AM                           /* 대체                     */
+		     , SUM(A.CCD_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS CCD_AM                           /* 카드                     */    
+		     , SUM(A.PRV_AM  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS PRV_AM                           /* 선수금                   */    
+		     , SUM(A.DC_AM   * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS DC_AM                            /* 할인                     */
+		     , SUM(A.PARC_AM * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS PARC_AM                          /* 택배비                   */    
+		     , SUM(A.TRPCS   * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+		                        ELSE                                  1
+		                        END)) AS TRPCS                            /* 운송비                   */
+		     , SUM(A.LT_COST * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                ELSE                                  1
+                                END)) AS LT_COST                          /* 물류비용                   */                 
+		                        
+		  FROM TB_SE_M_SL              A
+		  LEFT OUTER JOIN TB_CO_M_TRPL B
+		    ON A.CORP_C  = B.CORP_C
+		   AND A.TRPL_C  = B.TRPL_C
+		  LEFT OUTER JOIN TB_CO_M_TRPL C
+		    ON A.CORP_C  = C.CORP_C
+		   AND A.ADJPL_C = C.ADJPL_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SLP_NML_YN        = 'Y'
+         <choose>
+          <when test="DT_GBN == 1">
+           AND A.SL_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 3">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>   
+          <when test="DT_GBN == 4">
+           AND A.WDR_PLA_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>          
+         </choose>       
+       <if test="TRPL_C != null and TRPL_C != ''">            
+         <choose>
+          <when test="CD_GBN == 1">
+           AND A.TRPL_C            = #{TRPL_C}
+          </when>   
+          <when test="CD_GBN == 2">
+           AND A.ADJPL_C           = #{ADJPL_C}
+          </when>  
+         </choose>         
+       </if>            
+         GROUP BY A.TRPL_C
+                , A.ADJPL_C       
+    </select>
+
+    <!-- 물품별매출현황 -->    
+    <select id="selectSe3110_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe3110_02 */
+               MAX(B.GDS_C) AS GDS_C                                       /* 물품코드                 */ 
+             , MAX(C.GDS_DTL_NM) AS GDS_DTL_NM                             /* 물품명                   */
+             , MAX(C.GDS_STD_NM) AS GDS_STD_NM                             /* 물품규격                 */ 
+             , MAX(C.UNT_C) AS UNT_C                                       /* 관리단위                 */ 
+             , SUM(B.SL_QT     * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS SL_QT                           /* 매출수량                 */ 
+             , MAX(B.TR_UNT_C) AS TR_UNT_C                                 /* 거래단위                 */ 
+             , SUM(B.SL_BOX_QT * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS SL_BOX_QT                       /* 매출박스수량             */ 
+             , MAX(B.SL_UPR) AS SL_UPR                                     /* 매출단가                 */ 
+             , SUM(B.SPY_AM    * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS SPY_AM                          /* 공급가액                 */ 
+             , SUM(B.VAT       * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS VAT                             /* 부가세                   */
+             , SUM(B.SL_AM     * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS SL_AM                           /* 매출금액                 */  
+          FROM TB_SE_M_SL             A
+          INNER JOIN TB_SE_D_SL       B
+            ON A.CORP_C  = B.CORP_C
+           AND A.BZPL_C  = B.BZPL_C
+           AND A.SL_DT   = B.SL_DT
+           AND A.SL_SQNO = B.SL_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON B.CORP_C  = C.CORP_C
+           AND B.BZPL_C  = C.BZPL_C
+           AND B.GDS_C   = C.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SLP_NML_YN        = 'Y'           
+         <choose>
+          <when test="DT_GBN == 1">
+           AND A.SL_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 3">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>   
+          <when test="DT_GBN == 4">
+           AND A.WDR_PLA_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>          
+         </choose>   
+       <if test="TRPL_C != null and TRPL_C != ''">            
+         <choose>
+          <when test="CD_GBN == 1">
+           AND A.TRPL_C            = #{TRPL_C}
+          </when>   
+          <when test="CD_GBN == 2">
+           AND A.ADJPL_C           = #{ADJPL_C}
+          </when>  
+         </choose>         
+       </if>   
+       <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C             = #{GDS_C}
+       </if>   
+         GROUP BY B.GDS_C     
+    </select>
+
+</mapper>

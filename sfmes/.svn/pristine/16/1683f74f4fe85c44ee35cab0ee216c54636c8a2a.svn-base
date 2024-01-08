@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 출고내역찾기팝업 -->
+    <select id="select_Sm1050_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Sm1050_03 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.STDV_DT                                           /* 입출고일자                */
+             , A.STDV_SQNO                                         /* 입출고일련번호            */
+             , A.STDV_DSC                                          /* 입출고구분코드            */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.RLTR_DT                                           /* 실거래일자                */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.TRPL_C                                            /* 거래처코드                */
+             ,(SELECT TRPL_NM 
+                 FROM TB_CO_M_TRPL
+                WHERE 1 = 1
+                  AND CORP_C = A.CORP_C
+                  AND TRPL_C = A.TRPL_C
+              )AS TRPL_NM                                          /* 거리처명                  */
+             , A.RCPL_C                                            /* 수령처코드                */ 
+             ,(SELECT TRPL_NM 
+                 FROM TB_CO_M_TRPL
+                WHERE 1 = 1
+                  AND CORP_C = A.CORP_C
+                  AND TRPL_C = A.RCPL_C
+              )AS RCPL_NM                                          /* 수령처명                  */ 
+             , A.STDV_STS_DSC                                      /* 입출고상태구분코드        */
+             , A.STDV_REF_DSC                                      /* 입출고참조구분코드        */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드          */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , A.DVY_VHC_DSC                                       /* 배송차량구분코드          */
+             , A.VHC_NO                                            /* 차량번호                  */
+             , A.DVY_CAFF_NM                                       /* 배송기사명                */
+             , A.STDV_REF_DT                                       /* 입출고참조일자            */
+             , A.STDV_REF_SQNO                                     /* 입출고참조일련번호        */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */                                           
+          FROM TB_SM_M_GDS_RL_STDV A 
+         WHERE 1 = 1 
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.STDV_DSC     = #{STDV_DSC}
+           AND A.SLP_NML_YN   = #{SLP_NML_YN}
+      <choose>
+        <when test="DT_GUBUN == 1">            
+           AND A.STDV_DT BETWEEN #{ST_DT} AND #{ED_DT}                   
+        </when>
+        <when  test="DT_GUBUN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}         
+        </when>
+      </choose>            
+          <if test="STDV_STS_DSC != null and STDV_STS_DSC != ''">
+           AND A.STDV_STS_DSC = #{STDV_STS_DSC}
+          </if>                        
+          <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C       = #{TRPL_C}
+          </if>                    
+    </select>    
+    
+    <!-- 제품출고내역조회 -->
+    <select id="select_Sm1050_04" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+          SELECT /*+ select_Sm1050_04 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.STDV_DT                                           /* 입출고일자           */
+             , A.STDV_SQNO                                         /* 입출고일련번호       */
+             , A.STDV_DSC                                          /* 입출고구분코드       */
+             , A.SLP_NML_YN                                        /* 전표정상여부         */
+             , A.RLTR_DT                                           /* 실거래일자           */
+             , A.TRPL_C                                            /* 거래처코드           */
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND A.CORP_C = CORP_C 
+                   AND A.TRPL_C = TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명             */
+             , A.STDV_STS_DSC                                      /* 입출고상태구분코드   */
+             , A.STDV_REF_DSC                                      /* 입출고참조구분코드   */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SM_M_GDS_RL_STDV A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.STDV_DSC          = #{STDV_DSC}
+           AND A.STDV_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test = "TRPL_NM != null and TRPL_NM != ''">
+            AND A.TRPL_C  LIKE '%'+#{TRPL_C}+'%'
+        </if>
+        <if test="STDV_REF_DSC != null and STDV_REF_DSC != ''">
+            AND A.STDV_REF_DSC = #{STDV_REF_DSC}
+        </if>
+    </select>
+    
+    <!-- 참조출고지시기본내역 조회 -->
+    <select id="select_Sm1050_M_DLR" parameterType="LinkedHashMap" resultType="LinkedHashMap">   
+        SELECT /*+ select_Sm1050_M_DLR */
+               A.CORP_C                                            /* 회사코드             */     
+             , A.BZPL_C                                            /* 사업장코드           */
+             , CONVERT(VARCHAR, GETDATE(), 112) AS STDV_DT         /* 전표일자             */
+             , CONVERT(VARCHAR, GETDATE(), 112) AS RLTR_DT         /* 출고일자             */
+             , '3' AS STDV_REF_DSC                                 /* 출고참조구분코드     */    
+             , A.DLR_DNTT_DT AS STDV_REF_DT                        /* 출고지시일자         */ 
+             , A.DLR_DNTT_SQNO AS STDV_REF_SQNO                    /* 출고지시일련번호     */    
+             , A.TRPL_C                                            /* 거래처코드           */ 
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명             */
+             , A.RCPL_C                                            /* 수령처코드           */ 
+             , (
+                SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND TRPL_C = A.RCPL_C
+               ) AS RCPL_NM                                        /* 수령처명             */     
+             , '1' AS STDV_STS_DSC                                 /* 출고상태구분코드     */ 
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드     */ 
+             , A.DVY_DT                                            /* 배송일자             */ 
+             , '2' AS DVY_VHC_DSC                                  /* 배송차량구분         */ 
+             , A.DVYAA_INP_DSC                                     /* 대송지입력구분       */ 
+             , A.DVYAA_ZIP                                         /* 배송지우편번호       */ 
+             , A.DVYAA_ADR1                                        /* 배송지주소1          */ 
+             , A.DVYAA_ADR2                                        /* 베송지주소2          */ 
+             , B.ODR_CUS_NM                                        /* 주문자명             */ 
+             , B.ODR_CUS_TEL                                       /* 주문자연락처         */     
+             , B.RCP_CUS_NM                                        /* 수령자명             */ 
+             , B.RCP_CUS_TEL                                       /* 수령자연락처         */ 
+             , B.DVY_RQR_CNTN                                      /* 배송요청내용         */     
+             , A.RMK_CNTN                                          /* 비고내용             */              
+          FROM TB_SM_M_DLR                A
+          LEFT OUTER JOIN TB_SE_M_DVY_CUS B
+            ON A.CORP_C           = B.CORP_C
+           AND A.BZPL_C           = B.BZPL_C
+           AND A.DVY_CUS_REG_DT   = B.DVY_CUS_REG_DT
+           AND A.DVY_CUS_REG_SQNO = B.DVY_CUS_REG_SQNO
+           AND B.DEL_YN           = 'N'
+         WHERE 1 = 1
+           AND A.CORP_C        = #{CORP_C}
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.DLR_DNTT_DT   = #{STDV_REF_DT}
+           AND A.DLR_DNTT_SQNO = #{STDV_REF_SQNO}
+           AND A.SLP_NML_YN    = #{SLP_NML_YN}    
+    </select>
+    
+    <!-- 참조출고지시상세내역 조회 -->
+    <select id="select_Sm1050_D_DLR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Sm1050_DLR */
+               A.CORP_C                                                     /* 회사코드                   */
+             , A.BZPL_C                                                     /* 사업장코드                 */
+             , A.DLR_DNTT_DT                                                /* 출고지시일자               */
+             , A.DLR_DNTT_SQNO                                              /* 출고지시일련번호           */
+             , A.DLR_DNTT_DSQNO                                             /* 출고지시상세일련번호       */
+             , A.GDS_C                                                      /* 물품코드                   */
+             , B.GDS_DTL_NM                                                 /* 물품명                     */
+             , B.GDS_STD_NM                                                 /* 규격                       */
+             , B.UNT_C                                                      /* 관리단위                   */
+             , A.TR_UNT_C                                                   /* 거래단위코드               */    
+             , A.DLR_QT      AS STDV_QT                                     /* 출고수량                   */
+             , A.DLR_BOX_QT  AS STDV_BOX_QT                                 /* 출고박스수량               */
+             , A.DLR_UPR     AS STDV_UPR                                    /* 출고단가                   */
+             , A.SPY_AM                                                     /* 공급금액                   */
+             , A.VAT                                                        /* 부가세                     */    
+             , A.DLR_AM      AS STDV_AM                                     /* 출고금액                   */
+             , A.QT_WT_DSC                                                  /* 수(중)량형구분코드         */
+             , A.WHT_QT                                                     /* 단량                       */    
+             , A.WHT_UNT_C                                                  /* 단량단위코드               */
+             , A.DLR_WT      AS STDV_WT                                     /* 출고중량                   */
+             , CASE WHEN C.DLR_BSC_WHSE_C = '' 
+                    THEN B.BAS_WHSE_C ELSE C.DLR_BSC_WHSE_C END AS WHSE_C   /* 창고코드                   */
+             , D.WHSE_NM                                                    /* 창고명                     */
+             , A.TXT_DSC                                                    /* 과세구분코드               */
+             , B.DSTR_TER_AMN_YN                                            /* 유통기한관리여부           */
+             , B.HST_AMN_DSC                                                /* 이력관리구분코드           */             
+             , A.DEL_YN                                                     /* 삭제구분코드               */ 
+             , A.RMK_CNTN                                                   /* 비고내용                   */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM             /* 최초등록일시               */
+             , A.FSRG_ID                                                    /* 최초등록자ID               */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM            /* 최종변경일시               */
+             , A.LSCHG_ID                                                   /* 최종변경자ID               */
+          FROM TB_SM_D_DLR                 A
+          LEFT OUTER JOIN TB_CO_M_GDS      B   
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+          LEFT OUTER JOIN TB_CO_M_BZPL_ENV C
+            ON A.CORP_C  = C.CORP_C 
+           AND A.BZPL_C  = C.BZPL_C
+          LEFT OUTER JOIN TB_CO_M_WHSE     D
+            ON A.CORP_C  = D.CORP_C
+           AND A.BZPL_C  = D.BZPL_C
+           AND D.WHSE_C = CASE WHEN C.DLR_BSC_WHSE_C = '' THEN B.BAS_WHSE_C ELSE C.DLR_BSC_WHSE_C END
+         WHERE 1 = 1
+           AND A.CORP_C        = #{CORP_C}
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.DLR_DNTT_DT   = #{STDV_REF_DT}
+           AND A.DLR_DNTT_SQNO = #{STDV_REF_SQNO}
+           AND A.DEL_YN        = 'N'
+    </select>
+        
+    <!-- 매출에서 제품출고기본내역 수정 -->
+    <update id="updateSm1050_M_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSm1050_M_STS */ TB_SM_M_GDS_RL_STDV
+           SET ACG_DT       = #{ACG_DT}                           /* 회계일자                   */      
+             , STDV_STS_DSC = #{STDV_STS_DSC}                     /* 출고상태구분코드           */ 
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND STDV_DT      = #{STDV_DT}
+           AND STDV_DSC     = #{STDV_DSC}           
+           AND STDV_SQNO    = #{STDV_SQNO}
+    </update>
+    
+    <!-- 매출에서 출고상세내역 금액수정 -->
+    <update id="updateSm1050_D_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSm1050_D_STS */ TB_SM_D_GDS_RL_STDV
+           SET STDV_UPR     = #{STDV_UPR}                         /* 출고단가                   */
+             , SPY_AM       = #{SPY_AM}                           /* 공급가액                   */      
+             , VAT          = #{VAT}                              /* 세액                       */
+             , STDV_AM      = #{STDV_AM}                          /* 입고금액                   */ 
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND STDV_DT      = #{STDV_DT}
+           AND STDV_DSC     = #{STDV_DSC}           
+           AND STDV_SQNO    = #{STDV_SQNO}
+           AND STDV_DSQNO   = #{STDV_DSQNO}
+    </update> 
+    
+    <!-- 무참조매출등록 시 생성된 출고내역삭제 -->
+    <update id="deleteSm1050_SE" parameterType="LinkedHashMap">
+        UPDATE /*+ deleteSm1050_SE */ TB_SM_M_GDS_RL_STDV
+           SET SLP_NML_YN   = #{SLP_NML_YN}                       /* 전표정상여부               */  
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */           
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND TR_SQNO      = #{TR_SQNO} 
+    </update>
+      
+</mapper>

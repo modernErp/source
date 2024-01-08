@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+ 
+    <!-- 재고 실사등록조회 기본-->
+    <select id="selectSm5010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectSm5010_01 */
+                A.CORP_C
+            ,   A.BZPL_C
+            ,   A.SSVY_RSV_DT
+            ,   SUBSTRING(A.SSVY_RSV_DT,1,6)   AS SSVY_RSV_YM_DT
+            ,   #{SEARCH_WHSE_C}               AS SEARCH_WHSE_C
+            ,   #{SEARCH_WHSE_NM}              AS SEARCH_WHSE_NM      
+            ,   A.SSVY_RSV_SQNO
+            ,   A.BAS_DT
+            ,   A.SSVY_STS_DSC
+            ,   A.DFN_YN
+            ,   A.RMK_CNTN
+            ,   A.DEL_YN
+            ,   A.FSRG_DTM
+            ,   A.FSRG_ID
+            ,   A.LSCHG_DTM
+            ,   A.LSCHG_ID
+            ,   B.WHSE_C
+            ,   C.WHSE_NM
+            ,   C.WHSE_CFC
+            ,   C.WHSE_DSC
+          FROM TB_SM_M_SSVY_RSV               A
+         INNER JOIN (SELECT DISTINCT CORP_C, BZPL_C, SSVY_RSV_DT, SSVY_RSV_SQNO, WHSE_C
+                       FROM TB_SM_D_SSVY_RSV_WHSE
+                      WHERE 1=1
+                        AND CORP_C         = #{CORP_C}
+                        AND BZPL_C         = #{BZPL_C}
+                        AND SSVY_RSV_DT LIKE #{SSVY_RSV_YM_DT} + '%'
+                    ) B
+           ON  A.CORP_C         = B.CORP_C     
+          AND A.BZPL_C         = B.BZPL_C     
+          AND A.SSVY_RSV_DT    = B.SSVY_RSV_DT
+          AND A.SSVY_RSV_SQNO  = B.SSVY_RSV_SQNO
+         LEFT OUTER JOIN TB_CO_M_WHSE        C 
+           ON  B.CORP_C         = C.CORP_C
+          AND B.BZPL_C         = C.BZPL_C
+          AND B.WHSE_C         = C.WHSE_C
+        WHERE 1=1
+         AND A.CORP_C         = #{CORP_C}
+         AND A.BZPL_C         = #{BZPL_C}
+         /*AND A.DEL_YN         = 'N'*/
+         AND A.SSVY_RSV_DT LIKE #{SSVY_RSV_YM_DT} + '%'
+		
+         <if test = "SEARCH_WHSE_C != null and SEARCH_WHSE_C != ''"> 
+           AND B.WHSE_C         = #{SEARCH_WHSE_C}
+         </if>
+    </select>
+    
+    
+    <!-- 재고 실사등록조회 상세-->
+    <select id="select_Sm5010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Sm5010_02 */
+                C.CORP_C                                                /* 회사코드              */
+            ,   C.BZPL_C                                                /* 사업장코드           */
+            ,   C.SSVY_RSV_DT                                           /* 실사준비일자        */
+            ,   C.SSVY_RSV_SQNO                                         /* 실사준비일련번호  */
+            ,   A.BAS_DT                                                /* 기준일자              */
+            ,   A.SSVY_STS_DSC                                          /* 실사상태구분코드  */
+            ,   A.DFN_YN                                                /* 확정여부              */
+            ,   A.RMK_CNTN                                              /* 비고내용              */
+            ,   A.DEL_YN                                                /* 삭제여부              */
+            ,   C.GDS_C                                                 /* 물품코드              */
+            ,   D.GDS_NM                                                /* 물품명                 */
+            ,   C.WHSE_C                                                /* 창고코드              */
+            ,   E.WHSE_NM                                               /* 창고명                 */
+            ,   C.STPL_QT                                               /* 재고수량              */
+            ,   C.STPL_WT                                               /* 재고중량              */
+            ,   B.STPL_AM                                               /* 재고금액              */
+            ,   C.FSRG_DTM                                              /* 최초등록일시        */
+            ,   C.FSRG_ID                                               /* 최초등록자ID    */
+            ,   C.FSRG_ID                           AS FSRG_NM          /* 최초등록자           */
+            ,   C.LSCHG_DTM                                             /* 최종변경일시        */
+            ,   C.LSCHG_ID                                              /* 최종변경자ID   */
+            ,   C.LSCHG_ID                          AS LSCHG_NM         /* 최종변경자           */
+          FROM TB_SM_M_SSVY_RSV                   A
+         INNER JOIN TB_SM_D_SSVY_RSV             B
+            ON  A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.SSVY_RSV_DT       = B.SSVY_RSV_DT
+           AND A.SSVY_RSV_SQNO     = B.SSVY_RSV_SQNO
+         INNER JOIN TB_SM_D_SSVY_RSV_WHSE        C
+            ON  B.CORP_C            = C.CORP_C
+           AND B.BZPL_C            = C.BZPL_C
+           AND B.SSVY_RSV_DT       = C.SSVY_RSV_DT
+           AND B.SSVY_RSV_SQNO     = C.SSVY_RSV_SQNO
+           AND B.GDS_C             = C.GDS_C
+          LEFT OUTER JOIN TB_CO_M_GDS             D
+            ON  C.CORP_C            = D.CORP_C
+           AND C.BZPL_C            = D.BZPL_C
+           AND C.GDS_C             = D.GDS_C
+          LEFT OUTER JOIN TB_CO_M_WHSE            E
+            ON  C.CORP_C            = E.CORP_C
+           AND C.BZPL_C            = E.BZPL_C
+           AND C.WHSE_C            = E.WHSE_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SSVY_RSV_DT       = #{SSVY_RSV_DT}
+           AND A.SSVY_RSV_SQNO     = #{SSVY_RSV_SQNO}
+           AND A.DEL_YN            = 'N'    
+           AND C.SSVY_RSV_DT BETWEEN #{ST_DT} AND #{ED_DT}
+           AND A.BAS_DT            = #{BAS_DT}
+    </select>
+
+    
+    <!-- 재고실사 삭제여부 조회 -->
+    <select id="searchSm5010_02" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ searchSm5010_02 */
+               ISNULL(DEL_YN, 'Y') AS DEL_YN
+          FROM TB_SM_M_SSVY_RSV
+         WHERE 1=1
+           AND CORP_C        = #{CORP_C}
+           AND BZPL_C        = #{BZPL_C}
+           AND SSVY_RSV_DT   = #{SSVY_RSV_DT}
+           AND SSVY_RSV_SQNO = #{SSVY_RSV_SQNO}
+    </select>
+    
+    
+    <!-- 재고실사준비등록 재고_실사준비창고상세 저장 -->
+    <insert id="insertSm5010_TB_SM_D_SSVY_RSV_WHSE" parameterType="linkedHashMap">
+        INSERT INTO /*+ insertSm5010_TB_SM_D_SSVY_RSV_WHSE */ TB_SM_D_SSVY_RSV_WHSE
+               (
+                   CORP_C                          /*  회사코드       */
+               ,   BZPL_C                          /*  사업장코드      */
+               ,   SSVY_RSV_DT                     /*  실사준비일자     */
+               ,   SSVY_RSV_SQNO                   /*  실사준비일련번호  */
+               ,   GDS_C                           /*  물품코드       */
+               ,   WHSE_C                          /*  창고코드       */
+               ,   STPL_QT                         /*  재고수량       */
+               ,   STPL_WT                         /*  재고중량       */
+               ,   FSRG_DTM                        /*  최초등록일시     */
+               ,   FSRG_ID                         /*  최초등록자ID    */
+               ,   LSCHG_DTM                       /*  최종변경일시     */
+               ,   LSCHG_ID                        /*  최종변경자ID    */
+               )
+        SELECT
+               A.CORP_C                                                                     /* 회사코드      */
+             , A.BZPL_C                                                                     /* 사업장코드    */
+             , #{SSVY_RSV_DT}
+             , #{SSVY_RSV_SQNO}
+             , A.GDS_C                                                                      /* 물품코드      */
+             , A.WHSE_C
+             , CONVERT(FLOAT,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) AS STPL_QT         /* 기말재고수량  */
+             , 0 AS STPL_WT
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM (
+                SELECT 
+                       CORP_C
+                     , BZPL_C
+                     , GDS_C                                        
+                     , CONVERT(INT , BAS_STPL_QT)   AS BAS_STPL_QT  
+                     , WHSE_C
+                     , 0 AS DB_QT           
+                     , 0 AS DB_AM           
+                     , 0 AS CR_QT           
+                     , 0 AS CR_AM           
+                  FROM TB_SM_D_GDS_RL_MON_TOT
+                 WHERE 1=1
+                   AND TOT_MN = SUBSTRING(#{ST_DT},1,6)
+                   <if test = "WHSE_C != null and WHSE_C != ''"> 
+                     AND WHSE_C = #{WHSE_C}
+                   </if>
+					
+                UNION ALL
+					
+                SELECT 
+                       B.CORP_C
+                     , B.BZPL_C
+                     , GDS_C
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND CONVERT(CHAR(8), dateadd(day,-1,#{ST_DT}),112)  THEN      
+                                                    CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                                         ELSE B.STDV_QT * -1
+                                                    END
+                                               ELSE 0
+                                          END)
+                       ) AS BAS_STPL_QT
+                     , B.WHSE_C
+                     , CONVERT(FLOAT ,SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                    CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                                         ELSE 0
+                                                    END
+                                               ELSE 0
+					                      END)
+					   ) AS DB_QT
+                     , CONVERT(INT ,SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                  CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_AM
+                                                       ELSE 0
+                                                  END
+                                             ELSE 0
+                                        END)
+                       ) AS DB_AM
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                    CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+                                                         ELSE 0
+                                                    END
+                                               ELSE 0
+                                          END)
+                       ) AS CR_QT
+                     , CONVERT(INT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                  CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_AM
+                                                       ELSE 0
+                                                  END
+                                             ELSE 0
+                                        END)
+                       ) AS CR_AM
+                  FROM TB_SM_M_GDS_RL_STDV A
+                     , TB_SM_D_GDS_RL_STDV B
+                 WHERE 1=1
+                   AND A.CORP_C    = B.CORP_C
+                   AND A.BZPL_C    = B.BZPL_C
+                   AND A.STDV_DT   = B.STDV_DT
+                   AND A.STDV_SQNO = B.STDV_SQNO
+                   AND A.STDV_DSC  = B.STDV_DSC
+                   AND A.RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND #{ED_DT}
+                   AND A.SLP_NML_YN = 'Y'
+                   AND A.DEL_YN      = 'N'
+                   AND B.DEL_YN      = 'N'
+                   <if test = "WHSE_C != null and WHSE_C != ''"> 
+                     AND B.WHSE_C = #{WHSE_C}
+                   </if>
+                 GROUP BY
+                          B.GDS_C
+                        , B.CORP_C
+                        , B.BZPL_C
+                        , B.WHSE_C
+               ) A
+         WHERE 1=1
+           AND A.CORP_C = #{CORP_C}
+           AND A.BZPL_C = #{BZPL_C}
+         GROUP BY
+                  A.GDS_C
+                , A.CORP_C
+                , A.BZPL_C
+                , A.WHSE_C
+         <if test = "STPL_QT_FLAG != null and STPL_QT_FLAG != ''">
+         HAVING CONVERT(FLOAT,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) != 0
+         </if>
+    </insert>
+    
+    
+    <!-- 재고실사준비등록 재고_실사준비상세 저장 -->
+    <insert id="insertSm5010_TB_SM_D_SSVY_RSV" parameterType="linkedHashMap">
+        INSERT INTO /*+ insertSm5010_TB_SM_D_SSVY_RSV */ TB_SM_D_SSVY_RSV
+               (
+                   CORP_C                        /*  회사코드       */
+               ,   BZPL_C                        /*  사업장코드      */
+               ,   SSVY_RSV_DT                   /*  실사준비일자     */
+               ,   SSVY_RSV_SQNO                 /*  실사준비일련번호  */
+               ,   GDS_C                         /*  물품코드       */
+               ,   STPL_QT                       /*  재고수량       */
+               ,   STPL_WT                       /*  재고중량       */
+               ,   STPL_AM                       /*  재고금액       */
+               ,   FSRG_DTM                      /*  최초등록일시     */
+               ,   FSRG_ID                       /*  최초등록자ID    */
+               ,   LSCHG_DTM                     /*  최종변경일시     */
+               ,   LSCHG_ID                      /*  최종변경자ID    */
+               )
+        SELECT
+               A.CORP_C                                                                     /* 회사코드      */
+             , A.BZPL_C                                                                     /* 사업장코드    */
+             , #{SSVY_RSV_DT}
+             , #{SSVY_RSV_SQNO}
+             , A.GDS_C                                                                      /* 물품코드      */
+             , CONVERT(FLOAT,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) AS STPL_QT           /* 기말재고수량  */
+             , 0 AS STPL_WT
+             , 0 AS STPL_AM
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM (
+                SELECT 
+                       CORP_C
+                     , BZPL_C
+                     , GDS_C                                        
+                     , CONVERT(INT , BAS_STPL_QT)   AS BAS_STPL_QT  
+                     , 0 AS DB_QT           
+                     , 0 AS DB_AM           
+                     , 0 AS CR_QT           
+                     , 0 AS CR_AM           
+                  FROM TB_SM_D_GDS_RL_MON_TOT
+                 WHERE 1=1
+                   AND TOT_MN = SUBSTRING(#{ST_DT},1,6)
+                   <if test = "WHSE_C != null and WHSE_C != ''"> 
+                     AND WHSE_C = #{WHSE_C}
+                   </if>
+				
+                UNION ALL
+				
+                SELECT 
+                       B.CORP_C
+                     , B.BZPL_C
+                     , GDS_C
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND CONVERT(CHAR(8), dateadd(day,-1,#{ST_DT}),112)  THEN      
+                                                    CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                                         ELSE B.STDV_QT * -1
+                                                    END
+                                               ELSE 0
+                                          END)
+                       ) AS BAS_STPL_QT
+                     , CONVERT(FLOAT ,SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                    CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                                         ELSE 0
+                                                    END
+                                               ELSE 0
+                                          END)
+                       ) AS DB_QT
+                     , CONVERT(INT ,SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                  CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_AM
+                                                       ELSE 0
+                                                  END
+                                             ELSE 0
+                                        END)
+                       ) AS DB_AM
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                    CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+                                                         ELSE 0
+                                                    END
+                                               ELSE 0
+                                          END)
+                       ) AS CR_QT
+                     , CONVERT(INT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                                                  CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_AM
+                                                       ELSE 0
+                                                  END
+                                             ELSE 0
+                                        END)
+                       ) AS CR_AM
+                    FROM TB_SM_M_GDS_RL_STDV A
+                       , TB_SM_D_GDS_RL_STDV B
+                   WHERE 1=1
+                     AND A.CORP_C     = B.CORP_C
+                     AND A.BZPL_C     = B.BZPL_C
+                     AND A.STDV_DT    = B.STDV_DT
+                     AND A.STDV_SQNO  = B.STDV_SQNO
+                     AND A.STDV_DSC   = B.STDV_DSC
+                     AND A.RLTR_DT    BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND #{ED_DT}
+                     AND A.SLP_NML_YN = 'Y'
+                     AND A.DEL_YN     = 'N'
+                     AND B.DEL_YN     = 'N'
+                     <if test = "WHSE_C != null and WHSE_C != ''"> 
+                       AND B.WHSE_C = #{WHSE_C}
+                     </if>
+                   GROUP BY 
+                            B.GDS_C
+                          , B.CORP_C
+                          , B.BZPL_C
+               ) A
+           WHERE 1=1
+             AND A.CORP_C = #{CORP_C}
+             AND A.BZPL_C = #{BZPL_C}
+           GROUP BY
+                    A.GDS_C
+                  , A.CORP_C
+                  , A.BZPL_C
+           <if test = "STPL_QT_FLAG != null and STPL_QT_FLAG != ''">
+           HAVING CONVERT(FLOAT,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) != 0
+           </if>
+    </insert>
+        
+        
+    <!-- 재고실사준비등록 재고_실사준비기본 저장 -->
+    <insert id="insertSm5010_TB_SM_M_SSVY_RSV" parameterType="linkedHashMap">
+			INSERT INTO /*+ insertSm5010_TB_SM_M_SSVY_RSV */ TB_SM_M_SSVY_RSV
+			(
+			    CORP_C                        /* 회사코드      */
+			,   BZPL_C                        /* 사업장코드     */
+			,   SSVY_RSV_DT                   /* 실사준비일자    */
+			,   SSVY_RSV_SQNO                 /* 실사준비일련번호 */
+			,   BAS_DT                        /* 기준일자      */
+			,   SSVY_STS_DSC                  /* 실사상태구분코드 */
+			,   DFN_YN                        /* 확정여부      */
+			,   RMK_CNTN                      /* 비고내용      */
+			,   DEL_YN                        /* 삭제여부      */
+			,   FSRG_DTM                      /* 최초등록일시    */
+			,   FSRG_ID                       /* 최초등록자ID   */
+			,   LSCHG_DTM                     /* 최종변경일시    */
+			,   LSCHG_ID                      /* 최종변경자ID   */
+			)
+			VALUES
+			(
+			    #{CORP_C}
+			,   #{BZPL_C}
+			,   #{SSVY_RSV_DT}
+			,   #{SSVY_RSV_SQNO}
+			,   #{BAS_DT}
+			,   #{SSVY_STS_DSC}
+			,   #{DFN_YN}
+			,   #{RMK_CNTN}
+			,   'N'
+			,   GETDATE()
+			,   #{GUSRID}
+			,   GETDATE()
+			,   #{GUSRID}
+			)
+    </insert>
+    
+    <!-- 재고_실사준비기본 삭제 -->
+    <update id="delete5010_TB_SM_M_SSVY_RSV" parameterType="linkedHashMap">
+            UPDATE  /*+ delete5010_TB_SM_M_SSVY_RSV */ TB_SM_M_SSVY_RSV
+            SET     DEL_YN          = 'Y'
+            ,       LSCHG_DTM       = GETDATE()
+            ,       LSCHG_ID        = #{GUSRID}
+            WHERE   1=1
+            AND     CORP_C          = #{CORP_C}
+            AND     BZPL_C          = #{BZPL_C}
+            AND     SSVY_RSV_DT     = #{SSVY_RSV_DT}
+            AND     SSVY_RSV_SQNO   = #{SSVY_RSV_SQNO}
+            AND     DEL_YN          = 'N' 
+    </update>
+    
+    <!-- 재고실사준비내역 팝업 기본 조회  -->
+    <select id="searchSm5010P01" parameterType="linkedHashMap" resultType="linkedHashMap">
+           SELECT  /*+ searchSm5010P01 */ 
+                    A.CORP_C                                      /* 회사코드 */ 
+                ,   A.BZPL_C                                      /* 사업장코드*/ 
+                ,   A.SSVY_RSV_DT                                 /* 실사준비일자*/ 
+                ,   A.SSVY_RSV_SQNO                               /* 실사준비일련번호*/ 
+                ,   A.BAS_DT                                      /* 기준일자*/ 
+                ,   A.SSVY_STS_DSC                                /* 실사상태구분코드*/ 
+                ,   A.DFN_YN                                      /* 확정여부*/ 
+                ,   
+                    CASE
+                         WHEN #{SSVY_STS_DSC} = '1' THEN B.RMK_CNTN  
+                         WHEN #{SSVY_STS_DSC} = '2' THEN C.RMK_CNTN  
+                         WHEN #{SSVY_STS_DSC} = '3' THEN D.RMK_CNTN
+                         WHEN #{SSVY_STS_DSC} = '4' THEN D.RMK_CNTN  
+                    ELSE A.RMK_CNTN 
+                    END AS RMK_CNTN                               /* 비고내용*/
+                ,   A.DEL_YN                                      /* 삭제여부*/ 
+                ,   A.FSRG_DTM                                    /* 최초등록일시*/ 
+                ,   A.FSRG_ID                                     /* 최초등록자ID*/
+                ,   A.FSRG_ID                  AS FSRG_NM         /* 최초등록자*/ 
+                ,   A.LSCHG_DTM                                   /* 최종변경일시*/ 
+                ,   A.LSCHG_ID                                    /* 최종변경자ID*/
+                ,   A.LSCHG_ID                 AS LSCHG_NM        /* 최종변경자*/ 
+            FROM    TB_SM_M_SSVY_RSV A 
+            LEFT OUTER JOIN TB_SM_M_SSVY_RZT B
+            ON A.CORP_C         = B.CORP_C
+            AND A.BZPL_C        = B.BZPL_C
+            AND A.SSVY_RSV_DT   = B.SSVY_RSV_DT
+            AND A.SSVY_RSV_SQNO = B.SSVY_RSV_SQNO
+            LEFT OUTER JOIN TB_SM_M_SSVY_AJ C
+            ON A.CORP_C         = C.CORP_C
+            AND A.BZPL_C        = C.BZPL_C
+            AND A.SSVY_RSV_DT   = C.SSVY_RSV_DT
+            AND A.SSVY_RSV_SQNO = C.SSVY_RSV_SQNO
+            LEFT OUTER JOIN TB_SM_M_SSVY_DFN D
+            ON A.CORP_C         = D.CORP_C
+            AND A.BZPL_C        = D.BZPL_C
+            AND A.SSVY_RSV_DT   = D.SSVY_RSV_DT
+            AND A.SSVY_RSV_SQNO = D.SSVY_RSV_SQNO
+            WHERE   1=1
+			AND A.CORP_C         = #{CORP_C}
+			AND A.BZPL_C         = #{BZPL_C}
+			AND A.SSVY_RSV_DT BETWEEN #{ST_DT} AND #{ED_DT}
+			AND A.SSVY_STS_DSC   = #{SSVY_STS_DSC}
+			AND A.DEL_YN         = 'N'
+    </select>
+    
+    <!-- 재고실사준비내역 팝업 상세창고 조회  -->
+    <select id="searchSm5010P02" parameterType="linkedHashMap" resultType="linkedHashMap">
+           SELECT /*+ searchSm5010P02 */
+                A.CORP_C                                             /* 회사코드      */
+			,   A.BZPL_C                                             /* 사업장코드     */
+			,   A.SSVY_RSV_DT                                        /* 실사준비일자    */
+			,   A.SSVY_RSV_SQNO                                      /* 실사준비일련번호 */
+			,   A.GDS_C                                              /* 물품코드      */
+			,   B.GDS_DTL_NM                                         /* 물품명    */
+			,   B.GDS_STD_NM                                         /* 물품규격   */
+			,   B.UNT_C                                              /* 관리단위  */
+			,   A.WHSE_C                                             /* 창고코드      */
+			,   C.WHSE_NM                                            /* 창고명  */
+			,   A.STPL_QT                                            /* 재고수량      */
+			,   A.STPL_WT                                            /* 재고중량      */
+			,   CONVERT(CHAR(23),  A.FSRG_DTM , 20)  AS FSRG_DTM     /* 최초등록일시    */
+			,   A.FSRG_ID                                            /* 최초등록자ID   */
+			,   A.FSRG_ID                            AS FSRG_NM      /* 최초등록자  */
+			,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)   AS LSCHG_DTM    /*  최종변경일시     */
+			,   A.LSCHG_ID                                           /* 최종변경자ID   */
+			,   A.LSCHG_ID                           AS LSCHG_NM     /* 최종변경자   */
+            FROM  TB_SM_D_SSVY_RSV_WHSE A
+            LEFT OUTER JOIN TB_CO_M_GDS B
+            ON  A.CORP_C         = B.CORP_C
+            AND A.BZPL_C         = B.BZPL_C
+            AND A.GDS_C          = B.GDS_C
+            LEFT OUTER JOIN TB_CO_M_WHSE C
+            ON  A.CORP_C         = C.CORP_C
+            AND A.BZPL_C         = C.BZPL_C
+            AND A.WHSE_C         = C.WHSE_C
+            WHERE 1=1
+            AND A.CORP_C         = #{CORP_C}
+            AND A.BZPL_C         = #{BZPL_C}
+            AND A.SSVY_RSV_DT    = #{SSVY_RSV_DT}
+            AND A.SSVY_RSV_SQNO  = #{SSVY_RSV_SQNO}
+            
+    </select>
+    
+</mapper>

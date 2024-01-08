@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_BY_M_ODR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_BY_M_ODR */ TB_BY_M_ODR
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , ODR_DT              /* 발주일자             */
+            , ODR_SQNO            /* 발주일련번호         */
+            , ODR_STS_DSC         /* 발주상태구분코드     */
+            , TRPL_C              /* 거래처코드           */
+            , ADJPL_C             /* 정산처코드           */
+            , RCPL_C              /* 수령처코드           */
+            , DVY_DT              /* 배송일자             */
+            , DVYAA_INP_DSC       /* 배송지입력구분코드   */
+            , DVYAA_ZIP           /* 배송지우편번호       */
+            , DVYAA_ADR1          /* 배송지주소1          */
+            , DVYAA_ADR2          /* 배송지주소2          */
+            , ODR_AM              /* 발주금액             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , ODR_VLD_YN          /* 발주유효여부         */
+            , STR_DT              /* 입고일자             */
+            , STR_SQNO            /* 입고일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+            , CANCEL_RSN          /* 취소사유  20211223 추가 rchkorea */
+            , OEM_YN              /* OEM여부  20211223 추가 rchkorea */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{ODR_DT}
+            , #{ODR_SQNO}
+            , #{ODR_STS_DSC}
+            , #{TRPL_C}
+            , #{ADJPL_C}
+            , #{RCPL_C}
+            , #{DVY_DT}
+            , #{DVYAA_INP_DSC}
+            , #{DVYAA_ZIP}
+            , #{DVYAA_ADR1}
+            , #{DVYAA_ADR2}
+            , DBO.SF_GET_NUMERIC(#{ODR_AM})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , #{ODR_VLD_YN}
+            , #{STR_DT}
+            , DBO.SF_GET_NUMERIC(#{STR_SQNO})
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+            , ''
+            , #{OEM_YN}
+        )
+    </insert>
+
+    <update id="update_TB_BY_M_ODR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_BY_M_ODR */ TB_BY_M_ODR
+           SET 
+               CORP_C              = #{CORP_C}                       /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                       /* 사업장코드           */
+             , ODR_DT              = #{ODR_DT}                       /* 발주일자             */
+             , ODR_SQNO            = #{ODR_SQNO}                     /* 발주일련번호         */
+             , ODR_STS_DSC         = #{ODR_STS_DSC}                  /* 발주상태구분코드     */
+             , TRPL_C              = #{TRPL_C}                       /* 거래처코드           */
+             , ADJPL_C             = #{ADJPL_C}                      /* 정산처코드           */
+             , RCPL_C              = #{RCPL_C}                       /* 수령처코드           */
+             , DVY_DT              = #{DVY_DT}                       /* 배송일자             */
+             , DVYAA_INP_DSC       = #{DVYAA_INP_DSC}                /* 배송지입력구분코드   */
+             , DVYAA_ZIP           = #{DVYAA_ZIP}                    /* 배송지우편번호       */
+             , DVYAA_ADR1          = #{DVYAA_ADR1}                   /* 배송지주소1          */
+             , DVYAA_ADR2          = #{DVYAA_ADR2}                   /* 배송지주소2          */
+             , ODR_AM              = DBO.SF_GET_NUMERIC(#{ODR_AM})   /* 발주금액             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})   /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})      /* 부가세               */
+             , ODR_VLD_YN          = #{ODR_VLD_YN}                   /* 발주유효여부         */
+             , STR_DT              = #{STR_DT}                       /* 입고일자             */
+             , STR_SQNO            = DBO.SF_GET_NUMERIC(#{STR_SQNO}) /* 입고일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}                     /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                       /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                     /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                     /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                     /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                       /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                       /* 최종변경자ID         */
+             , CANCEL_RSN          = #{CANCEL_RSN}                   /* 취소사유  20211223 추가 rchkorea */
+             , OEM_YN              = #{OEM_YN}                       /* OEM여부  20211223 추가 rchkorea */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ODR_DT              = #{ODR_DT}
+           AND ODR_SQNO            = #{ODR_SQNO}
+    </update>
+
+    <delete id="delete_TB_BY_M_ODR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_BY_M_ODR */ FROM TB_BY_M_ODR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ODR_DT              = #{ODR_DT}
+           AND ODR_SQNO            = #{ODR_SQNO}
+    </delete>
+
+    <select id="select_TB_BY_M_ODR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_BY_M_ODR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ODR_DT                                            /* 발주일자                  */
+             , A.ODR_SQNO                                          /* 발주일련번호              */
+             , A.ODR_STS_DSC                                       /* 발주상태구분코드          */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.ADJPL_C                                           /* 정산처코드                */
+             , A.RCPL_C                                            /* 수령처코드                */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.ODR_AM                                            /* 발주금액                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.ODR_VLD_YN                                        /* 발주유효여부              */
+             , A.STR_DT                                            /* 입고일자                  */
+             , A.STR_SQNO                                          /* 입고일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , CANCEL_RSN          /* 취소사유  20211223 추가 rchkorea */
+             , OEM_YN              /* OEM여부  20211223 추가 rchkorea */
+          FROM TB_BY_M_ODR A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.ODR_DT            = #{ODR_DT}
+           AND A.ODR_SQNO          = #{ODR_SQNO}
+    </select>
+</mapper>

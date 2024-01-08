@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <!-- 물품대분류 조회 -->
+    <select id="selectCo1060_LCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+selectCo1060_LCLC*/
+		       A.CORP_C
+		     , A.GDS_CLF_DSC
+		     , A.GDS_LCLC
+		     , A.GDS_MCLC
+		     , A.GDS_SCLC
+		     , A.GDS_LCLC_NM
+		     , A.GDS_MCLC_NM
+		     , A.GDS_SCLC_NM
+		     , A.GDS_CLF_LVL
+		     , A.GDS_CLF_C
+		     , A.USE_YN
+		     , A.ETC_DSC1
+		     , A.FSRG_DTM
+		     , A.FSRG_ID
+		     , A.LSCHG_DTM
+		     , A.LSCHG_ID
+		  FROM TB_CO_M_GDS_CLF A
+		 WHERE 1 = 1
+		   AND A.CORP_C      = #{CORP_C}
+		   AND A.GDS_CLF_LVL = '1'
+     <if test="USE_YN != null and USE_YN != ''">
+           AND A.USE_YN      = #{USE_YN}    
+     </if>
+     <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 1">
+           AND A.GDS_LCLC_NM LIKE '%' + #{searchKeyword} + '%'
+        </when>
+        <when test="searchCondition == 2">
+           AND EXISTS (SELECT NULL
+                         FROM TB_CO_M_GDS_CLF X
+                        WHERE 1 = 1                       
+                          AND X.GDS_CLF_LVL = '2'
+                          AND X.GDS_MCLC_NM LIKE '%' + #{searchKeyword} + '%'
+                          AND X.GDS_LCLC    = A.GDS_LCLC
+                      )
+        </when>
+        <when test="searchCondition == 3">
+           AND EXISTS (SELECT NULL
+                         FROM TB_CO_M_GDS_CLF X
+                        WHERE 1 = 1
+                          AND X.GDS_CLF_LVL = '3'
+                          AND X.GDS_SCLC_NM LIKE '%' + #{searchKeyword} + '%'
+                          AND X.GDS_LCLC    = A.GDS_LCLC
+                      )
+        </when>
+        </choose>
+     </if>
+    </select>
+        
+    <!-- 물품중분류 조회 -->    
+    <select id="selectCo1060_MCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+selectCo1060_MCLC*/
+               A.CORP_C
+             , A.GDS_CLF_DSC
+             , A.GDS_LCLC
+             , A.GDS_MCLC
+             , A.GDS_SCLC
+             , A.GDS_LCLC_NM
+             , A.GDS_MCLC_NM
+             , A.GDS_SCLC_NM
+             , A.GDS_CLF_LVL
+             , A.GDS_CLF_C
+             , A.USE_YN
+             , A.ETC_DSC1
+             , A.FSRG_DTM
+             , A.FSRG_ID
+             , A.LSCHG_DTM
+             , A.LSCHG_ID
+          FROM TB_CO_M_GDS_CLF A
+         WHERE 1 = 1
+           AND A.CORP_C      = #{CORP_C}
+           AND A.GDS_CLF_LVL = '2'
+           AND A.GDS_LCLC    = #{GDS_LCLC}
+     <if test="USE_YN != null and USE_YN != ''">
+           AND A.USE_YN      = #{USE_YN}    
+     </if>
+     <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 2">
+           AND A.GDS_MCLC_NM LIKE '%' + #{searchKeyword} + '%'
+        </when>
+        <when test="searchCondition == 3">
+           AND EXISTS (SELECT NULL
+                         FROM TB_CO_M_GDS_CLF X
+                        WHERE 1 = 1                 
+                          AND X.GDS_CLF_LVL = '3'
+                          AND X.GDS_SCLC_NM LIKE '%' + #{searchKeyword} + '%'
+                          AND X.GDS_LCLC    = #{GDS_LCLC}
+                          AND X.GDS_MCLC    = A.GDS_MCLC
+                      )
+        </when>
+        </choose>
+     </if>    
+    </select>
+    
+    <!-- 물품소분류 조회 -->    
+    <select id="selectCo1060_SCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+selectCo1060_SCLC*/
+               A.CORP_C
+             , A.GDS_CLF_DSC
+             , A.GDS_LCLC
+             , A.GDS_MCLC
+             , A.GDS_SCLC
+             , A.GDS_LCLC_NM
+             , A.GDS_MCLC_NM
+             , A.GDS_SCLC_NM
+             , A.GDS_CLF_LVL
+             , A.GDS_CLF_C
+             , A.USE_YN
+             , A.ETC_DSC1
+             , A.FSRG_DTM
+             , A.FSRG_ID
+             , A.LSCHG_DTM
+             , A.LSCHG_ID
+          FROM TB_CO_M_GDS_CLF A
+         WHERE 1 = 1
+           AND A.CORP_C      = #{CORP_C}
+           AND A.GDS_CLF_LVL = '3'
+           AND A.GDS_LCLC    = #{GDS_LCLC}
+           AND A.GDS_MCLC    = #{GDS_MCLC}
+     <if test="USE_YN != null and USE_YN != ''">
+           AND A.USE_YN      = #{USE_YN}    
+     </if>
+     <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 3">
+           AND A.GDS_SCLC_NM LIKE '%' + #{searchKeyword} + '%'
+        </when>
+        </choose>
+     </if> 
+    </select>   
+          
+</mapper>

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_L_INTF_CRT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_L_INTF_CRT */ TB_SY_L_INTF_CRT
+        (
+              CORP_C              /* 회사코드             */
+            , INTF_ID             /* 인터페이스ID         */
+            , INTF_CSE_SQNO       /* 연계추적일련번호     */
+            , RQR_RSP_DSC         /* 요청응답구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , CRT_RQR_DT          /* 생성요청일자         */
+            , CRT_RQR_TM          /* 생성요청시간         */
+            , ERR_MSG             /* 에러메세지           */
+            , ERR_RSP_C           /* 에러응답코드         */
+            , INTF_DATA           /* 연계자료             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{INTF_ID}
+            , #{INTF_CSE_SQNO}
+            , #{RQR_RSP_DSC}
+            , #{TR_SQNO}
+            , #{CRT_RQR_DT}
+            , #{CRT_RQR_TM}
+            , #{ERR_MSG}
+            , #{ERR_RSP_C}
+            , #{INTF_DATA}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_L_INTF_CRT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_L_INTF_CRT */ TB_SY_L_INTF_CRT
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , INTF_ID             = #{INTF_ID}               /* 인터페이스ID         */
+             , INTF_CSE_SQNO       = #{INTF_CSE_SQNO}         /* 연계추적일련번호     */
+             , RQR_RSP_DSC         = #{RQR_RSP_DSC}           /* 요청응답구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , CRT_RQR_DT          = #{CRT_RQR_DT}            /* 생성요청일자         */
+             , CRT_RQR_TM          = #{CRT_RQR_TM}            /* 생성요청시간         */
+             , ERR_MSG             = #{ERR_MSG}               /* 에러메세지           */
+             , ERR_RSP_C           = #{ERR_RSP_C}             /* 에러응답코드         */
+             , INTF_DATA           = #{INTF_DATA}             /* 연계자료             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_CSE_SQNO       = #{INTF_CSE_SQNO}
+           AND INTF_ID             = #{INTF_ID}
+           AND RQR_RSP_DSC         = #{RQR_RSP_DSC}
+    </update>
+
+    <delete id="delete_TB_SY_L_INTF_CRT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_L_INTF_CRT */ FROM TB_SY_L_INTF_CRT
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_CSE_SQNO       = #{INTF_CSE_SQNO}
+           AND INTF_ID             = #{INTF_ID}
+           AND RQR_RSP_DSC         = #{RQR_RSP_DSC}
+    </delete>
+
+    <select id="select_TB_SY_L_INTF_CRT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_L_INTF_CRT */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+             , A.INTF_CSE_SQNO                                     /* 연계추적일련번호     */
+             , A.RQR_RSP_DSC                                       /* 요청응답구분코드     */
+             , A.TR_SQNO                                           /* 거래일련번호         */
+             , A.CRT_RQR_DT                                        /* 생성요청일자         */
+             , A.CRT_RQR_TM                                        /* 생성요청시간         */
+             , A.ERR_MSG                                           /* 에러메세지           */
+             , A.ERR_RSP_C                                         /* 에러응답코드         */
+             , A.INTF_DATA                                         /* 연계자료             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_L_INTF_CRT A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.INTF_CSE_SQNO     = #{INTF_CSE_SQNO}
+           AND A.INTF_ID           = #{INTF_ID}
+           AND A.RQR_RSP_DSC       = #{RQR_RSP_DSC}
+    </select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">  
+
+    <!-- 출고지시기본내역 -->
+    <select id="selectBy2120" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+   
+		 SELECT  /*+ selectBy2120 */
+		       A.ODR_DT       /* 발주일자         */
+		     , A.ODR_SQNO     /* 발주일련번호     */
+		     , A.ODR_STS_DSC  /* 발주상태구분코드 */
+		     , A.STR_DT       /* 입고일자         */
+		     , A.STR_SQNO     /* 입고일련번호     */
+             , A.TRPL_C       /* 거래처코드       */
+             , (
+                 SELECT TRPL_NM
+                   FROM TB_CO_M_TRPL
+                  WHERE 1 = 1
+                    AND A.CORP_C = CORP_C 
+                    AND A.TRPL_C = TRPL_C
+               ) AS TRPL_NM   /* 거래처명         */
+		     , A.GDS_C        /* 물품코드         */
+		     , B.GDS_DTL_NM   /* 물품상세명       */
+		     , B.GDS_STD_NM   /* 물품규격명       */
+		     , B.UNT_C        /* 관리단위         */
+		     , A.ODR_AM       /* 발주금액         */
+		     , A.ODR_QT       /* 발주수량         */
+		     , A.STDV_QT      /* 입출고수량       */
+		     , A.CHA_QT       /* 미입고수량       */
+		  FROM (
+		        SELECT
+		               A.CORP_C
+		             , A.BZPL_C
+		             , A.ODR_DT
+		             , A.ODR_SQNO
+		             , A.ODR_STS_DSC
+		             , A.STR_DT
+		             , A.STR_SQNO
+		             , A.GDS_C
+		             , A.ODR_AM
+		             , A.TRPL_C
+		             , ISNULL(A.ODR_QT , 0) AS ODR_QT
+		             , ISNULL(B.STDV_QT, 0) AS STDV_QT
+		             , ISNULL(A.ODR_QT , 0) - ISNULL(B.STDV_QT, 0) AS CHA_QT  --미입고수량
+		          FROM (
+		                SELECT
+		                       A.CORP_C
+		                     , A.BZPL_C
+		                     , A.ODR_DT
+		                     , A.ODR_SQNO
+		                     , A.TRPL_C
+		                     , MAX(A.ODR_STS_DSC) AS ODR_STS_DSC
+		                     , MAX(A.STR_DT     ) AS STR_DT
+		                     , MAX(A.STR_SQNO   ) AS STR_SQNO
+		                     , B.GDS_C
+		                     , SUM(B.ODR_AM     ) AS ODR_AM
+		                     , SUM(B.ODR_QT     ) AS ODR_QT
+		                  FROM TB_BY_M_ODR A
+		                     , TB_BY_D_ODR B
+		                 WHERE 1 = 1
+		                   AND A.CORP_C      = B.CORP_C
+		                   AND A.BZPL_C      = B.BZPL_C
+		                   AND A.ODR_DT      = B.ODR_DT
+		                   AND A.ODR_SQNO    = B.ODR_SQNO
+		                   AND A.DEL_YN      = 'N'
+		                   AND B.DEL_YN      = 'N'
+		                   AND A.CORP_C      = #{CORP_C}
+		                   AND A.BZPL_C      = #{BZPL_C}
+                      <if test="ODR_STS_DSC != null and ODR_STS_DSC != ''">
+                           AND A.ODR_STS_DSC = #{ODR_STS_DSC}  
+                      </if>   
+		                   AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+		                 GROUP BY A.CORP_C
+		                        , A.BZPL_C
+		                        , A.ODR_DT
+		                        , A.ODR_SQNO
+		                        , A.TRPL_C
+		                        , B.GDS_C
+		               ) A LEFT OUTER JOIN
+		               (SELECT
+		                       A.CORP_C
+		                     , A.BZPL_C
+		                     , A.STDV_REF_DT   AS ODR_DT   /*오익환*/
+                             , A.STDV_REF_SQNO AS ODR_SQNO /*오익환*/
+		                     , B.GDS_C
+		                     , SUM(B.STDV_QT) AS STDV_QT
+		                  FROM TB_SM_M_GDS_RL_STDV A
+		                     , TB_SM_D_GDS_RL_STDV B
+		                 WHERE 1 = 1
+		                   AND A.CORP_C       = B.CORP_C
+		                   AND A.BZPL_C       = B.BZPL_C
+		                   AND A.STDV_DT      = B.STDV_DT
+		                   AND A.STDV_SQNO    = B.STDV_SQNO
+		                   AND A.STDV_DSC     = B.STDV_DSC
+		                   AND A.SLP_NML_YN   = 'Y'
+		                   AND A.DEL_YN       = 'N'
+		                   AND B.DEL_YN       = 'N'
+		                   AND A.STDV_REF_DSC = '2'          /* 발주참조인것만 */
+		                   AND A.CORP_C       = #{CORP_C}
+		                   AND A.BZPL_C       = #{BZPL_C}
+		                   AND A.STDV_REF_DT BETWEEN #{ST_DT} AND #{ED_DT}       
+		                 GROUP BY A.CORP_C
+		                        , A.BZPL_C
+		                        , A.STDV_REF_DT    /*오익환A.STDV_DT */
+                                , A.STDV_REF_SQNO  /*오익환A.STDV_SQNO*/
+		                        , B.GDS_C
+		               ) B
+		            ON A.CORP_C   = B.CORP_C    AND
+		               A.BZPL_C   = B.BZPL_C    AND
+		               A.ODR_DT   = B.ODR_DT   AND
+		               A.ODR_SQNO = B.ODR_SQNO AND
+		               A.GDS_C    = B.GDS_C
+		         WHERE 1 = 1
+		       ) A LEFT OUTER JOIN TB_CO_M_GDS B
+		    ON A.CORP_C = B.CORP_C AND
+		       A.BZPL_C = B.BZPL_C AND
+		       A.GDS_C  = B.GDS_C
+		 WHERE 1 = 1
+    <![CDATA[
+           AND ( (#{CHA_YN} = '' )                     OR
+                 (#{CHA_YN} = 'Y') AND (A.CHA_QT >  0) OR
+                 (#{CHA_YN} = 'N') AND (A.CHA_QT <= 0)    )
+		 ORDER BY A.ODR_DT
+		        , A.ODR_SQNO
+		        , A.GDS_C
+	 ]]>
+    </select>
+   
+</mapper>

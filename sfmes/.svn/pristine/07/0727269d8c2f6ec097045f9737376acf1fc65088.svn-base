@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_L_USR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_L_USR */ TB_SY_L_USR
+        (
+              CORP_C              /* 회사코드             */
+            , HST_SQNO            /* 이력일련번호         */
+            , USR_ID              /* 사용자아이디         */
+            , USR_NM              /* 사용자명             */
+            , PW                  /* 암호화된비밀번호     */
+            , EMP_NO              /* 사원번호             */
+            , BZPL_C              /* 사업장코드           */
+            , DEPT_C              /* 부서코드             */
+            , USE_DSC             /* 사용자구분           */
+            , LS_CONN_DTM         /* 최종접속일시         */
+            , LS_CONN_IP          /* 최종IP               */
+            , CONN_YN             /* 접속여부             */
+            , PW_CHG_DTM          /* 비밀번호변경일시     */
+            , LGIN_PROV_NT        /* 로그인시도횟수       */
+            , LOCK_YN             /* 잠김여부             */
+            , ACC_ST_DT           /* 계정시작일자         */
+            , ACC_ED_DT           /* 계정종료일자         */
+            , EMAIL_ADR           /* 이메일주소           */
+            , ANC_RMS_METH        /* 알림수신방법         */
+            , SIGN_IMG            /* 사인이미지           */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT
+                CORP_C
+              , (SELECT ISNULL(MAX(HST_SQNO),0)+1
+			       FROM TB_SY_L_USR
+			      WHERE 1=1
+			  	    AND CORP_C = #{CORP_C})
+              , USR_ID
+              , USR_NM
+              , PW
+              , EMP_NO
+              , BZPL_C
+              , DEPT_C
+              , USE_DSC
+              , LS_CONN_DTM
+              , LS_CONN_IP
+              , CONN_YN
+              , PW_CHG_DTM
+              , LGIN_PROV_NT
+              , LOCK_YN
+              , ACC_ST_DT
+              , ACC_ED_DT
+              , EMAIL_ADR
+              , ANC_RMS_METH
+              , SIGN_IMG
+              , USE_YN
+              , ETC_DSC1
+              , ETC_DSC2
+              , ETC_DSC3
+              , FSRG_DTM  
+              , FSRG_ID   
+              , LSCHG_DTM 
+              , LSCHG_ID  
+		   FROM TB_SY_M_USR
+		  WHERE 1=1
+		    AND CORP_C      = #{CORP_C}
+		    AND USR_ID      = #{USR_ID}
+    </insert>
+</mapper>

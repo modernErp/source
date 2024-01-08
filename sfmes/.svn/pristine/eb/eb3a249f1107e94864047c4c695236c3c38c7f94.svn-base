@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_L_ERR_LOG" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_L_ERR_LOG */ TB_SY_L_ERR_LOG
+        (
+              CORP_C              /* 회사코드             */
+            , ERR_SQNO            /* 에러일련번호         */
+            , LOG_DSC_NM          /* 로그구분명           */
+            , ERR_DTM             /* 에러발생일시         */
+            , USR_ID              /* 사용자아이디         */
+            , CONN_IP             /* 접속IP               */
+            , PGM_ID              /* 프로그램ID           */
+            , CLASS_NM            /* 클래스명             */
+            , METHOD_NM           /* 메쏘드명             */
+            , SRC_FILE_NM         /* 소스파일명           */
+            , LINE_NO             /* 소스라인NO           */
+            , ERR_MSG             /* 에러메세지           */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT
+              #{CORP_C}
+            , ISNULL(MAX(ERR_SQNO), 0) + 1
+            , #{LOG_DSC_NM}
+            , GETDATE()
+            , #{GUSRID}
+            , #{CONN_IP}
+            , #{PGM_ID}
+            , #{CLASS_NM}
+            , #{METHOD_NM}
+            , #{SRC_FILE_NM}
+            , #{LINE_NO}
+            , #{ERR_MSG}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+         FROM TB_SY_L_ERR_LOG
+        WHERE 1=1
+          AND CORP_C = #{CORP_C}
+    </insert>
+
+    <update id="update_TB_SY_L_ERR_LOG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_L_ERR_LOG */ TB_SY_L_ERR_LOG
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , ERR_SQNO            = #{ERR_SQNO}              /* 에러일련번호         */
+             , LOG_DSC_NM          = #{LOG_DSC_NM}            /* 로그구분명           */
+             , ERR_DTM             = #{ERR_DTM}               /* 에러발생일시         */
+             , USR_ID              = #{USR_ID}                /* 사용자아이디         */
+             , CONN_IP             = #{CONN_IP}               /* 접속IP               */
+             , PGM_ID              = #{PGM_ID}                /* 프로그램ID           */
+             , CLASS_NM            = #{CLASS_NM}              /* 클래스명             */
+             , METHOD_NM           = #{METHOD_NM}             /* 메쏘드명             */
+             , SRC_FILE_NM         = #{SRC_FILE_NM}           /* 소스파일명           */
+             , LINE_NO             = #{LINE_NO}               /* 소스라인NO           */
+             , ERR_MSG             = #{ERR_MSG}               /* 에러메세지           */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND ERR_SQNO            = #{ERR_SQNO}
+    </update>
+
+    <delete id="delete_TB_SY_L_ERR_LOG" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_L_ERR_LOG */ FROM TB_SY_L_ERR_LOG
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND ERR_SQNO            = #{ERR_SQNO}
+    </delete>
+
+    <select id="select_TB_SY_L_ERR_LOG" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_L_ERR_LOG */
+               A.CORP_C                                            /* 회사코드             */
+             , A.ERR_SQNO                                          /* 에러일련번호         */
+             , A.LOG_DSC_NM                                        /* 로그구분명           */
+             , A.ERR_DTM                                           /* 에러발생일시         */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.CONN_IP                                           /* 접속IP               */
+             , A.PGM_ID                                            /* 프로그램ID           */
+             , A.CLASS_NM                                          /* 클래스명             */
+             , A.METHOD_NM                                         /* 메쏘드명             */
+             , A.SRC_FILE_NM                                       /* 소스파일명           */
+             , A.LINE_NO                                           /* 소스라인NO           */
+             , A.ERR_MSG                                           /* 에러메세지           */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_L_ERR_LOG A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.ERR_SQNO          = #{ERR_SQNO}
+    </select>
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 물품일별집계내역 -->
+    <select id="select_Sm2170_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		/*+ select_Sm2170_01 */
+		SELECT 
+		       A.GDS_C                                                                          /* 물품코드 */
+		     , A.GDS_NM                                                                         /* 물품명  */
+		     , A.GDS_STD_NM                                                                     /* 물품규격 */
+		     , A.GDS_TP_DSC                                                                     /* 물품유형코드 */
+		     , A.UNT_C                                                                          /* 관리단위 */
+		     , A.RLTR_DT                                                                        /* 입출고 일자 */
+		     , ISNULL(A.BAS_STPL_QT, 0) + A.SUM_QT_TOT - (A.IN_QT - A.OUT_QT) AS BAS_STPL_QT    /* 기초재고 */
+		     , ISNULL(A.BAS_STPL_AM, 0) + A.SUM_AM_TOT - (A.IN_AM - A.OUT_AM) AS BAS_STPL_AM    /* 기초금액 */
+		     , A.IN_QT                                                     AS DB_QT             /* 차변-입고량    */
+		     , A.IN_AM                                                     AS DB_AM             /* 차변-금액    */
+		     , A.OUT_QT                                                    AS CR_QT             /* 대변-출고량   */
+		     , A.OUT_AM                                                    AS CR_AM             /* 대변-금액   */
+		     , (A.BAS_STPL_QT + A.SUM_QT_TOT)                              AS STPL_QT           /* 기말재고 */
+		     , (A.BAS_STPL_AM + A.SUM_AM_TOT)                              AS STPL_AM           /* 기말금액 */
+		  FROM (
+		        SELECT A.GDS_C
+		             , C.GDS_NM                                                                         /* 물품명  */
+		             , C.GDS_STD_NM                                                                     /* 물품규격 */
+		             , C.GDS_TP_DSC  
+		             , C.UNT_C
+		             , A.RLTR_DT
+		             , ISNULL((SELECT X.BAS_STPL_QT
+		                  FROM TB_SM_M_GDS_MON_TOT X
+		                 WHERE X.CORP_C = A.CORP_C
+		                   AND X.BZPL_C = A.BZPL_C
+		                   AND X.GDS_C  = A.GDS_C
+		                   AND X.ACG_MN =  SUBSTRING(#{ST_DT},1,6)),0) AS BAS_STPL_QT      /* 기초재고(월기준)  */
+		             , ISNULL((SELECT X.BAS_STPL_AM
+                          FROM TB_SM_M_GDS_MON_TOT X
+                         WHERE X.CORP_C = A.CORP_C
+                           AND X.BZPL_C = A.BZPL_C
+                           AND X.GDS_C  = A.GDS_C
+                           AND X.ACG_MN =  SUBSTRING(#{ST_DT},1,6)),0) AS BAS_STPL_AM      /* 기초금액(월기준)  */
+		             , A.IN_QT
+		             , A.IN_AM
+		             , A.OUT_QT
+		             , A.OUT_AM
+		             , SUM(A.IN_QT - A.OUT_QT) OVER (PARTITION BY A.GDS_C ORDER BY A.GDS_C, A.RLTR_DT) SUM_QT_TOT  /* 누적재고 */
+		             , SUM(A.IN_AM - A.OUT_AM) OVER (PARTITION BY A.GDS_C ORDER BY A.GDS_C, A.RLTR_DT) SUM_AM_TOT  /* 누적금액 */
+		          FROM (
+		                SELECT /*  일자별 물품별 입출고 금액 합산 계산 */
+		                       B.CORP_C
+		                     , B.BZPL_C
+		                     , B.GDS_C
+		                     , A.RLTR_DT
+		                     , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                        ELSE 0 END)) AS IN_QT
+                             , SUM(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_AM
+                                        ELSE 0 END) AS IN_AM
+                             , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+                                        ELSE 0 END)) AS OUT_QT
+                             , SUM(CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_AM
+                                        ELSE 0 END) AS OUT_AM
+		                  FROM TB_SM_M_GDS_RL_STDV A
+		                     , TB_SM_D_GDS_RL_STDV B
+		                 WHERE 1=1
+		                   AND A.CORP_C    = B.CORP_C
+		                   AND A.BZPL_C    = B.BZPL_C
+		                   AND A.STDV_DT   = B.STDV_DT
+		                   AND A.STDV_SQNO = B.STDV_SQNO
+		                   AND A.CORP_C    = #{CORP_C}
+		                   AND A.BZPL_C    = #{BZPL_C}
+		                   AND A.RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND #{ED_DT}       /* 시작일자를 입력조건의 01일부터 처리 */
+		                   AND A.SLP_NML_YN = 'Y'
+		                 GROUP BY
+		                       B.CORP_C
+		                     , B.BZPL_C
+		                     , B.GDS_C
+		                     , A.RLTR_DT
+		               ) A
+		               LEFT OUTER JOIN TB_CO_M_GDS C
+		               ON A.CORP_C  = C.CORP_C
+		               AND A.BZPL_C = C.BZPL_C
+		               AND A.GDS_C  = C.GDS_C 
+		       ) A
+		 WHERE A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}                                          /* 실제 입력조건으로 필터 */
+		  <if test = "GDS_C != null and GDS_C != ''"> 
+		      AND A.GDS_C = #{GDS_C}                         
+		  </if>    
+          <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''"> 
+              AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+          </if>
+    </select>    
+    
+</mapper>

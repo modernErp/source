@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <!-- 거래처물품연결 정보 목록 조회 -->
+    <select id="selectCo1070" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo1070 */
+               A.CORP_C                                          /* 회사코드         */
+             , A.BZPL_C                                          /* 사업장코드       */
+             , A.REG_SQNO                                        /* 등록일련번호     */
+             , A.TRPL_C                                          /* 거래처코드       */
+             , dbo.SF_GET_TRPL_NM(A.CORP_C, A.TRPL_C)  AS TRPL_NM/* 거래처명                 */ 
+             , A.GDS_C                                           /* 물품코드         */
+             , B.GDS_NM                                          /* 물품명           */
+             , A.TRPL_GDS_C                                      /* 거래처물품코드   */
+             , A.TRPL_GDS_NM                                     /* 거래처물품명     */
+             , A.TRPL_GDS_BAR_C                                  /* 거래처물품바코드 */
+             , A.TRPL_GDS_LABEL                                  /* 거래처물품라벨   */
+             , A.RMK_CNTN                                        /* 비고내용         */
+             , A.USE_YN                                          /* 사용여부         */
+             , A.ETC_DSC1                                        /* 기타구분1        */
+             , A.ETC_DSC2                                        /* 기타구분2        */
+             , A.ETC_DSC3                                        /* 기타구분3        */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM     /* 최초등록일시     */
+             , A.FSRG_ID                                         /* 최초등록자ID     */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM   /* 최종변경일시     */
+             , A.LSCHG_ID                                        /* 최총변경자ID     */
+          FROM TB_CO_M_TRPL_GDS        A 
+          LEFT OUTER JOIN TB_CO_M_GDS  B 
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+          LEFT OUTER JOIN TB_CO_M_TRPL C
+            ON A.CORP_C = C.CORP_C
+           AND A.TRPL_C = C.TRPL_C
+         WHERE 1 = 1
+           AND A.CORP_C = #{CORP_C}
+           AND A.BZPL_C = #{BZPL_C}
+	    <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C LIKE '%' + #{TRPL_C} + '%'
+        </if>
+         <if test="TRPL_NM != null and TRPL_NM != ''">  
+           AND C.TRPL_NM LIKE '%' + #{TRPL_NM} + '%'
+        </if>    
+        <if test="GDS_NM != null and GDS_NM != ''">   
+           AND B.GDS_NM LIKE '%' + #{GDS_NM} + '%'
+        </if>
+        <if test="USE_YN != null and USE_YN != ''">   
+           AND A.USE_YN = #{USE_YN}
+        </if>
+    </select>
+    
+    <!-- 거래처-물품 연결 정보 밸리데이션체크 -->
+    <select id="validationCo0090" parameterType="LinkedHashMap" resultType="Int">
+        SELECT /*+ validationCo0090 */
+               COUNT(*) M_CNT
+          FROM TB_CO_M_TRPL_GDS
+         WHERE 1 = 1
+           AND TRPL_C   = #{TRPL_C}
+           AND BZPL_C   = #{BZPL_C}
+           AND GDS_C    = #{GDS_C}
+    </select>
+      
+</mapper>

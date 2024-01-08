@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_D_DLR_DNTT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_D_DLR_DNTT */ TB_SE_D_DLR_DNTT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DLR_DNTT_DT         /* 출고지시일자         */
+            , DLR_DNTT_SQNO       /* 출고지시일련번호     */
+            , DLR_DNTT_DSQNO      /* 출고지시상세일련번호 */
+            , GDS_C               /* 물품코드             */
+            , DLR_DNTT_QT         /* 출고지시수량         */
+            , DLR_DNTT_BOX_QT     /* 출고지시박스수량     */
+            , TR_UNT_C            /* 거래단위코드         */
+            , DLR_DNTT_UPR        /* 출고지시단가         */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , DLR_DNTT_AM         /* 출고지시금액         */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , DLR_DNTT_WT         /* 출고지시중량         */
+            , TXT_DSC             /* 과세구분코드         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DLR_DNTT_DT}
+            , #{DLR_DNTT_SQNO}
+            , (SELECT ISNULL(MAX(DLR_DNTT_DSQNO),0)+1
+                 FROM TB_SE_D_DLR_DNTT
+                WHERE 1=1
+                  AND BZPL_C              = #{BZPL_C}
+                  AND CORP_C              = #{CORP_C}
+                  AND DLR_DNTT_DT         = #{DLR_DNTT_DT}
+                  AND DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO})
+            , #{GDS_C}
+            , #{DLR_DNTT_QT}
+            , DBO.SF_GET_NUMERIC(#{DLR_DNTT_BOX_QT})
+            , #{TR_UNT_C}
+            , DBO.SF_GET_NUMERIC(#{DLR_DNTT_UPR})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{DLR_DNTT_AM})
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_NUMERIC(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , DBO.SF_GET_NUMERIC(#{DLR_DNTT_WT})
+            , #{TXT_DSC}
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_D_DLR_DNTT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_D_DLR_DNTT */ TB_SE_D_DLR_DNTT
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DLR_DNTT_DT         = #{DLR_DNTT_DT}           /* 출고지시일자         */
+             , DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}         /* 출고지시일련번호     */
+             , DLR_DNTT_DSQNO      = #{DLR_DNTT_DSQNO}        /* 출고지시상세일련번호 */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , DLR_DNTT_QT         = #{DLR_DNTT_QT}           /* 출고지시수량         */
+             , DLR_DNTT_BOX_QT     = #{DLR_DNTT_BOX_QT}       /* 출고지시박스수량     */
+             , TR_UNT_C            = #{TR_UNT_C}              /* 거래단위코드         */
+             , DLR_DNTT_UPR        = #{DLR_DNTT_UPR}          /* 출고지시단가         */
+             , SPY_AM              = #{SPY_AM}                /* 공급금액             */
+             , VAT                 = #{VAT}                   /* 부가세               */
+             , DLR_DNTT_AM         = #{DLR_DNTT_AM}           /* 출고지시금액         */
+             , QT_WT_DSC           = #{QT_WT_DSC}             /* 수(중)량형구분코드   */
+             , WHT_QT              = #{WHT_QT}                /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}             /* 단량단위코드         */
+             , DLR_DNTT_WT         = #{DLR_DNTT_WT}           /* 출고지시중량         */
+             , TXT_DSC             = #{TXT_DSC}               /* 과세구분코드         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_DNTT_DSQNO      = #{DLR_DNTT_DSQNO}
+           AND DLR_DNTT_DT         = #{DLR_DNTT_DT}
+           AND DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}
+    </update>
+
+    <delete id="delete_TB_SE_D_DLR_DNTT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_D_DLR_DNTT */ FROM TB_SE_D_DLR_DNTT
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_DNTT_DSQNO      = #{DLR_DNTT_DSQNO}
+           AND DLR_DNTT_DT         = #{DLR_DNTT_DT}
+           AND DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_D_DLR_DNTT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_D_DLR_DNTT */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_DNTT_DT                                       /* 출고지시일자              */
+             , A.DLR_DNTT_SQNO                                     /* 출고지시일련번호          */
+             , A.DLR_DNTT_DSQNO                                    /* 출고지시상세일련번호      */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.DLR_DNTT_QT                                       /* 출고지시수량              */
+             , A.DLR_DNTT_BOX_QT                                   /* 출고지시박스수량          */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.DLR_DNTT_UPR                                      /* 출고지시단가              */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.DLR_DNTT_AM                                       /* 출고지시금액              */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.DLR_DNTT_WT                                       /* 출고지시중량              */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_D_DLR_DNTT A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DLR_DNTT_DSQNO    = #{DLR_DNTT_DSQNO}
+           AND A.DLR_DNTT_DT       = #{DLR_DNTT_DT}
+           AND A.DLR_DNTT_SQNO     = #{DLR_DNTT_SQNO}
+    </select>
+</mapper>

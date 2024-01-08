@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+    <!-- 물품별매출현황 -->
+    <select id="selectMi1140_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    SELECT /*+ selectMi1140_01 */
+           A.CORP_C                                                                         /* 회사코드        */
+         , A.BZPL_C                                                                         /* 사업장코드      */ 
+         , B.BZPL_NM                                                                        /* 사업장명        */
+         , A.GDS_C                                                                          /* 물품코드        */
+         , C.GDS_DTL_NM                                                                     /* 물품명          */
+         , C.GDS_STD_NM                                                                     /* 물품규격        */
+         , C.UNT_C                                                                          /* 관리단위        */
+         , A.Y_SL_AM_01                                                                     /* 1월당년매출금액 */
+         , A.L_SL_AM_01                                                                     /* 1월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_01 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_01-A.L_SL_AM_01)/A.L_SL_AM_01)*100
+           END          AS INDRT_01                                                         /* 1월증감율       */  
+         , A.Y_SL_AM_02                                                                     /* 2월당년매출금액 */
+         , A.L_SL_AM_02                                                                     /* 2월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_02 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_02-A.L_SL_AM_02)/A.L_SL_AM_02)*100
+           END          AS INDRT_02                                                         /* 2월증감율       */  
+         , A.Y_SL_AM_03                                                                     /* 3월당년매출금액 */
+         , A.L_SL_AM_03                                                                     /* 3월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_03 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_03-A.L_SL_AM_03)/A.L_SL_AM_03)*100
+           END          AS INDRT_03                                                         /* 3월증감율       */ 
+         , A.Y_SL_AM_04                                                                     /* 4월당년매출금액 */
+         , A.L_SL_AM_04                                                                     /* 4월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_04 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_04-A.L_SL_AM_04)/A.L_SL_AM_04)*100
+           END          AS INDRT_04                                                         /* 4월증감율       */  
+         , A.Y_SL_AM_05                                                                     /* 5월당년매출금액 */
+         , A.L_SL_AM_05                                                                     /* 5월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_05 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_05-A.L_SL_AM_05)/A.L_SL_AM_05)*100
+           END          AS INDRT_05                                                         /* 5월증감율       */  
+         , A.Y_SL_AM_06                                                                     /* 6월당년매출금액 */
+         , A.L_SL_AM_06                                                                     /* 6월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_06 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_06-A.L_SL_AM_06)/A.L_SL_AM_06)*100
+           END          AS INDRT_06                                                         /* 6월증감율       */
+         , A.Y_SL_AM_07                                                                     /* 7월당년매출금액 */
+         , A.L_SL_AM_07                                                                     /* 7월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_07 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_07-A.L_SL_AM_07)/A.L_SL_AM_07)*100
+           END          AS INDRT_07                                                         /* 7월증감율       */
+         , A.Y_SL_AM_08                                                                     /* 8월당년매출금액 */
+         , A.L_SL_AM_08                                                                     /* 8월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_08 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_08-A.L_SL_AM_08)/A.L_SL_AM_08)*100
+           END          AS INDRT_08                                                         /* 8월증감율       */
+         , A.Y_SL_AM_09                                                                     /* 9월당년매출금액 */
+         , A.L_SL_AM_09                                                                     /* 9월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_09 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_09-A.L_SL_AM_09)/A.L_SL_AM_09)*100
+           END          AS INDRT_09                                                         /* 9월증감율        */
+         , A.Y_SL_AM_10                                                                     /* 10월당년매출금액 */
+         , A.L_SL_AM_10                                                                     /* 10월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_10 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_10-A.L_SL_AM_10)/A.L_SL_AM_10)*100
+           END          AS INDRT_10                                                         /* 10월증감율       */
+         , A.Y_SL_AM_11                                                                     /* 11월당년매출금액 */
+         , A.L_SL_AM_11                                                                     /* 11월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_11 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_11-A.L_SL_AM_11)/A.L_SL_AM_11)*100
+           END          AS INDRT_11                                                         /* 11월증감율       */
+         , A.Y_SL_AM_12                                                                     /* 12월당년매출금액 */
+         , A.L_SL_AM_12                                                                     /* 12월전년매출금액 */
+         , CASE WHEN A.L_SL_AM_12 = 0 THEN 0
+                ELSE                       ((A.Y_SL_AM_12-A.L_SL_AM_12)/A.L_SL_AM_12)*100
+           END          AS INDRT_12                                                         /* 12월증감율       */
+      FROM (
+            SELECT 
+                   A.CORP_C
+                 , A.BZPL_C 
+                 , A.GDS_C
+                 , SUM(A.Y_SL_AM_01) AS Y_SL_AM_01
+                 , SUM(A.L_SL_AM_01) AS L_SL_AM_01
+                 , SUM(A.Y_SL_AM_02) AS Y_SL_AM_02
+                 , SUM(A.L_SL_AM_02) AS L_SL_AM_02
+                 , SUM(A.Y_SL_AM_03) AS Y_SL_AM_03
+                 , SUM(A.L_SL_AM_03) AS L_SL_AM_03
+                 , SUM(A.Y_SL_AM_04) AS Y_SL_AM_04
+                 , SUM(A.L_SL_AM_04) AS L_SL_AM_04
+                 , SUM(A.Y_SL_AM_05) AS Y_SL_AM_05
+                 , SUM(A.L_SL_AM_05) AS L_SL_AM_05
+                 , SUM(A.Y_SL_AM_06) AS Y_SL_AM_06
+                 , SUM(A.L_SL_AM_06) AS L_SL_AM_06
+                 , SUM(A.Y_SL_AM_07) AS Y_SL_AM_07
+                 , SUM(A.L_SL_AM_07) AS L_SL_AM_07
+                 , SUM(A.Y_SL_AM_08) AS Y_SL_AM_08
+                 , SUM(A.L_SL_AM_08) AS L_SL_AM_08
+                 , SUM(A.Y_SL_AM_09) AS Y_SL_AM_09
+                 , SUM(A.L_SL_AM_09) AS L_SL_AM_09
+                 , SUM(A.Y_SL_AM_10) AS Y_SL_AM_10
+                 , SUM(A.L_SL_AM_10) AS L_SL_AM_10
+                 , SUM(A.Y_SL_AM_11) AS Y_SL_AM_11
+                 , SUM(A.L_SL_AM_11) AS L_SL_AM_11
+                 , SUM(A.Y_SL_AM_12) AS Y_SL_AM_12
+                 , SUM(A.L_SL_AM_12) AS L_SL_AM_12
+              FROM (
+                    /* 당년매출 */
+                    SELECT 
+                           A.CORP_C
+                         , A.BZPL_C 
+                         , B.GDS_C
+                       <if test='VAT_YN == "Y"'>
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='01' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_01
+                         , 0             AS L_SL_AM_01
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='02' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_02
+                         , 0             AS L_SL_AM_02
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='03' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_03
+                         , 0             AS L_SL_AM_03
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='04' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_04
+                         , 0             AS L_SL_AM_04
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='05' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_05
+                         , 0             AS L_SL_AM_05
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='06' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_06
+                         , 0             AS L_SL_AM_06
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='07' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_07
+                         , 0             AS L_SL_AM_07
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='08' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_08
+                         , 0             AS L_SL_AM_08
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='09' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_09
+                         , 0             AS L_SL_AM_09
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='10' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_10
+                         , 0             AS L_SL_AM_10
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='11' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_11
+                         , 0             AS L_SL_AM_11
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='12' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SL_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_12
+                         , 0             AS L_SL_AM_12
+                       </if>
+                       <if test='VAT_YN == "N"'>
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='01' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_01
+                         , 0             AS L_SL_AM_01
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='02' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_02
+                         , 0             AS L_SL_AM_02                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='03' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_03
+                         , 0             AS L_SL_AM_03                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='04' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_04
+                         , 0             AS L_SL_AM_04                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='05' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_05
+                         , 0             AS L_SL_AM_05                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='06' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_06
+                         , 0             AS L_SL_AM_06                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='07' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_07
+                         , 0             AS L_SL_AM_07                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='08' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_08
+                         , 0             AS L_SL_AM_08                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='09' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_09
+                         , 0             AS L_SL_AM_09                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='10' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_10
+                         , 0             AS L_SL_AM_10                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='11' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_11
+                         , 0             AS L_SL_AM_11                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='12' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS Y_SL_AM_12
+                         , 0             AS L_SL_AM_12                                 
+                       </if> 
+                      FROM TB_SE_M_SL A
+                         , TB_SE_D_SL B
+                     WHERE 1=1
+                       AND A.CORP_C     = B.CORP_C
+                       AND A.BZPL_C     = B.BZPL_C 
+                       AND A.SL_DT      = B.SL_DT
+                       AND A.SL_SQNO    = B.SL_SQNO
+                       AND A.CORP_C     = #{CORP_C}
+                       AND A.SLP_NML_YN = 'Y'
+                       AND A.ACG_DT LIKE #{ACG_DT}+'%'
+                     <if test='searchKeyword != null and searchKeyword != ""'>
+                       AND A.BZPL_C IN (${searchKeyword})
+                     </if>
+                     <if test='GDS_C != null and GDS_C != ""'>
+                       AND B.GDS_C      = #{GDS_C}
+                     </if>
+                    GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                    UNION
+                    /* 전년매출  */
+                    SELECT
+                           A.CORP_C
+                         , A.BZPL_C 
+                         , B.GDS_C
+                       <if test='VAT_YN == "Y"'>
+                         , 0             AS Y_SL_AM_01
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='01' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0   
+                               END)      AS L_SL_AM_01
+                         , 0             AS Y_SL_AM_02
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='02' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0   
+                               END)      AS L_SL_AM_02
+                         , 0             AS Y_SL_AM_03
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='03' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_03
+                         , 0             AS Y_SL_AM_04
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='04' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_04
+                         , 0             AS Y_SL_AM_05
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='05' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_05
+                         , 0             AS Y_SL_AM_06
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='06' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_06
+                         , 0             AS Y_SL_AM_07
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='07' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_07
+                         , 0             AS Y_SL_AM_08
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='08' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_08
+                         , 0             AS Y_SL_AM_09
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='09' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_09
+                         , 0             AS Y_SL_AM_10
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='10' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_10
+                         , 0             AS Y_SL_AM_11
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='11' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_11
+                         , 0             AS Y_SL_AM_12
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5, 2)='12' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                           -1
+                                                                              END) * B.SL_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_12
+                       </if>
+                       <if test='VAT_YN == "N"'>
+                         , 0             AS Y_SL_AM_01
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='01' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                   ELSE                          -1
+                                                                              END) * B.SPY_AM
+                                    ELSE                                     0
+                               END)      AS L_SL_AM_01
+                         , 0             AS Y_SL_AM_02                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='02' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_02
+                         , 0             AS Y_SL_AM_03                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='03' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_03
+                         , 0             AS Y_SL_AM_04                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='04' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_04
+                         , 0             AS Y_SL_AM_05                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='05' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_05
+                         , 0             AS Y_SL_AM_06                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='06' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_06
+                         , 0             AS Y_SL_AM_07                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='07' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_07
+                         , 0             AS Y_SL_AM_08                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='08' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_08
+                         , 0             AS Y_SL_AM_09                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='09' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_09
+                         , 0             AS Y_SL_AM_10                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='10' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_10
+                         , 0             AS Y_SL_AM_11                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='11' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_11
+                         , 0             AS Y_SL_AM_12                                 
+                         , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 5,2)='12' THEN (CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                                  ELSE                           -1
+                                                                             END) * B.SPY_AM
+                                    ELSE                                    0
+                               END)      AS L_SL_AM_12
+                       </if>
+                      FROM TB_SE_M_SL A
+                         , TB_SE_D_SL B
+                     WHERE 1=1
+                       AND A.CORP_C     = B.CORP_C
+                       AND A.BZPL_C     = B.BZPL_C
+                       AND A.SL_DT      = B.SL_DT
+                       AND A.SL_SQNO    = B.SL_SQNO
+                       AND A.CORP_C     = #{CORP_C}
+                       AND A.SLP_NML_YN = 'Y'
+                       AND A.ACG_DT LIKE CONVERT(VARCHAR, #{ACG_DT}-1)+'%'
+                     <if test='searchKeyword != null and searchKeyword != ""'>
+                       AND A.BZPL_C IN (${searchKeyword})
+                     </if>   
+                     <if test='GDS_C != null and GDS_C != ""'>
+                       AND B.GDS_C      = #{GDS_C}
+                     </if>
+                    GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                   ) A
+             GROUP BY A.CORP_C, A.BZPL_C, A.GDS_C
+           )                       A
+      LEFT OUTER JOIN TB_CO_M_BZPL B
+        ON A.CORP_C = B.CORP_C
+       AND A.BZPL_C = B.BZPL_C
+      LEFT OUTER JOIN TB_CO_M_GDS  C
+        ON A.CORP_C = C.CORP_C
+       AND A.BZPL_C = C.BZPL_C
+       AND A.GDS_C  = C.GDS_C
+    </select>    
+</mapper>

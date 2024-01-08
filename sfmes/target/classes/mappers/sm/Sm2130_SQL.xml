@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">
+
+    <!-- 창고별재고내역 기본조회 -->
+    <select id="select_Sm2130_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT    /*+ select_Sm2130_01 */
+               A.CORP_C                                                               /* 회사코드      */
+             , A.BZPL_C                                                               /* 사업장코드    */
+             , D.WHSE_C                                                               /* 창고코드      */
+             , D.WHSE_NM                                                              /* 창고명        */
+             , C.GDS_TP_DSC                                                           /* 물품유형      */
+             , A.GDS_C                                                                /* 물품코드      */
+             , C.GDS_NM                                                               /* 물품명        */
+             , C.GDS_DTL_NM                                                           /* 물품상세명   */
+             , C.GDS_STD_NM                                                           /* 물품규격      */
+             , C.UNT_C                                                                /* 관리단위      */
+             , CONVERT(FLOAT, SUM(BAS_STPL_QT)) AS BAS_STPL_QT                          /* 기초재고수량  */
+             , CONVERT(FLOAT, SUM(DB_QT)) AS DB_QT                                      /* 입고수량(+)   */
+             , CONVERT(FLOAT, SUM(CR_QT)) AS CR_QT                                      /* 출고수량(-)   */
+             , CONVERT(FLOAT ,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) AS BAS_BAL_QT /* 기말재고수량  */
+          FROM (
+                SELECT
+                       B.CORP_C
+                     , B.BZPL_C
+                     , GDS_C
+                     , B.WHSE_C
+                     , CONVERT(FLOAT, SUM(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT ELSE B.STDV_QT * -1  END))           AS BAS_STPL_QT
+                     , 0  AS DB_QT
+                     , 0  AS CR_QT
+                  FROM TB_SM_M_GDS_RL_STDV A
+                     , TB_SM_D_GDS_RL_STDV B
+                 WHERE 1=1
+                   AND A.CORP_C    = B.CORP_C
+                   AND A.BZPL_C    = B.BZPL_C
+                   AND A.STDV_DT   = B.STDV_DT
+                   AND A.STDV_SQNO = B.STDV_SQNO
+                   AND A.STDV_DSC  = B.STDV_DSC
+		           <![CDATA[
+        		   AND A.RLTR_DT < #{ST_DT}
+           		   ]]>
+                   AND A.SLP_NML_YN  = 'Y'
+                   AND A.DEL_YN      = 'N'
+                   AND B.DEL_YN      = 'N'
+                 GROUP BY
+                       B.GDS_C
+                     , B.CORP_C
+                     , B.BZPL_C
+                     , B.WHSE_C
+
+                UNION ALL
+
+                SELECT
+                       B.CORP_C
+                     , B.BZPL_C
+                     , GDS_C
+                     , B.WHSE_C
+                     , 0  AS BAS_STPL_QT
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN
+                                CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                     ELSE 0
+                                END
+                                ELSE 0
+                           END)) AS DB_QT
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN
+                                CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+                                     ELSE 0
+                                END
+                                ELSE 0
+                           END)) AS CR_QT
+                  FROM TB_SM_M_GDS_RL_STDV A
+                     , TB_SM_D_GDS_RL_STDV B
+                 WHERE 1=1
+                   AND A.CORP_C    = B.CORP_C
+                   AND A.BZPL_C    = B.BZPL_C
+                   AND A.STDV_DT   = B.STDV_DT
+                   AND A.STDV_SQNO = B.STDV_SQNO
+                   AND A.STDV_DSC  = B.STDV_DSC
+                   AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                   AND A.SLP_NML_YN  = 'Y'
+                   AND A.DEL_YN      = 'N'
+                   AND B.DEL_YN      = 'N'
+                 GROUP BY
+                       B.GDS_C
+                     , B.CORP_C
+                     , B.BZPL_C
+                     , B.WHSE_C
+                ) A
+                LEFT OUTER JOIN TB_CO_M_GDS  C
+                ON  A.CORP_C    = C.CORP_C
+                AND A.BZPL_C    = C.BZPL_C
+                AND A.GDS_C     = C.GDS_C
+                LEFT OUTER JOIN TB_CO_M_WHSE D
+                ON  A.CORP_C    = D.CORP_C
+                AND A.BZPL_C    = D.BZPL_C
+                AND A.WHSE_C    = D.WHSE_C
+               WHERE 1=1
+                AND A.CORP_C = #{CORP_C}
+                AND A.BZPL_C = #{BZPL_C}
+                <if test = "GDS_C != null and GDS_C != ''">
+                    AND A.GDS_C = #{GDS_C}
+                </if>
+                <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''">
+                    AND C.GDS_TP_DSC = #{GDS_TP_DSC}
+                </if>
+                <if test = "WHSE_C != null and WHSE_C != ''">
+                    AND UPPER(D.WHSE_C) LIKE UPPER('%' + #{WHSE_C} + '%')
+                </if>
+		        <if test="CSTD_METH_C !='' and CSTD_METH_C != null">
+		           AND C.CSTD_METH_C     = #{CSTD_METH_C}
+		        </if>
+            GROUP BY
+                 A.GDS_C
+               , A.CORP_C
+               , A.BZPL_C
+               , C.GDS_NM
+               , C.GDS_DTL_NM
+               , C.GDS_STD_NM
+               , C.UNT_C
+               , C.GDS_TP_DSC
+               , D.WHSE_C
+               , D.WHSE_NM
+            HAVING CONVERT(FLOAT ,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) <![CDATA[<>]]> 0   
+        ORDER BY A.GDS_C
+    </select>    
+            
+    
+ <!-- 월집계를 사용하는 쿼리로 월집계 배치를 사용하지 않아서 아래 쿼리를 사용하지 않음 20220104 rchkorea    
+      차후 월집계 테이블 정합성이 갇춰지면 다시 사용함.   
+        SELECT    /*+ select_Sm2130_01 */
+               A.CORP_C                                                               /* 회사코드      */
+             , A.BZPL_C                                                               /* 사업장코드    */
+             , D.WHSE_C                                                               /* 창고코드      */
+             , D.WHSE_NM                                                              /* 창고명        */
+             , C.GDS_TP_DSC                                                           /* 물품유형      */
+             , A.GDS_C                                                                /* 물품코드      */
+             , C.GDS_NM                                                               /* 물품명        */
+             , C.GDS_DTL_NM                                                           /* 물품상세명   */
+             , C.GDS_STD_NM                                                           /* 물품규격      */
+             , C.UNT_C                                                                /* 관리단위      */
+             , CONVERT(FLOAT, SUM(BAS_STPL_QT)) AS BAS_STPL_QT                          /* 기초재고수량  */
+             , CONVERT(FLOAT, SUM(DB_QT)) AS DB_QT                                      /* 입고수량(+)   */
+             , CONVERT(FLOAT, SUM(CR_QT)) AS CR_QT                                      /* 출고수량(-)   */
+             , CONVERT(FLOAT ,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) AS BAS_BAL_QT /* 기말재고수량  */
+          FROM (
+                 SELECT
+                       CORP_C
+                     , BZPL_C
+                     , GDS_C
+                     , WHSE_C
+                     , CONVERT(FLOAT, BAS_STPL_QT)    AS BAS_STPL_QT
+                     , CONVERT(FLOAT , 0) AS DB_QT
+                     , CONVERT(FLOAT , 0) AS CR_QT
+                  FROM TB_SM_D_GDS_RL_MON_TOT
+                 WHERE 1=1
+                   AND TOT_MN = SUBSTRING(#{ST_DT},1,6)
+
+                UNION ALL
+
+                SELECT
+                       B.CORP_C
+                     , B.BZPL_C
+                     , GDS_C
+                     , B.WHSE_C
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND CONVERT(CHAR(8), dateadd(day,-1,#{ST_DT}),112) THEN
+                                CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                     ELSE B.STDV_QT * -1
+                                END
+                                ELSE 0
+                           END)) AS BAS_STPL_QT
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN
+                                CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+                                     ELSE 0
+                                END
+                                ELSE 0
+                           END)) AS DB_QT
+                     , CONVERT(FLOAT, SUM(CASE WHEN RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN
+                                CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+                                     ELSE 0
+                                END
+                                ELSE 0
+                           END)) AS CR_QT
+                  FROM TB_SM_M_GDS_RL_STDV A
+                     , TB_SM_D_GDS_RL_STDV B
+                 WHERE 1=1
+                   AND A.CORP_C    = B.CORP_C
+                   AND A.BZPL_C    = B.BZPL_C
+                   AND A.STDV_DT   = B.STDV_DT
+                   AND A.STDV_SQNO = B.STDV_SQNO
+                   AND A.STDV_DSC  = B.STDV_DSC
+                   AND A.RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND #{ED_DT}
+                   AND A.SLP_NML_YN = 'Y'
+                   AND A.DEL_YN      = 'N'
+                   AND B.DEL_YN      = 'N'
+                 GROUP BY
+                       B.GDS_C
+                     , B.CORP_C
+                     , B.BZPL_C
+                     , B.WHSE_C
+                ) A
+                LEFT OUTER JOIN TB_CO_M_GDS  C
+                ON  A.CORP_C    = C.CORP_C
+                AND A.BZPL_C    = C.BZPL_C
+                AND A.GDS_C     = C.GDS_C
+                LEFT OUTER JOIN TB_CO_M_WHSE D
+                ON  A.CORP_C    = D.CORP_C
+                AND A.BZPL_C    = D.BZPL_C
+                AND A.WHSE_C    = D.WHSE_C
+               WHERE 1=1
+                AND A.CORP_C = #{CORP_C}
+                AND A.BZPL_C = #{BZPL_C}
+                <if test = "GDS_C != null and GDS_C != ''">
+                    AND A.GDS_C = #{GDS_C}
+                </if>
+                <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''">
+                    AND C.GDS_TP_DSC = #{GDS_TP_DSC}
+                </if>
+                <if test = "WHSE_C != null and WHSE_C != ''">
+                    AND UPPER(D.WHSE_C) LIKE UPPER('%' + #{WHSE_C} + '%')
+                </if>
+		        <if test="CSTD_METH_C !='' and CSTD_METH_C != null">
+		           AND C.CSTD_METH_C     = #{CSTD_METH_C}
+		        </if>
+            GROUP BY
+                 A.GDS_C
+               , A.CORP_C
+               , A.BZPL_C
+               , C.GDS_NM
+               , C.GDS_DTL_NM
+               , C.GDS_STD_NM
+               , C.UNT_C
+               , C.GDS_TP_DSC
+               , D.WHSE_C
+               , D.WHSE_NM
+            HAVING CONVERT(FLOAT ,SUM(BAS_STPL_QT) + SUM(DB_QT) - SUM(CR_QT)) <![CDATA[<>]]> 0   
+        ORDER BY A.GDS_C
+        -->
+</mapper>

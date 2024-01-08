@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.cm">
+
+    <!-- 파일관리번호 채번                                                        -->
+    <!-- 번호체계 : 회사코드(4자리) + 업무구분(2자리) + 날짜(8자리) + 채번(4자리) -->
+    <!--       예 : 9999 + CO + 20201013 + 0001                                   -->
+    <select id="selectUploadFileNo" parameterType="LinkedHashMap" resultType="String">
+		SELECT #{CORP_C} + #{gbnTaskDsc} + CONVERT(VARCHAR, GETDATE(), 112) + FORMAT(ISNULL(MAX(RIGHT(APD_FILE_AMN_NO, 4))+1, '1'), '0000') AS APD_FILE_AMN_NO
+		  FROM TB_CO_M_APDFL
+		 WHERE CORP_C = #{CORP_C}
+		   AND LEFT(RIGHT(APD_FILE_AMN_NO, 12), 8) = CONVERT(VARCHAR, GETDATE(), 112)		  
+	</select>  
+</mapper>

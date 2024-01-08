@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="Content-Script-Type" content="text/javascript"/>
+<meta http-equiv="Content-Style-Type" content="text/css"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>rMate Chart for HTML5</title>
+<link rel="stylesheet" type="text/css" href="http://demo.riamore.net/HTML5demo/chart/rMateChartH5Sample.css"/>
+<!-- rMateChartH5 에서 사용하는 스타일 -->
+<link rel="stylesheet" type="text/css" href="http://demo.riamore.net/HTML5demo/chart/rMateChartH5/Assets/Css/rMateChartH5.css"/>
+
+<!-- IE7, 8 에서 차트 생성하고자 하는 경우 -->
+<!--[if IE]><script language="javascript" type="text/javascript" src="http://demo.riamore.net/HTML5demo/chart/rMateChartH5/JS/excanvas.js"></script><![endif]-->
+
+<!-- rMateChartH5 라이센스 -->
+<script language="javascript" type="text/javascript" src="http://demo.riamore.net/HTML5demo/chart/LicenseKey/rMateChartH5License.js"></script>
+
+<!-- 실제적인 rMateChartH5 라이브러리 -->
+<script language="javascript" type="text/javascript" src="http://demo.riamore.net/HTML5demo/chart/rMateChartH5/JS/rMateChartH5.js"></script>
+
+<!-- 차트 생성과 관련없음. 샘플을 위한 스크립트. 따라서 실제 적용 시 생략하십시오. -->
+<script language="javascript" type="text/javascript" src="http://demo.riamore.net/HTML5demo/chart/Samples/sampleHelper.js"></script>
+
+<script type="text/javascript">
+
+// -----------------------차트 설정 시작-----------------------
+
+// rMate 차트 생성 준비가 완료된 상태 시 호출할 함수를 지정합니다.
+var chartVars = "rMateOnLoadCallFunction=chartReadyHandler";
+
+// rMateChart 를 생성합니다.
+// 파라메터 (순서대로) 
+//  1. 차트의 id ( 임의로 지정하십시오. ) 
+//  2. 차트가 위치할 div 의 id (즉, 차트의 부모 div 의 id 입니다.)
+//  3. 차트 생성 시 필요한 환경 변수들의 묶음인 chartVars
+//  4. 차트의 가로 사이즈 (생략 가능, 생략 시 100%)
+//  5. 차트의 세로 사이즈 (생략 가능, 생략 시 100%)
+rMateChartH5.create("chart1", "chartHolder", chartVars, "100%", "100%"); 
+
+// 차트의 속성인 rMateOnLoadCallFunction 으로 설정된 함수.
+// rMate 차트 준비가 완료된 경우 이 함수가 호출됩니다.
+// 이 함수를 통해 차트에 레이아웃과 데이터를 삽입합니다.
+// 파라메터 : id - rMateChartH5.create() 사용 시 사용자가 지정한 id 입니다.
+// 차트 콜백함수 4개 존재합니다.
+// 1. setLayout - 스트링으로 작성된 레이아웃 XML을 삽입합니다.
+// 2. setData - 배열로 작성된 데이터를 삽입합니다.
+// 3. setLayoutURL - 레이아웃 XML 경로를 지시합니다.
+// 4. setDataURL - 데이터 XML 경로를 지시합니다.
+function chartReadyHandler(id) {
+	//예제1. 레이아웃 스트링 형태,데이터 배열 형태 
+	document.getElementById(id).setLayout(layoutStr);
+	document.getElementById(id).setData(chartData);
+
+	//예제2. 레이아웃 XML URL경로, 데이터 배열 형태
+	//document.getElementById(id).setLayoutURL(layoutURL);
+	//document.getElementById(id).setData(chartData);
+	
+	//예제3. 레이아웃 스트링 형태, 데이터 XML URL경로
+	//document.getElementById(id).setLayout(layoutStr);
+	//document.getElementById(id).setDataURL(dataURL);
+	
+	//예제4. 레이아웃 URL, 데이터 URL
+	//document.getElementById(id).setLayoutURL(layoutURL);
+	//document.getElementById(id).setDataURL(dataURL);
+}
+
+var layoutStr = "";// 스트링 형식으로 레이아웃 정의.
+var chartData = "";// 차트 데이터(배열 형식)
+function Load()
+{
+	if(parent.Webcrea) 
+	{
+		var param = window.location.search.substring(1);
+		var arr = param.split('=');
+		if(arr.length<2) return;
+		var obj = parent.Webcrea.arrChart[arr[1]];
+		if(!obj) return;
+		var height = obj.height;
+		var width = obj.width;
+		var layout = obj.layout;
+		var data = obj.data;
+
+		var chart = document.createElement('div');
+		chart.setAttribute('id', 'chartHolder');
+		var style = 'height:' + height + 'px;';
+		chart.setAttribute('style', style);
+		document.body.appendChild(chart);
+
+		layoutStr = layout;
+		chartData = data;
+	}
+}
+// -----------------------차트 설정 끝 -----------------------
+
+</script>
+</head>
+<body topmargin=0 leftmargin=0 scroll="no" onload='Load()'>
+</body>
+</html>

@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="selectPd2010_HSTNO_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        WITH SRS_BUDL_TMP AS  /*+ selectPd2010_HSTNO_ValidCheck */
+				(									
+				  SELECT 'Y' as USE_YN				
+					   , (BUDL_TOT_WT - DLR_TOT_WT)  AS USE_WT				
+					   , COUNT(BUDL_NO) AS DET_HST_CNT				
+				    FROM TB_CO_M_SRA_HST_BNDNO				
+				   WHERE 1 = 1
+				     AND CORP_C   = #{CORP_C}				
+					 AND BZPL_C   = #{BZPL_C}				
+				<choose>
+				    <when test= "GDS_NO != '' or GDS_HST_NO != ''" >	
+					 AND BUDL_NO  = #{GDS_HST_NO}			
+                    </when>                                   
+                    <when test= "GDS_NO == '' or GDS_HST_NO = ''" >  
+					 AND BUDL_NO  = ( SELECT BUDL_NO 				
+					                    FROM TB_CO_D_SRA_HST_BNDNO				
+					                   WHERE CORP_C     = #{CORP_C}			
+					                     AND BZPL_C     = #{BZPL_C}				
+					                     AND SRA_HST_NO = #{GDS_HST_NO} )				
+				    </when>
+				</choose>									
+					GROUP BY (BUDL_TOT_WT - DLR_TOT_WT) 				
+                ),
+		SRS_HST_NO AS 
+		        (								
+				  SELECT 'Y' as USE_YN					
+				       , COUNT(1) AS HST_CNT					
+				    FROM TB_CO_M_SRS_HST_NO					
+				    WHERE 1 = 1
+				     AND CORP_C     = #{CORP_C}				
+				     AND BZPL_C     = #{BZPL_C}				
+				     AND SRA_HST_NO = #{GDS_HST_NO}				
+				     AND DLR_YN     = 'N'					
+				     AND DEL_YN     = 'N'					
+				)
+     <![CDATA[							
+        SELECT 								
+               CASE WHEN A.USE_YN                 != 'Y' THEN '사용할 수 없는 묶음번호 입니다.'									
+                    WHEN A.USE_WT                 <=  0  THEN '잔량이 0 이여서 출고할 중량이 없습니다.'									
+                    WHEN ISNULL(A.DET_HST_CNT, 0)  =  0 AND ISNULL(B.HST_CNT, 0) = 0 THEN '묶음번호 정보와 이력번호정보가 존재하지 않습니다.'									
+                    WHEN ISNULL(DET_HST_CNT, 0)    =  0  THEN '묶음번호 정보에 이력번호가 존재하지 않습니다.' 									
+                    ELSE 'OK' END AS RESULT_MSG									
+          FROM SRS_BUDL_TMP A									
+		       FULL OUTER JOIN							
+		       SRS_HST_NO  B							
+			   ON A.USE_YN = B.USE_YN				
+        ]]>
+    </select>
+    
+    <insert id="insert_TB_PD_D_WK_DNTT_MTRL02" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_WK_DNTT_MTRL02 */ TB_PD_D_WK_DNTT_MTRL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DNTT_DT             /* 지시일자             */
+            , DNTT_SQNO           /* 지시일련번호         */
+            , DNTT_DNO            /* 지시상세번호         */
+            , GDS_C               /* 물품코드             */
+            , PTIN_DNTT_QT        /* 투입지시량           */
+            , PTIN_GDS_UNT_C      /* 물품단위코드         */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , WHSE_C              /* 창고코드             */
+            , ACP_MTR_DSC         /* 인수재료구분코드     */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+       SELECT /*+ select_TB_PD_D_BOM_MTRL */
+              A.CORP_C                                            
+            , A.BZPL_C   
+            , #{DNTT_DT}                   AS DNTT_DT
+            , #{DNTT_SQNO}                 AS DNTT_SQNO
+            , #{DNTT_DNO}                  AS DNTT_DNO			                          
+            , A.MTRL_GDS_C                 AS GDS_C   
+            , A.PTIN_QT * #{PQT}           AS PTIN_DNTT_QT		
+            , A.GDS_UNT_C                  AS PTIN_GDS_UNT_C                                                                
+            , #{GDS_HST_NO}                AS GDS_HST_NO 
+            , A.WHSE_C                                            
+            , #{ACP_MTR_DSC}               AS ACP_MTR_DSC                                   
+            , A.RMK_CNTN                                          
+            , 'N'                          AS DEL_YN                                                 
+            , A.ETC_DSC1                                          
+            , A.ETC_DSC2                                          
+            , A.ETC_DSC3                                          
+            , GETDATE()                AS FSRG_DTM                          
+            , #{GUSRID}                                         
+            , GETDATE()                AS LSCHG_DTM                          
+            , #{GUSRID}                                                     
+         FROM TB_PD_D_BOM_MTRL A
+		    , TB_CO_M_GDS      B
+        WHERE 1=1 
+          AND A.CORP_C            = B.CORP_C
+          AND A.BZPL_C            = B.BZPL_C
+          AND A.MTRL_GDS_C        = B.GDS_C    
+          AND A.USE_YN            = 'Y'
+          AND A.CORP_C            = #{CORP_C}
+          AND A.BZPL_C            = #{BZPL_C}
+          AND A.GDS_C             = #{GDS_C}
+          AND A.BOM_C             = #{BOM_C}
+    </insert>
+    
+    <!-- 원재료 이력구분이있으면 해당 제품 또는 반제품에 따라가도록 수정  20211219 rchkorea -->
+    <update id="update_TB_PD_D_WK_DNTT_MTRL_02" parameterType="LinkedHashMap">
+        MERGE /*+ update_TB_PD_D_WK_DNTT_MTRL_02 */ TB_PD_D_WK_DNTT_MTRL  AS  A
+		 USING (SELECT   A.CORP_C
+					   , A.BZPL_C
+					   , A.DNTT_DT
+					   , A.DNTT_SQNO
+					   , A.DNTT_DNO
+					   , A.GDS_C
+					   , ISNULL(CASE WHEN B.GDS_TP_DSC = '20' AND B.HST_AMN_DSC > '0' THEN    /* 반제품이면서 이력관리대상이면 반제품에 등록된 이력번호 */
+									  (SELECT X.GDS_HST_NO
+										  FROM TB_PD_D_WK_DNTT_MFS  X
+										WHERE 1=1 
+										  AND X.CORP_C    = A.CORP_C
+										  AND X.BZPL_C    = A.BZPL_C
+										  AND X.DNTT_DT   = A.DNTT_DT
+										  AND X.DNTT_SQNO = A.DNTT_SQNO
+										  AND X.DNTT_DNO  = A.DNTT_DNO
+										  AND X.GDS_C     = A.GDS_C
+										)
+								   WHEN B.GDS_TP_DSC = '40' AND B.HST_AMN_DSC > '0' THEN    /* 원재료이면서 이력구분이 같으면 해당제품의 이력번호 */
+									  (SELECT CASE WHEN C1.HST_AMN_DSC = C2.HST_AMN_DSC THEN X.GDS_HST_NO
+												   ELSE ''
+											  END
+										  FROM TB_PD_D_WK_DNTT_MFS  X
+											 , TB_PD_D_WK_DNTT_MTRL Y
+											 , TB_CO_M_GDS          C1 
+											 , TB_CO_M_GDS          C2
+										WHERE 1=1 
+										  AND X.CORP_C    = Y.CORP_C
+										  AND X.BZPL_C    = Y.BZPL_C
+										  AND X.DNTT_DT   = Y.DNTT_DT
+										  AND X.DNTT_SQNO = Y.DNTT_SQNO
+										  AND X.DNTT_DNO  = Y.DNTT_DNO
+										  AND X.CORP_C    = C1.CORP_C
+										  AND X.BZPL_C    = C1.BZPL_C
+										  AND X.GDS_C     = C1.GDS_C
+										  AND Y.CORP_C    = C2.CORP_C
+										  AND Y.BZPL_C    = C2.BZPL_C
+										  AND Y.GDS_C     = C2.GDS_C
+										  AND X.CORP_C    = A.CORP_C
+										  AND X.BZPL_C    = A.BZPL_C
+										  AND X.DNTT_DT   = A.DNTT_DT
+										  AND X.DNTT_SQNO = A.DNTT_SQNO
+										  AND X.DNTT_DNO  = A.DNTT_DNO
+										  AND Y.GDS_C     = A.GDS_C
+										)
+								   ELSE ''
+							  END , '')     AS GDS_HST_NO   
+				FROM  TB_PD_D_WK_DNTT_MTRL A
+					, TB_CO_M_GDS          B
+				WHERE 1=1 
+				  AND A.CORP_C    = B.CORP_C
+				  AND A.BZPL_C    = B.BZPL_C
+				  AND A.GDS_C     = B.GDS_C    
+				  AND A.CORP_C    = #{CORP_C}
+				  AND A.BZPL_C    = #{BZPL_C}
+				  AND A.DNTT_DT   = #{DNTT_DT}
+				  AND A.DNTT_SQNO = #{DNTT_SQNO}
+				  AND A.DNTT_DNO  = #{DNTT_DNO}
+			 )  AS B
+		   ON A.CORP_C    = B.CORP_C 
+		  AND A.BZPL_C    = B.BZPL_C
+		  AND A.DNTT_DT   = B.DNTT_DT
+		  AND A.DNTT_SQNO = B.DNTT_SQNO
+		  AND A.DNTT_DNO  = B.DNTT_DNO
+		  AND A.GDS_C     = B.GDS_C   
+	   WHEN MATCHED THEN
+	   UPDATE 
+	          SET A.GDS_HST_NO   = B.GDS_HST_NO   
+	   ;
+    </update>
+
+    <update id="update_delyn_TB_PD_M_WK_DNTT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_delyn_TB_PD_M_WK_DNTT */ TB_PD_M_WK_DNTT
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+           AND DNTT_DNO            = #{DNTT_DNO}              /* 2021.04.21 JKS 추가  */
+    </update>
+    
+    <update id="update_delyn_TB_PD_D_WK_DNTT_MFS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_delyn_TB_PD_D_WK_DNTT_MFS */ TB_PD_D_WK_DNTT_MFS
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+           AND DNTT_DNO            = #{DNTT_DNO}
+    </update>
+    
+    <update id="update_delyn_TB_PD_D_WK_DNTT_MTRL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_delyn_TB_PD_D_WK_DNTT_MTRL */ TB_PD_D_WK_DNTT_MTRL
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+		   AND DNTT_DNO            = #{DNTT_DNO}
+           AND GDS_C               = #{GDS_C}
+    </update>
+    
+    <update id="TB_PD_M_WK_DNTT_change" parameterType="LinkedHashMap">
+        UPDATE /*+ TB_PD_M_WK_DNTT_change */ TB_PD_M_WK_DNTT
+           SET 
+               MFC_WK_STS_C        = #{MFC_WK_STS_C}          /* 가공작업상태코드     */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+    </update>
+
+    <select id="selectdntt_dNo_01" parameterType="LinkedHashMap" resultType="String">
+        <!-- 반제품 레벨에따라 채번 적용되도록 수정  rchkorea 20211214 -->
+        SELECT /*+ selectdntt_dNo_01 */
+               ISNULL(REPLICATE(#{ST_STRING}, 2 - LEN(ISNULL(MAX(CONVERT(INT, SUBSTRING(DNTT_DNO,1,2))),0)+1)) + 
+                                CONVERT(VARCHAR, ISNULL(MAX(CONVERT(INT, SUBSTRING(DNTT_DNO,1,2))),0)+1) 
+                      ,'00')    AS dntt_dNo
+          FROM TB_PD_D_WK_DNTT_MFS
+         WHERE 1=1
+           AND BZPL_C      = #{BZPL_C}
+           AND CORP_C      = #{CORP_C}
+           AND DNTT_DT     = #{DNTT_DT} 
+           AND DNTT_SQNO   = #{DNTT_SQNO} 
+           AND SUBSTRING(DNTT_DNO,1,1) = #{ST_STRING}
+    </select>
+    
+    <select id="select_save_count" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ select_save_count */
+               COUNT(*) AS save_c
+          FROM TB_PD_D_WK_DNTT_MFS
+         WHERE 1=1
+           AND BZPL_C      = #{BZPL_C}
+           AND CORP_C      = #{CORP_C}
+           AND DNTT_DT     = #{DNTT_DT} 
+           AND DNTT_SQNO   = #{DNTT_SQNO} 
+    </select>
+    
+    <select id="selectBOM_D" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBOM_D */
+               B.BAS_QT                                            /* 기준량                    */
+             , B.PD_LINE_C                                         /* 주생산라인                */
+			 , A.MTRL_SQNO                                         /* 자재일련번호              */
+             , A.MTRL_GDS_C  AS GDS_C                              /* 자재물품코드              */
+             , A.GDS_UNT_C   AS PTIN_GDS_UNT_C                     /* 물품단위코드              */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , C.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , C.GDS_NM                                            /* 물품명                    */
+             , C.GDS_STD_NM                                        /* 규격명                    */
+             , C.GDS_ENM                                           /* 물품영문명                */
+             , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , C.BAS_BOM_C AS BOM_C                                /* 기본BOM코드               */
+             , C.UNT_C                                             /* 단위코드                  */
+             , C.WHT_QT                                            /* 기준단량                  */
+             , C.USE_YN                                            /* 사용여부                  */
+             , C.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , C.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , C.TXT_DSC                                           /* 과세구분코드              */
+             , C.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.NED_WT    AS NED_QTT                              /* 총소요량                  */
+             , A.NED_WT    AS NED_DNTT_QT                          /* 총소요량(숨김값)     */
+             , A.PTIN_QT                                           /* BOM투입량                 */
+             , A.PTIN_QT   AS PTIN_QTT                             /* BOM투입량(숨김값)   */
+             , A.PTIN_QT   AS PTIN_DNTT_QT                         /* 투입량                    */
+             , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.MTRL_GDS_C, '00000000') AS STPL_QT /* 현재고수량     */
+          FROM TB_PD_D_BOM_MTRL A
+		     , TB_PD_M_BOM_MFC  B
+             , TB_CO_M_GDS      C
+         WHERE 1=1 
+		   AND A.CORP_C            = B.CORP_C 
+		   AND A.BZPL_C            = B.BZPL_C 
+		   AND A.GDS_C             = B.GDS_C 
+		   AND A.BOM_C             = B.BOM_C 
+           AND A.CORP_C            = C.CORP_C
+           AND A.BZPL_C            = C.BZPL_C
+           AND A.MTRL_GDS_C        = C.GDS_C 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.BOM_C             = #{BOM_C}
+           AND A.USE_YN            = 'Y'
+    </select>
+    
+    <select id="selectBOM_D_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        <!-- 반제품 조회하는 쿼리 수정 물룸구분을 substr 대신 물품기본과 조인하여 체크함.  rchkorea 20211214 -->
+        WITH DNTT_MFS AS  /*+ selectBOM_D_01 */
+				(    /* 생산_작업지시제품TEMP */
+				  SELECT
+					  	 A.CORP_C
+                       , A.BZPL_C
+                       , '1'                       AS STP_DSC          /* 물품단계         */
+                       , A.GDS_C                   AS MFC_GDS_C        /* 제품물품코드     */
+                       , A.GDS_C                   AS BPRW_GDS_C       /* 전공정물품코드   */
+                       , A.BOM_C                   AS BPRW_BOM_C       /* 전공정BOM코드    */
+                       , D.GDS_TP_DSC              AS GDS_TP_DSC       /* 물품유형구분     */
+                       , A.GDS_C                   AS GDS_C            /* 물품코드         */
+                       , A.BOM_C                   AS BAS_BOM_C        /* BOM코드          */
+                       , A.BAS_QT                  AS MFS_DNTT_QT      /* 지수수량         */
+					   , A.BAS_QT                  AS BAS_QT           /* 지시수량         */
+           			   , A.GDS_C                   AS ORDER_SEQ        /* 정렬순서 */
+					   FROM TB_PD_M_BOM_MFC      A                 
+					  INNER JOIN TB_CO_M_GDS     D                    /* 공통_물품기본     */
+						 ON A.CORP_C       = D.CORP_C
+						AND A.BZPL_C       = D.BZPL_C
+						AND A.GDS_C        = D.GDS_C
+					  WHERE 1 = 1
+						AND A.CORP_C       = #{CORP_C}
+						AND A.BZPL_C       = #{BZPL_C}
+						AND A.GDS_C        = #{GDS_C}
+						AND A.BOM_C        = #{BOM_C}
+				)
+				 , DNTT_MTRL1 AS
+				(    /* 생산_작업지시반제품1TEMP */
+			      SELECT
+			        	 A.CORP_C
+                       , A.BZPL_C
+                       , '2'                        AS STP_DSC        /* 물품단계         */
+                       , A.GDS_C                    AS MFC_GDS_C      /* 제품물품코드     */
+                       , A.GDS_C                    AS BPRW_GDS_C     /* 전공정물품코드   */
+                       , A.BAS_BOM_C                AS BPRW_BOM_C     /* 전공정BOM코드    */
+                       , D.GDS_TP_DSC               AS GDS_TP_DSC     /* 물품유형구분     */
+                       , B.MTRL_GDS_C               AS GDS_C          /* 자재물품코드2    */
+                       , B.BOM_C                    AS BAS_BOM_C      /* 자재BOM코드      */
+                       , MAX(B.PTIN_QT)             AS MFS_DNTT_QT    /* 지수수량         */
+			           , MAX(B.PTIN_QT)             AS BAS_QT         /* 지시수량         */
+           			   , B.MTRL_GDS_C               AS ORDER_SEQ      /* 정렬순서 */
+		           FROM  DNTT_MFS               A           
+			       INNER JOIN TB_PD_D_BOM_MTRL  B     
+			        	 ON A.CORP_C       = B.CORP_C
+			        	AND A.BZPL_C       = B.BZPL_C
+			        	AND A.GDS_C        = B.GDS_C
+			        	AND A.BAS_BOM_C    = B.BOM_C
+			       INNER JOIN TB_CO_M_GDS    D
+			             ON B.CORP_C       = D.CORP_C
+			        	AND B.BZPL_C       = D.BZPL_C
+			        	AND B.MTRL_GDS_C   = D.GDS_C
+			       WHERE 1 = 1
+			         AND D.GDS_TP_DSC = '20'		/* 반제품 */
+			         AND B.USE_YN     = 'Y'
+			       GROUP BY A.CORP_C
+			              , A.BZPL_C
+			        	  , A.GDS_C
+						  , A.BAS_BOM_C
+			        	  , B.MTRL_GDS_C
+			        	  , D.GDS_TP_DSC
+			        	  , B.BOM_C
+                    
+				)
+				 , DNTT_MTRL2 AS
+				(    /* 생산_작업지시 반제품 안에 반제품 1TEMP */
+				  SELECT
+						 A.CORP_C
+                       , A.BZPL_C
+                       , '3'                      AS STP_DSC        /* 물품단계         */
+                       , A.MFC_GDS_C              AS MFC_GDS_C      /* 제품물품코드     */
+                       , A.GDS_C                  AS BPRW_GDS_C     /* 전공정물품코드   */
+                       , A.BAS_BOM_C              AS BPRW_BOM_C     /* 전공정BOM코드    */
+                       , D.GDS_TP_DSC             AS GDS_TP_DSC     /* 물품유형구분     */
+                       , B.MTRL_GDS_C             AS GDS_C          /* 자재물품코드2    */
+                       , B.BOM_C                  AS BAS_BOM_C      /* 자재BOM코드      */
+                       , MAX(B.PTIN_QT)           AS MFS_DNTT_QT    /* 지수수량         */
+					   , MAX(B.PTIN_QT)           AS BAS_QT         /* 지시수량         */
+          			   , CONCAT(A.ORDER_SEQ, B.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+				    FROM DNTT_MTRL1             A           
+				   INNER JOIN TB_PD_D_BOM_MTRL  B     
+					  ON A.CORP_C       = B.CORP_C
+					 AND A.BZPL_C       = B.BZPL_C
+				 	 AND A.GDS_C        = B.GDS_C
+					 AND A.BAS_BOM_C    = B.BOM_C
+				   INNER JOIN TB_CO_M_GDS D
+					  ON B.CORP_C       = D.CORP_C
+					 AND B.BZPL_C       = D.BZPL_C
+					 AND B.MTRL_GDS_C   = D.GDS_C
+			       WHERE 1 = 1
+			         AND D.GDS_TP_DSC = '20'		/* 반제품 */
+			         AND B.USE_YN     = 'Y'
+				   GROUP BY A.CORP_C
+					      , A.BZPL_C
+                          , A.MFC_GDS_C
+                          , A.GDS_C
+			              , A.BAS_BOM_C
+			              , B.MTRL_GDS_C
+                          , D.GDS_TP_DSC
+                          , B.BOM_C
+						  , A.ORDER_SEQ
+				)
+				 , DNTT_MTRL3 AS
+				(    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 1TEMP */
+				  SELECT
+				  		 A.CORP_C
+                       , A.BZPL_C
+                       , '4'                      AS STP_DSC        /* 물품단계         */
+                       , A.MFC_GDS_C              AS MFC_GDS_C      /* 제품물품코드     */
+                       , A.GDS_C                  AS BPRW_GDS_C     /* 전공정물품코드   */
+                       , A.BAS_BOM_C              AS BPRW_BOM_C     /* 전공정BOM코드    */
+                       , D.GDS_TP_DSC             AS GDS_TP_DSC     /* 물품유형구분     */
+                       , B.MTRL_GDS_C             AS GDS_C          /* 자재물품코드2    */
+                       , B.BOM_C                  AS BAS_BOM_C      /* 자재BOM코드      */
+                       , MAX(B.PTIN_QT)           AS MFS_DNTT_QT    /* 지수수량         */
+				  	   , MAX(B.PTIN_QT)           AS BAS_QT         /* 지시수량         */
+          			   , CONCAT(A.ORDER_SEQ, B.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+				    FROM DNTT_MTRL2             A           
+				   INNER JOIN TB_PD_D_BOM_MTRL  B     
+				  	  ON A.CORP_C       = B.CORP_C
+				  	 AND A.BZPL_C       = B.BZPL_C
+				  	 AND A.GDS_C        = B.GDS_C
+				  	 AND A.BAS_BOM_C    = B.BOM_C
+				   INNER JOIN TB_CO_M_GDS D
+				  	  ON B.CORP_C       = D.CORP_C
+				  	 AND B.BZPL_C       = D.BZPL_C
+				  	 AND B.MTRL_GDS_C   = D.GDS_C
+			       WHERE 1 = 1
+			         AND D.GDS_TP_DSC = '20'		/* 반제품 */
+			         AND B.USE_YN     = 'Y'
+				   GROUP BY A.CORP_C
+				  	      , A.BZPL_C
+                          , A.MFC_GDS_C
+                          , A.GDS_C
+			              , A.BAS_BOM_C
+			              , B.MTRL_GDS_C
+                          , D.GDS_TP_DSC
+                          , B.BOM_C
+                          , A.ORDER_SEQ
+				)
+				 , DNTT_MTRL4 AS
+				(    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 안에 반제품 1TEMP */
+				  SELECT
+				   		 A.CORP_C
+				   	   , A.BZPL_C
+                       , '5'                     AS STP_DSC        /* 물품단계         */
+                       , A.MFC_GDS_C             AS MFC_GDS_C      /* 제품물품코드     */
+                       , A.GDS_C                 AS BPRW_GDS_C     /* 전공정물품코드   */
+                       , A.BAS_BOM_C             AS BPRW_BOM_C     /* 전공정BOM코드    */
+                       , D.GDS_TP_DSC            AS GDS_TP_DSC     /* 물품유형구분     */
+                       , B.MTRL_GDS_C            AS GDS_C          /* 자재물품코드2    */
+                       , B.BOM_C                 AS BAS_BOM_C      /* 자재BOM코드      */
+                       , MAX(B.PTIN_QT)          AS MFS_DNTT_QT    /* 지수수량         */
+				   	   , MAX(B.PTIN_QT)          AS BAS_QT         /* 지시수량         */
+          			   , CONCAT(A.ORDER_SEQ, B.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+				    FROM DNTT_MTRL3       A           
+				   INNER JOIN             TB_PD_D_BOM_MTRL  B     
+				   	  ON A.CORP_C       = B.CORP_C
+				   	 AND A.BZPL_C       = B.BZPL_C
+				   	 AND A.GDS_C        = B.GDS_C
+				   	 AND A.BAS_BOM_C    = B.BOM_C
+				   INNER JOIN TB_CO_M_GDS D
+				   	  ON B.CORP_C       = D.CORP_C
+				   	 AND B.BZPL_C       = D.BZPL_C
+				   	 AND B.MTRL_GDS_C   = D.GDS_C
+			       WHERE 1 = 1
+			         AND D.GDS_TP_DSC = '20'		/* 반제품 */
+			         AND B.USE_YN     = 'Y'
+				   GROUP BY A.CORP_C
+				   	      , A.BZPL_C
+                          , A.MFC_GDS_C
+                          , A.GDS_C
+			              , A.BAS_BOM_C
+			              , B.MTRL_GDS_C
+                          , D.GDS_TP_DSC
+                          , B.BOM_C
+                          , A.ORDER_SEQ
+				)
+    		 SELECT
+    				A.CORP_C
+    			  , A.BZPL_C
+                  , A.STP_DSC                          /* 물품단계:색상처리용   */
+                  , A.GDS_TP_DSC                       /* 물품유형구분코드      */
+                  , A.MFC_GDS_C                        /* 제품코드              */
+                  , A.BPRW_GDS_C                       /* 전공정물품코드        */
+                  , A.BPRW_BOM_C                       /* 전공정BOM코드         */
+                  , A.GDS_C                            /* 물품코드              */
+                  , B.GDS_DTL_NM  AS GDS_NM            /* 물품명                */
+                  , B.UNT_C                            /* 단위                  */
+                  , B.GDS_STD_NM                       /* 물품명                */
+                  , A.BAS_BOM_C   AS BOM_C             /* BOM코드               */
+   			      , B.HST_AMN_DSC                      /* 이력관리대상구분코드 */
+    			  , B.PD_LINE_C                        /* 주생산라인 */
+    			  , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000') AS STPL_QT /* 현재고수량     */
+    			  , A.MFS_DNTT_QT                      /* 지시수량              */
+    			  , A.BAS_QT                           /* 지시수량              */
+    			  , A.ORDER_SEQ                        /* 정렬순서 */
+    		   FROM (
+    				  SELECT CORP_C, BZPL_C, MFC_GDS_C, BPRW_GDS_C, BPRW_BOM_C, GDS_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, MFS_DNTT_QT, BAS_QT, ORDER_SEQ 
+    				    FROM DNTT_MTRL1                /* 생산_작업지시반제품1TEMP */
+    				   UNION ALL
+    				  SELECT CORP_C, BZPL_C, MFC_GDS_C, BPRW_GDS_C, BPRW_BOM_C, GDS_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, MFS_DNTT_QT, BAS_QT, ORDER_SEQ 
+    				    FROM DNTT_MTRL2                /* 생산_작업지시반제품2TEMP */
+    				   UNION ALL
+    				  SELECT CORP_C, BZPL_C, MFC_GDS_C, BPRW_GDS_C, BPRW_BOM_C, GDS_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, MFS_DNTT_QT, BAS_QT, ORDER_SEQ 
+    				    FROM DNTT_MTRL3                /* 생산_작업지시반제품3TEMP */
+    				   UNION ALL
+    				  SELECT CORP_C, BZPL_C, MFC_GDS_C, BPRW_GDS_C, BPRW_BOM_C, GDS_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, MFS_DNTT_QT, BAS_QT, ORDER_SEQ 
+    				    FROM DNTT_MTRL4                /* 생산_작업지시반제품4TEMP */
+    				) A
+    		  INNER JOIN TB_CO_M_GDS B                 /* 공통_물품기본            */
+    			 ON A.CORP_C = B.CORP_C
+    			AND A.BZPL_C = B.BZPL_C
+    			AND A.GDS_C  = B.GDS_C
+    		  ORDER BY A.ORDER_SEQ          
+    </select>
+
+    <select id="select_Pd2010List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2010List01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.PD_PLA_DT                                         /* 생산시작일자              */
+             , A.DNTT_METH_C                                       /* 지시방법코드              */
+             , A.RVO_CLO_DT                                        /* 수주마감일자              */
+             , A.RVO_CLO_SQNO                                      /* 수주마감일련번호(차수)    */
+             , A.PLN_YY                                            /* 생산계획년                */
+             , A.PLN_MM                                            /* 생산계획월                */
+             , A.PLN_WEEK                                          /* 생산계획주                */
+             , A.DANI_PD_C                                         /* 주야생산코드              */
+             , A.ETR_MFC_RC_DT                                     /* 수탁위탁가공접수일자      */
+             , A.ETR_MFC_RC_SQNO                                   /* 수탁위탁가공접수일련번호  */
+             , A.DNTT_CNTN                                         /* 작업지시내용              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , B.TR_SQNO                                           /* 거래일련번호              */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+			 , B.CORP_C                                            /* 회사코드                  */
+             , B.BZPL_C                                            /* 사업장코드                */
+             , B.DNTT_DT                                           /* 지시일자                  */
+             , B.DNTT_SQNO                                         /* 지시일련번호              */
+             , B.DNTT_DNO                                          /* 지시상세번호              */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드       20220307 ksckorea   */
+             , B.GDS_C                                             /* 물품코드                  */
+             , B.GDS_HST_NO                                        /* 물품(라벨)이력번호        */
+			 , C.GDS_DTL_NM                                        /* 물품명                    */
+			 , C.GDS_NM                                            /* 물품명                    */
+			 , C.GDS_STD_NM                                        /* 규격명                    */
+             , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+	       	 , CASE WHEN C.GDS_TP_DSC = '10' THEN '[제]'
+				    WHEN C.GDS_TP_DSC = '20' THEN '[반]'
+					WHEN C.GDS_TP_DSC = '30' THEN '[부]'
+				    WHEN C.GDS_TP_DSC = '40' THEN '[원]'
+					WHEN C.GDS_TP_DSC = '50' THEN '[첨]'
+				    WHEN C.GDS_TP_DSC = '60' THEN '[포]'
+					WHEN C.GDS_TP_DSC = '70' THEN '[재]'
+					WHEN C.GDS_TP_DSC = '80' THEN '[상]'
+				    WHEN C.GDS_TP_DSC = '91' THEN '[저]'
+				    WHEN C.GDS_TP_DSC = '92' THEN '[보]'
+				    ELSE '[대]' END AS GDS_TP_DSC_A                /* 물품유형구분코드A        */        
+	         , C.WHT_QT                                            /* 기준단량                  */
+             , C.TXT_DSC                                           /* 과세구분코드              */
+             , C.UNT_C                                             /* 단위코드                  */
+             , C.BAS_WHSE_C                                        /* 기본창고코드              */
+             , C.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , C.ERP_GDS_C                                         /* ERP품목코드               */
+             , C.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , C.BAS_BOM_C                                         /* 기본BOM코드               */
+             , C.USE_YN                                            /* 사용여부                  */
+             , B.BOM_C                                             /* BOM코드                   */
+             , B.BPRW_GDS_C                                        /* 전공정물품코드            */
+             , B.BPRW_BOM_C                                        /* 전공정BOM코드             */
+             , B.STP_DSC                                           /* 단계구분코드              */
+             , B.PD_LINE_C                                         /* 생산라인코드              */
+             , B.MFS_DNTT_QT                                       /* 제품지시량                */
+             , CONCAT(FORMAT(MFS_DNTT_QT, '##0.##'), ' ', UNT_C) AS MFS_DNTT_QT_U   /* 제품지시량단위           */
+             , 0 AS BOZ_IN_QT                                       /*BOX당입수                */
+			 , (SELECT RVO_BOX_QT
+			      FROM TB_SE_D_RVO D
+				 WHERE 1 = 1
+				   AND D.CORP_C   = B.CORP_C
+				   AND D.BZPL_C   = B.BZPL_C
+				   AND D.RVO_DT   = B.DNTT_DT
+				   AND D.RVO_SQNO = B.DNTT_SQNO 
+				   AND D.RVO_DSQNO = 1) AS RVO_BOX_QT              /* BOX수량                 */
+             , B.MFS_DNTT_QT  AS MFS_DNTT_QTT                      /* 제품지시량(숨김값)        */
+             , B.WHSE_C                                            /* 창고코드                  */
+             , DBO.SF_GET_WHSE_NM(B.CORP_C,B.BZPL_C,B.WHSE_C)    AS WHSE_NM
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , B.DEL_YN                                            /* 삭제여부                  */
+             , B.ETC_DSC1                                          /* 기타구분1                 */
+             , B.ETC_DSC2                                          /* 기타구분2                 */
+             , B.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+			 , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+			 , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+          FROM TB_PD_M_WK_DNTT     A
+		     , TB_PD_D_WK_DNTT_MFS B
+			 , TB_CO_M_GDS         C 
+         WHERE 1=1 
+		   AND A.BZPL_C            = B.BZPL_C   
+           AND A.CORP_C            = B.CORP_C   
+           AND A.DNTT_DT           = B.DNTT_DT  
+           AND A.DNTT_SQNO         = B.DNTT_SQNO
+		   AND B.BZPL_C            = C.BZPL_C   
+           AND B.CORP_C            = C.CORP_C   
+           AND B.GDS_C             = C.GDS_C
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND B.DNTT_DNO          = #{DNTT_DNO}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+    </select>
+    
+    <select id="select_Pd2010List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2010List02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */ 
+             , A.GDS_C                                             /* 물품코드                  */
+			 , B.GDS_NM                                            /* 물품명                    */
+			 , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+			 , B.GDS_STD_NM                                        /* 규격                      */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.WHT_QT                                            /* 기준단량                  */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.BAS_WHSE_C                                        /* 기본창고코드              */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.ERP_GDS_C                                         /* ERP품목코드               */
+             , B.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , B.BAS_BOM_C                                         /* 기본BOM코드               */
+             , B.USE_YN                                            /* 사용여부                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.BPRW_GDS_C                                        /* 전공정물품코드            */
+             , A.BPRW_BOM_C                                        /* 전공정BOM코드             */
+             , A.STP_DSC                                           /* 단계구분코드              */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000') AS STPL_QT /* 현재고수량     */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.MFS_DNTT_QT                                       /* 제품지시량                */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , DBO.SF_GET_WHSE_NM(A.CORP_C,A.BZPL_C,A.WHSE_C)    AS WHSE_NM
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_DNTT_MFS A
+		     , TB_CO_M_GDS         B
+         WHERE 1=1 
+           AND A.BZPL_C            = B.BZPL_C   
+           AND A.CORP_C            = B.CORP_C   
+           AND A.GDS_C             = B.GDS_C
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+		   AND A.DNTT_DNO          = #{DNTT_DNO}
+    </select>
+    
+    <select id="select_Pd2010List03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2010List03 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_NM                                            /* 물품명                    */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B.GDS_STD_NM                                        /* 규격명                    */
+             , B.WHT_QT                                            /* 기준단량                  */
+             , B.GDS_ENM                                           /* 물품영문명                */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.BAS_BOM_C       AS BOM_C                          /* 기본BOM코드               */
+             , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000') AS STPL_QT /* 현재고수량     */
+             , B.USE_YN                                            /* 사용여부                  */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.NED_DNTT_QT                                       /* 총소요량                  */
+             , A.PTIN_DNTT_QT                                      /* 투입지시량 단위             */
+             , CONCAT(FORMAT(PTIN_DNTT_QT,'##0.##'),' ', UNT_C)  AS PTIN_DNTT_QT_U   /* 투입지시량 단위             */
+             , A.NED_DNTT_QT   AS NED_QTT                          /* 총소요량(숨김값)     */
+             , A.PTIN_DNTT_QT  AS PTIN_QTT                         /* 투입지시량(숨김값)    */
+             , A.PTIN_GDS_UNT_C                                    /* 물품단위코드              */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , DBO.SF_GET_WHSE_NM(A.CORP_C,A.BZPL_C,A.WHSE_C)    AS WHSE_NM
+             , A.ACP_MTR_DSC                                       /* 인수재료구분코드          */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_DNTT_MTRL A
+		     , TB_CO_M_GDS          B
+         WHERE 1=1 
+		   AND A.BZPL_C            = B.BZPL_C
+           AND A.CORP_C            = B.CORP_C
+           AND A.GDS_C             = B.GDS_C 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DNTT_DNO          = #{DNTT_DNO}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+    </select> 
+    
+    <!-- 반제품 내역 조회 20211215 rchkorea -->
+    <select id="select_Pd2010List06" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2010List06 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */ 
+             , A.GDS_C                                             /* 물품코드                  */
+			 , B.GDS_NM                                            /* 물품명                    */
+			 , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+			 , B.GDS_STD_NM                                        /* 규격                      */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.WHT_QT                                            /* 기준단량                  */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.BAS_WHSE_C                                        /* 기본창고코드              */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.ERP_GDS_C                                         /* ERP품목코드               */
+             , B.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , B.BAS_BOM_C                                         /* 기본BOM코드               */
+             , B.USE_YN                                            /* 사용여부                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.BPRW_GDS_C                                        /* 전공정물품코드            */
+             , A.BPRW_BOM_C                                        /* 전공정BOM코드             */
+             , A.STP_DSC                                           /* 단계구분코드              */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000') AS STPL_QT /* 현재고수량     */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.MFS_DNTT_QT                                       /* 제품지시량                */
+             , A.WHSE_C                                            /* 창고코드                  */
+			 , DBO.SF_GET_WHSE_NM(A.CORP_C,A.BZPL_C,A.WHSE_C)    AS WHSE_NM
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_DNTT_MFS A
+		     , TB_CO_M_GDS         B
+         WHERE 1=1 
+           AND A.CORP_C            = B.CORP_C   
+           AND A.BZPL_C            = B.BZPL_C   
+           AND A.GDS_C             = B.GDS_C
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+           AND A.DNTT_DNO   BETWEEN  (CASE WHEN #{DNTT_DNO} = '00' THEN '01'     /* 조회하는 상세번호에 따라 하위 반제품 모두 조회 */
+		                                   WHEN #{DNTT_DNO} BETWEEN '01' AND '09' THEN '10' 
+		                                   WHEN #{DNTT_DNO} BETWEEN '10' AND '19' THEN '20' 
+		                                   WHEN #{DNTT_DNO} BETWEEN '20' AND '29' THEN '30' 
+							         	   ELSE '99' 
+							          END) 
+							    AND  '99'  
+         ORDER BY A.DNTT_DT  
+                , A.DNTT_SQNO
+                , A.DNTT_DNO
+    </select>
+    
+</mapper>

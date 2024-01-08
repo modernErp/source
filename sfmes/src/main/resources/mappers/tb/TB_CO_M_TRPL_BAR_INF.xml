@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_TRPL_BAR_INF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_TRPL_BAR_INF */ TB_CO_M_TRPL_BAR_INF
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TRPL_C              /* 거래처코드           */
+            , TRPL_GDS_BAR_C      /* 거래처물품바코드     */
+            , GDS_C               /* 물품코드             */
+            , TRPL_GDS_NM         /* 거래처물품명         */
+            , BAR_CIP_GBN1        /* 바코드자릿수구분1    */
+            , BAR_CIP_GBN_NM1     /* 바코드자릿수구분명1  */
+            , BAR_CIP_GBN2        /* 바코드자릿수구분2    */
+            , BAR_CIP_GBN_NM2     /* 바코드자릿수구분명2  */
+            , BAR_CIP_GBN3        /* 바코드자릿수구분3    */
+            , BAR_CIP_GBN_NM3     /* 바코드자릿수구분명3  */
+            , BAR_CIP_GBN4        /* 바코드자릿수구분4    */
+            , BAR_CIP_GBN_NM4     /* 바코드자릿수구분명4  */
+            , BAR_CIP_GBN5        /* 바코드자릿수구분5    */
+            , BAR_CIP_GBN_NM5     /* 바코드자릿수구분명5  */
+            , BAR_CIP_GBN6        /* 바코드자릿수구분6    */
+            , BAR_CIP_GBN_NM6     /* 바코드자릿수구분명6  */
+            , BAR_CIP_GBN7        /* 바코드자릿수구분7    */
+            , BAR_CIP_GBN_NM7     /* 바코드자릿수구분명7  */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{TRPL_C}
+            , #{TRPL_GDS_BAR_C}
+            , #{GDS_C}
+            , #{TRPL_GDS_NM}
+            , #{BAR_CIP_GBN1}
+            , #{BAR_CIP_GBN_NM1}
+            , #{BAR_CIP_GBN2}
+            , #{BAR_CIP_GBN_NM2}
+            , #{BAR_CIP_GBN3}
+            , #{BAR_CIP_GBN_NM3}
+            , #{BAR_CIP_GBN4}
+            , #{BAR_CIP_GBN_NM4}
+            , #{BAR_CIP_GBN5}
+            , #{BAR_CIP_GBN_NM5}
+            , #{BAR_CIP_GBN6}
+            , #{BAR_CIP_GBN_NM6}
+            , #{BAR_CIP_GBN7}
+            , #{BAR_CIP_GBN_NM7}
+            , #{RMK_CNTN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_TRPL_BAR_INF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_TRPL_BAR_INF */ TB_CO_M_TRPL_BAR_INF
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , TRPL_GDS_BAR_C      = #{TRPL_GDS_BAR_C}        /* 거래처물품바코드     */
+             , GDS_C               = #{GDS_C}				  /* 물품코드             */	
+             , TRPL_GDS_NM         = #{TRPL_GDS_NM}           /* 거래처물품명         */
+             , BAR_CIP_GBN1        = #{BAR_CIP_GBN1}          /* 바코드자릿수구분1    */
+             , BAR_CIP_GBN_NM1     = #{BAR_CIP_GBN_NM1}       /* 바코드자릿수구분명1  */
+             , BAR_CIP_GBN2        = #{BAR_CIP_GBN2}          /* 바코드자릿수구분2    */
+             , BAR_CIP_GBN_NM2     = #{BAR_CIP_GBN_NM2}       /* 바코드자릿수구분명2  */
+             , BAR_CIP_GBN3        = #{BAR_CIP_GBN3}          /* 바코드자릿수구분3    */
+             , BAR_CIP_GBN_NM3     = #{BAR_CIP_GBN_NM3}       /* 바코드자릿수구분명3  */
+             , BAR_CIP_GBN4        = #{BAR_CIP_GBN4}          /* 바코드자릿수구분4    */
+             , BAR_CIP_GBN_NM4     = #{BAR_CIP_GBN_NM4}       /* 바코드자릿수구분명4  */
+             , BAR_CIP_GBN5        = #{BAR_CIP_GBN5}          /* 바코드자릿수구분5    */
+             , BAR_CIP_GBN_NM5     = #{BAR_CIP_GBN_NM5}       /* 바코드자릿수구분명5  */
+             , BAR_CIP_GBN6        = #{BAR_CIP_GBN6}          /* 바코드자릿수구분6    */
+             , BAR_CIP_GBN_NM6     = #{BAR_CIP_GBN_NM6}       /* 바코드자릿수구분명6  */
+             , BAR_CIP_GBN7        = #{BAR_CIP_GBN7}          /* 바코드자릿수구분7    */
+             , BAR_CIP_GBN_NM7     = #{BAR_CIP_GBN_NM7}       /* 바코드자릿수구분명7  */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TRPL_C              = #{TRPL_C}
+           AND TRPL_GDS_BAR_C      = #{TRPL_GDS_BAR_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_TRPL_BAR_INF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_TRPL_BAR_INF */ FROM TB_CO_M_TRPL_BAR_INF
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TRPL_C              = #{TRPL_C}
+           AND TRPL_GDS_BAR_C      = #{TRPL_GDS_BAR_C}
+    </delete>
+
+    <select id="select_TB_CO_M_TRPL_BAR_INF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_TRPL_BAR_INF */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.TRPL_GDS_BAR_C                                    /* 거래처물품바코드          */
+             , A.TRPL_GDS_NM                                       /* 거래처물품명              */
+             , A.BAR_CIP_GBN1                                      /* 바코드자릿수구분1         */
+             , A.BAR_CIP_GBN_NM1                                   /* 바코드자릿수구분명1       */
+             , A.BAR_CIP_GBN2                                      /* 바코드자릿수구분2         */
+             , A.BAR_CIP_GBN_NM2                                   /* 바코드자릿수구분명2       */
+             , A.BAR_CIP_GBN3                                      /* 바코드자릿수구분3         */
+             , A.BAR_CIP_GBN_NM3                                   /* 바코드자릿수구분명3       */
+             , A.BAR_CIP_GBN4                                      /* 바코드자릿수구분4         */
+             , A.BAR_CIP_GBN_NM4                                   /* 바코드자릿수구분명4       */
+             , A.BAR_CIP_GBN5                                      /* 바코드자릿수구분5         */
+             , A.BAR_CIP_GBN_NM5                                   /* 바코드자릿수구분명5       */
+             , A.BAR_CIP_GBN6                                      /* 바코드자릿수구분6         */
+             , A.BAR_CIP_GBN_NM6                                   /* 바코드자릿수구분명6       */
+             , A.BAR_CIP_GBN7                                      /* 바코드자릿수구분7         */
+             , A.BAR_CIP_GBN_NM7                                   /* 바코드자릿수구분명7       */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_TRPL_BAR_INF A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.TRPL_C            = #{TRPL_C}
+           AND A.TRPL_GDS_BAR_C    = #{TRPL_GDS_BAR_C}
+    </select>
+</mapper>

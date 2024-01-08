@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_D_USR_ROLE" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_D_USR_ROLE */ TB_SY_D_USR_ROLE
+        (
+              CORP_C              /* 회사코드             */
+            , USR_ID              /* 사용자아이디         */
+            , EMP_ROL_DSC         /* 직원역할구분         */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USR_ID}
+            , #{EMP_ROL_DSC}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_D_USR_ROLE" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_D_USR_ROLE */ TB_SY_D_USR_ROLE
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , USR_ID              = #{USR_ID}                /* 사용자아이디         */
+             , EMP_ROL_DSC         = #{EMP_ROL_DSC}           /* 직원역할구분         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND EMP_ROL_DSC         = #{EMP_ROL_DSC}
+           AND USR_ID              = #{USR_ID}
+    </update>
+
+    <delete id="delete_TB_SY_D_USR_ROLE" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_D_USR_ROLE */ FROM TB_SY_D_USR_ROLE
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND EMP_ROL_DSC         = #{EMP_ROL_DSC}
+           AND USR_ID              = #{USR_ID}
+    </delete>
+
+    <select id="select_TB_SY_D_USR_ROLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_D_USR_ROLE */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.EMP_ROL_DSC                                       /* 직원역할구분         */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_D_USR_ROLE A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.EMP_ROL_DSC       = #{EMP_ROL_DSC}
+           AND A.USR_ID            = #{USR_ID}
+    </select>
+</mapper>

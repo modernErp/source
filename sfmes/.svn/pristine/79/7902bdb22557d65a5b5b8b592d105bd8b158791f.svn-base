@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 회사코드 USE_YN 여부찾기 -->
+    <select id="selectCorpChk" parameterType="LinkedHashMap" resultType="String">
+        SELECT ISNULL(A.USE_YN, 'N')
+          FROM TB_CO_M_CORP A
+         WHERE A.CORP_C = #{CORP_C} 
+    </select>
+
+
+    <!-- 00. 사용자 기본정보 조회 -->
+    <!-- 2021.10.22 서광석
+                대표사업장명(BZPL_NM), 관리자여부(ADMIN_YN) 항목 추가
+       -->
+    <select id="selectUsrInfo" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_M_USR */
+               A.CORP_C                                            /* 회사코드             */
+             , (SELECT CORP_NM 
+                  FROM TB_CO_M_CORP
+                 WHERE CORP_C = #{CORP_C}) AS CORP_NM              /* 회사명               */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.USR_NM                                            /* 사용자명             */
+             , A.PW                                                /* 암호화된비밀번호     */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , (SELECT BZPL_NM 
+                  FROM TB_CO_M_BZPL
+                 WHERE CORP_C = #{CORP_C}
+                   AND BZPL_C = A.BZPL_C) AS BZPL_NM               /* 회사명               */             
+             , A.DEPT_C                                            /* 부서코드             */
+             , A.USE_DSC                                           /* 사용자구분           */
+             , A.LS_CONN_DTM                                       /* 최종접속일시         */
+             , A.LS_CONN_IP                                        /* 최종IP               */
+             , A.CONN_YN                                           /* 접속여부             */
+             , A.PW_CHG_DTM                                        /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                                      /* 로그인시도횟수       */
+             , A.LOCK_YN                                           /* 잠김여부             */
+             , A.ACC_ST_DT                                         /* 계정시작일자         */
+             , A.ACC_ED_DT                                         /* 계정종료일자         */
+             , A.EMAIL_ADR                                         /* 이메일주소           */
+             , A.ANC_RMS_METH                                      /* 알림수신방법         */
+             , A.SIGN_IMG                                          /* 사인이미지           */
+             , A.USE_YN                                            /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , ISNULL(A.ADMIN_YN, 'N') AS ADMIN_YN
+             , (SELECT MAX(EMP_ROL_DSC)
+                  FROM TB_SY_D_USR_ROLE
+                 WHERE 1=1 
+                   AND CORP_C = #{CORP_C}
+                   AND USR_ID = #{USR_ID}
+                ) AS EMP_ROL_DSC                                   /* 사용자 역활 구분 2022.04.18 나명우추가 */
+             , DBO.GetSysDate()                   AS   SVR_DATE    /* 서버시간 */
+          FROM TB_SY_M_USR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.USR_ID            = #{USR_ID} 
+    </select>
+    
+    <!-- 04. 로그인 시도 횟수 조회 -->
+    <select id="selectLginProvNt" parameterType="LinkedHashMap" resultType="int">
+        SELECT ISNULL(LGIN_PROV_NT, 0)    /* 로그인시도횟수 */             
+          FROM TB_SY_M_USR
+         WHERE 1=1
+           AND CORP_C = #{CORP_C}
+           AND USR_ID = #{USR_ID} 
+    </select> 
+    
+    <!-- 05. 로그인 시도 횟수 증가  -->
+    <update id="updateUsrLginProvNt" parameterType="LinkedHashMap">
+        UPDATE TB_SY_M_USR
+           SET     
+               LGIN_PROV_NT = ISNULL(LGIN_PROV_NT, 0) + 1   /* 로그인시도횟수 */
+             , CONN_YN      = 'N'                           /* 접속여부       */
+             , LSCHG_DTM    = GETDATE()                     /* 최종변경일시   */   
+             , LSCHG_ID     = '000000'                      /* 최종변경아이디 */ 
+         WHERE USR_ID       = #{USR_ID}                     
+           AND CORP_C       = #{CORP_C}  
+    </update>
+    
+    <!-- 06. 비밀번호 오류 5회 시 계정잠금 -->
+    <update id="updateUsrLockYn" parameterType="LinkedHashMap">
+        UPDATE TB_SY_M_USR
+           SET     
+               LOCK_YN      = 'Y'                           /* 계정잠김여부   */
+             , USE_YN       = 'N'                           /* 사용여부       */
+             , LSCHG_DTM    = GETDATE()                     /* 최종변경일시   */    
+             , LSCHG_ID     = '000000'                      /* 최종변경아이디 */
+         WHERE USR_ID       = #{USR_ID}                     
+           AND CORP_C       = #{CORP_C}  
+    </update>
+    
+    <!-- 06. 로그인 성공 시, 연결정보 업데이트 -->
+    <!-- 2021.10.23 서광석
+         로그인 성공 시, 로그인 시도 회수 초기화
+       -->    
+    <update id="updateUsrConnInfo" parameterType="LinkedHashMap">
+        UPDATE TB_SY_M_USR
+           SET     
+               LS_CONN_DTM  = GETDATE()                     /* 최종접속일시   */
+             , LS_CONN_IP   = #{LS_CONN_IP}                 /* 사용여부       */
+             , CONN_YN      = 'Y'                           /* 접속여부       */
+             , LGIN_PROV_NT = 0  
+         WHERE USR_ID       = #{USR_ID}                     
+           AND CORP_C       = #{CORP_C}  
+    </update>    
+
+    <!-- 07. 로그아웃 시, 연결정보 업데이트 -->
+    <update id="updateUsrDisconnInfo" parameterType="LoginVO">
+        UPDATE TB_SY_M_USR
+           SET CONN_YN      = 'N'                           /* 접속여부       */  
+         WHERE USR_ID       = #{USR_ID}                     
+           AND CORP_C       = #{CORP_C}  
+    </update>    
+
+    <!-- 08. 대표사업장 카운트 조회 -->
+    <select id="selectBasBzplCnt" parameterType="LinkedHashMap" resultType="int">
+		SELECT count(1)
+		  FROM TB_SY_D_USR_BZPLC 
+		 WHERE CORP_C      = #{CORP_C}
+		   AND USR_ID      = #{USR_ID}
+		   AND BAS_BZPL_YN = 'Y'
+    </select> 
+</mapper>

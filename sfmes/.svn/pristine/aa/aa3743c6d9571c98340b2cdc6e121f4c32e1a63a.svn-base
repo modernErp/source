@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_DVY_VHC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_DVY_VHC */ TB_SE_M_DVY_VHC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , VHC_NO              /* 차량번호             */
+            , VHC_NM              /* 차량명               */
+            , DVY_CAFF_NM         /* 배송기사명           */
+            , DVY_YN              /* 배송여부             */
+            , VHC_TPC             /* 차량유형코드         */
+            , TONNAGE             /* 톤수                 */
+            , LOAD_WT             /* 적재중량             */
+            , CBM                 /* CBM                  */
+            , WDTH_LEN            /* 가로길이             */
+            , LEN_LEN             /* 세로길이             */
+            , HGHT                /* 높이                 */
+            , MFT_BZNM            /* 제조사               */
+            , MFT_DT              /* 제조일자             */
+            , BUY_BZNM            /* 구매사               */
+            , BUY_DT              /* 구매일자             */
+            , BUY_AM              /* 구매금액             */
+            , ISR_BZNM            /* 보험사               */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{VHC_NO}
+            , #{VHC_NM}
+            , #{DVY_CAFF_NM}
+            , #{DVY_YN}
+            , #{VHC_TPC}
+            , #{TONNAGE}
+            , #{LOAD_WT}
+            , #{CBM}
+            , #{WDTH_LEN}
+            , #{LEN_LEN}
+            , #{HGHT}
+            , #{MFT_BZNM}
+            , #{MFT_DT}
+            , #{BUY_BZNM}
+            , #{BUY_DT}
+            , #{BUY_AM}
+            , #{ISR_BZNM}
+            , #{RMK_CNTN}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_DVY_VHC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_DVY_VHC */ TB_SE_M_DVY_VHC
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , VHC_NO              = #{VHC_NO}                /* 차량번호             */
+             , VHC_NM              = #{VHC_NM}                /* 차량명               */
+             , DVY_CAFF_NM         = #{DVY_CAFF_NM}           /* 배송기사명           */
+             , DVY_YN              = #{DVY_YN}                /* 배송여부             */
+             , VHC_TPC             = #{VHC_TPC}               /* 차량유형코드         */
+             , TONNAGE             = #{TONNAGE}               /* 톤수                 */
+             , LOAD_WT             = #{LOAD_WT}               /* 적재중량             */
+             , CBM                 = #{CBM}                   /* CBM                  */
+             , WDTH_LEN            = #{WDTH_LEN}              /* 가로길이             */
+             , LEN_LEN             = #{LEN_LEN}               /* 세로길이             */
+             , HGHT                = #{HGHT}                  /* 높이                 */
+             , MFT_BZNM            = #{MFT_BZNM}              /* 제조사               */
+             , MFT_DT              = #{MFT_DT}                /* 제조일자             */
+             , BUY_BZNM            = #{BUY_BZNM}              /* 구매사               */
+             , BUY_DT              = #{BUY_DT}                /* 구매일자             */
+             , BUY_AM              = #{BUY_AM}                /* 구매금액             */
+             , ISR_BZNM            = #{ISR_BZNM}              /* 보험사               */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND VHC_NO              = #{VHC_NO}
+    </update>
+
+    <delete id="delete_TB_SE_M_DVY_VHC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_DVY_VHC */ FROM TB_SE_M_DVY_VHC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND VHC_NO              = #{VHC_NO}
+    </delete>
+
+    <select id="select_TB_SE_M_DVY_VHC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_DVY_VHC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.VHC_NO                                            /* 차량번호                  */
+             , A.VHC_NM                                            /* 차량명                    */
+             , A.DVY_CAFF_NM                                       /* 배송기사명                */
+             , A.DVY_YN                                            /* 배송여부                  */
+             , A.VHC_TPC                                           /* 차량유형코드              */
+             , A.TONNAGE                                           /* 톤수                      */
+             , A.LOAD_WT                                           /* 적재중량                  */
+             , A.CBM                                               /* CBM                       */
+             , A.WDTH_LEN                                          /* 가로길이                  */
+             , A.LEN_LEN                                           /* 세로길이                  */
+             , A.HGHT                                              /* 높이                      */
+             , A.MFT_BZNM                                          /* 제조사                    */
+             , A.MFT_DT                                            /* 제조일자                  */
+             , A.BUY_BZNM                                          /* 구매사                    */
+             , A.BUY_DT                                            /* 구매일자                  */
+             , A.BUY_AM                                            /* 구매금액                  */
+             , A.ISR_BZNM                                          /* 보험사                    */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최최등록자명              */       
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명              */
+          FROM TB_SE_M_DVY_VHC A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.VHC_NO            = #{VHC_NO}
+    </select>
+</mapper>

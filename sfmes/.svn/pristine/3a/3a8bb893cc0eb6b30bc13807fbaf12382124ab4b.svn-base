@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_TRU_MFC_REQ" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_TRU_MFC_REQ */ TB_PD_M_TRU_MFC_REQ
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TRU_MFC_RC_DT       /* 위탁가공접수일자     */
+            , TRU_MFC_RC_SQNO     /* 위탁가공접수일련번호 */
+            , TRU_MFC_STS_DSC     /* 위탁가공상태구분코드 */
+            , TRPL_C              /* 거래처코드           */
+            , DLVG_HOP_DT         /* 납품희망일자         */
+            , GDS_C               /* 물품코드             */
+            , GDS_TP_DSC          /* 물품유형구분코드     */
+            , TRU_RQR_QT          /* 위탁의뢰수량         */
+            , STR_TOT_QT          /* 입고총수량           */
+            , TAX_DSC             /* 과세구분코드         */
+            , TRU_MFC_UPR         /* 위탁가공물품단가     */
+            , TRU_MFC_AM          /* 위탁가공금액         */
+            , TRU_MFC_VAT         /* 위탁가공부가세       */
+            , CTR_CHRR_NM         /* 계약담당자           */
+            , CHRR_TEL_NO         /* 담당자전화번호       */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{TRU_MFC_RC_DT}
+            , #{TRU_MFC_RC_SQNO}
+            , #{TRU_MFC_STS_DSC}
+            , #{TRPL_C}
+            , #{DLVG_HOP_DT}
+            , #{GDS_C}
+            , #{GDS_TP_DSC}
+            , #{TRU_RQR_QT}
+            , #{STR_TOT_QT}
+            , #{TAX_DSC}
+            , #{TRU_MFC_UPR}
+            , #{TRU_MFC_AM}
+            , #{TRU_MFC_VAT}
+            , #{CTR_CHRR_NM}
+            , #{CHRR_TEL_NO}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_TRU_MFC_REQ" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_TRU_MFC_REQ */ TB_PD_M_TRU_MFC_REQ
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , TRU_MFC_RC_DT       = #{TRU_MFC_RC_DT}         /* 위탁가공접수일자     */
+             , TRU_MFC_RC_SQNO     = #{TRU_MFC_RC_SQNO}       /* 위탁가공접수일련번호 */
+             , TRU_MFC_STS_DSC     = #{TRU_MFC_STS_DSC}       /* 위탁가공상태구분코드 */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , DLVG_HOP_DT         = #{DLVG_HOP_DT}           /* 납품희망일자         */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , GDS_TP_DSC          = #{GDS_TP_DSC}            /* 물품유형구분코드     */
+             , TRU_RQR_QT          = #{TRU_RQR_QT}            /* 위탁의뢰수량         */
+             , STR_TOT_QT          = #{STR_TOT_QT}            /* 입고총수량           */
+             , TAX_DSC             = #{TAX_DSC}               /* 과세구분코드         */
+             , TRU_MFC_UPR         = #{TRU_MFC_UPR}           /* 위탁가공물품단가     */
+             , TRU_MFC_AM          = #{TRU_MFC_AM}            /* 위탁가공금액         */
+             , TRU_MFC_VAT         = #{TRU_MFC_VAT}           /* 위탁가공부가세       */
+             , CTR_CHRR_NM         = #{CTR_CHRR_NM}           /* 계약담당자           */
+             , CHRR_TEL_NO         = #{CHRR_TEL_NO}           /* 담당자전화번호       */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TRU_MFC_RC_DT       = #{TRU_MFC_RC_DT}
+           AND TRU_MFC_RC_SQNO     = #{TRU_MFC_RC_SQNO}
+    </update>
+
+    <delete id="delete_TB_PD_M_TRU_MFC_REQ" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_TRU_MFC_REQ */ FROM TB_PD_M_TRU_MFC_REQ
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TRU_MFC_RC_DT       = #{TRU_MFC_RC_DT}
+           AND TRU_MFC_RC_SQNO     = #{TRU_MFC_RC_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_M_TRU_MFC_REQ" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_TRU_MFC_REQ */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRU_MFC_RC_DT                                     /* 위탁가공접수일자          */
+             , A.TRU_MFC_RC_SQNO                                   /* 위탁가공접수일련번호      */
+             , A.TRU_MFC_STS_DSC                                   /* 위탁가공상태구분코드      */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.DLVG_HOP_DT                                       /* 납품희망일자              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.TRU_RQR_QT                                        /* 위탁의뢰수량              */
+             , A.STR_TOT_QT                                        /* 입고총수량                */
+             , A.TAX_DSC                                           /* 과세구분코드              */
+             , A.TRU_MFC_UPR                                       /* 위탁가공물품단가          */
+             , A.TRU_MFC_AM                                        /* 위탁가공금액              */
+             , A.TRU_MFC_VAT                                       /* 위탁가공부가세            */
+             , A.CTR_CHRR_NM                                       /* 계약담당자                */
+             , A.CHRR_TEL_NO                                       /* 담당자전화번호            */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_TRU_MFC_REQ A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.TRU_MFC_RC_DT     = #{TRU_MFC_RC_DT}
+           AND A.TRU_MFC_RC_SQNO   = #{TRU_MFC_RC_SQNO}
+    </select>
+</mapper>

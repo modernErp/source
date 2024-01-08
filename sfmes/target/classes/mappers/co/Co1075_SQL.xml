@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <!-- 거래처물품 연결 정보 변경이력 조회 -->
+    <select id="selectCo1075P01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               A.CORP_C                                          /* 회사코드         */
+             , A.TRPL_C                                          /* 거래처코드       */
+             , B.TRPL_NM                                         /* 거래처명         */
+             , A.GDS_C                                           /* 물품코드         */
+             , ISNULL(C.GDS_NM, C.GDS_ABR_NM) AS GDS_NM          /* 물품명           */
+             , A.TRPL_GDS_C                                      /* 거래처물품코드   */
+             , A.TRPL_GDS_NM                                     /* 거래처물품명     */
+             , A.TRPL_GDS_BAR_C                                  /* 거래처물품바코드 */
+             , A.TRPL_GDS_LABEL                                  /* 거래처물품라벨   */
+             , A.RMK_CNTN                                        /* 비고내용         */
+             , A.USE_YN                                          /* 사용여부         */
+             , A.ETC_DSC1                                        /* 기타구분1        */
+             , A.ETC_DSC2                                        /* 기타구분2        */
+             , A.ETC_DSC3                                        /* 기타구분3        */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM  /* 최초등록일시     */
+             , A.FSRG_ID                                         /* 최초등록자ID     */
+             , (
+                SELECT X.USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.FSRG_ID
+               ) AS FSRG_NM                                      /* 최초등록자명     */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM /* 최종변경일시     */
+             , A.LSCHG_ID                                        /* 최총변경자ID     */
+             , (
+                SELECT X.USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.LSCHG_ID
+               ) AS LSCHG_NM                                     /* 최총변경자명     */
+          FROM TB_CO_L_TRPL_GDS A LEFT OUTER JOIN TB_CO_M_TRPL B ON A.CORP_C = B.CORP_C AND A.TRPL_C = B.TRPL_C
+               LEFT OUTER JOIN TB_CO_M_GDS C ON A.CORP_C = C.CORP_C AND A.GDS_C = C.GDS_C
+         WHERE 1 = 1
+           AND A.CORP_C = '9999'
+        <if test='TRPL_C != null and TRPL_C != ""'>   
+            AND A.TRPL_C                                = #{TRPL_C}
+        </if>                                              
+        <if test='GDS_NM != null and GDS_NM != ""'>          
+            AND (A.TRPL_GDS_NM                             LIKE '%' + #{GDS_NM} + '%'
+             OR ISNULL(C.GDS_NM, C.GDS_ABR_NM) AS GDS_NM   LIKE '%' + #{GDS_NM} + '%')
+        </if>
+        <if test="ST_DT != null and ST_DT != ''">
+            <![CDATA[ AND CONVERT(CHAR(8), A.FSRG_DTM, 112) >= #{ST_DT} ]]>
+        </if>
+        <if test="ED_DT != null and ED_DT != ''">
+            <![CDATA[ AND CONVERT(CHAR(8), A.LSCHG_DTM, 112) <= #{ED_DT} ]]>
+        </if>
+    </select>
+</mapper>

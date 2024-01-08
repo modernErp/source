@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_PRW_REC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_PRW_REC */ TB_PD_M_PRW_REC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRW_C               /* 공정코드             */
+            , PRW_NM              /* 공정명               */
+            , PRW_CLF_C           /* 공정분류코드         */
+            , PD_DSC              /* 생산구분코드         */
+            , PRE_PRW_C           /* 전공정코드           */
+            , PD_LINE_C           /* 생산라인코드         */
+            , PD_PRW_EXPL         /* 생산공정설명         */
+            , PD_YLD              /* 생산수율             */
+            , PTIN_PERS           /* 투입인원             */
+            , WK_HR               /* 작업시간             */
+            , PCSTP_YN            /* 원가성여부           */
+            , QLT_ISP_YN          /* 품질검사여부         */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분3            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PRW_C}
+            , #{PRW_NM}
+            , #{PRW_CLF_C}
+            , #{PD_DSC}
+            , #{PRE_PRW_C}
+            , #{PD_LINE_C}
+            , #{PD_PRW_EXPL}
+            , DBO.SF_GET_FLOAT(#{PD_YLD})
+            , DBO.SF_GET_NUMERIC(#{PTIN_PERS})
+            , DBO.SF_GET_NUMERIC(#{WK_HR})
+            , #{PCSTP_YN}
+            , #{QLT_ISP_YN}
+            , #{RMK_CNTN}
+            , 'Y'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_PRW_REC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_PRW_REC */ TB_PD_M_PRW_REC
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PRW_C               = #{PRW_C}                 /* 공정코드             */
+             , PRW_NM              = #{PRW_NM}                /* 공정명               */
+             , PRW_CLF_C           = #{PRW_CLF_C}             /* 공정분류코드         */
+             , PD_DSC              = #{PD_DSC}                /* 생산구분코드         */
+             , PRE_PRW_C           = #{PRE_PRW_C}             /* 전공정코드           */
+             , PD_LINE_C           = #{PD_LINE_C}             /* 생산라인코드         */
+             , PD_PRW_EXPL         = #{PD_PRW_EXPL}           /* 생산공정설명         */
+             , PD_YLD              = #{PD_YLD}                /* 생산수율             */
+             , PTIN_PERS           = #{PTIN_PERS}             /* 투입인원             */
+             , WK_HR               = #{WK_HR}                 /* 작업시간             */
+             , PCSTP_YN            = #{PCSTP_YN}              /* 원가성여부           */
+             , QLT_ISP_YN          = #{QLT_ISP_YN}            /* 품질검사여부         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분3            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PRW_C               = #{PRW_C}
+    </update>
+
+    <delete id="delete_TB_PD_M_PRW_REC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_PRW_REC */ FROM TB_PD_M_PRW_REC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PRW_C               = #{PRW_C}
+    </delete>
+
+    <select id="select_TB_PD_M_PRW_REC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_PRW_REC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PRW_C                                             /* 공정코드                  */
+             , A.PRW_NM                                            /* 공정명                    */
+             , A.PRW_CLF_C                                         /* 공정분류코드              */
+             , A.PD_DSC                                            /* 생산구분코드              */
+             , A.PRE_PRW_C                                         /* 전공정코드                */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , A.PD_PRW_EXPL                                       /* 생산공정설명              */
+             , A.PD_YLD                                            /* 생산수율                  */
+             , A.PTIN_PERS                                         /* 투입인원                  */
+             , A.WK_HR                                             /* 작업시간                  */
+             , A.PCSTP_YN                                          /* 원가성여부                */
+             , A.QLT_ISP_YN                                        /* 품질검사여부              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분3                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_PRW_REC A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.PRW_C             = #{PRW_C}
+    </select>
+</mapper>

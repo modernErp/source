@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 2021.10.23 서광석
+                관리자권한(ADMIN_YN) 에 따른 사용자조회 적용           
+         -->
+    <select id="selectSy1035_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy1035_01 */
+               A.CORP_C                                             /* 회사코드             */
+             , A.USR_ID                                             /* 사용자아이디         */
+             , A.USR_NM                                             /* 사용자명             */
+             , A.PW                                                 /* 암호화된비밀번호     */
+             , A.BZPL_C                                             /* 사업장코드           */
+             , (
+                SELECT X.BZPL_NM
+                  FROM TB_CO_M_BZPL X
+                 WHERE 1=1
+                   AND X.CORP_C = A.CORP_C
+                   AND X.BZPL_C = A.BZPL_C
+               ) AS BZPL_NM                                         /* 사업장명             */
+             , A.DEPT_C                                             /* 부서코드             */
+             , (
+                SELECT Y.DEPT_NM
+                  FROM TB_CO_M_DEPT Y
+                 WHERE 1=1
+                   AND Y.CORP_C = A.CORP_C
+                   AND Y.BZPL_C = A.BZPL_C
+                   AND Y.DEPT_C = A.DEPT_C
+               ) AS DEPT_NM                                         /* 부서명               */
+             , A.USE_DSC                                            /* 사용자구분           */
+             , CONVERT(CHAR(23), A.LS_CONN_DTM, 20) AS LS_CONN_DTM  /* 최종접속일시         */
+             , A.LS_CONN_IP                                         /* 최종IP               */
+             , A.CONN_YN                                            /* 접속여부             */
+             , CONVERT(CHAR(23), A.PW_CHG_DTM, 20) AS PW_CHG_DTM    /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                                       /* 로그인시도횟수       */
+             , A.LOCK_YN                                            /* 잠김여부             */
+             , A.ACC_ST_DT                                          /* 계정시작일자         */
+             , A.ACC_ED_DT                                          /* 계정종료일자         */
+             , A.EMAIL_ADR                                          /* 이메일주소           */
+             , A.ANC_RMS_METH                                       /* 알림수신방법         */
+             , A.SIGN_IMG                                           /* 사인이미지           */
+             , A.USE_YN                                             /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM     /* 최초등록일시         */
+             , A.FSRG_ID                                            /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM    /* 최종변경일시         */
+             , A.LSCHG_ID                                           /* 최종변경자ID         */
+          FROM TB_SY_M_USR A
+             , (SELECT
+                       ISNULL(ADMIN_YN, 'N') AS ADMIN_YN
+                  FROM TB_SY_M_USR
+                 WHERE 1 = 1
+                   AND CORP_C = #{CORP_C}
+                   AND USR_ID = #{GUSRID}
+               ) B            
+         WHERE 1=1            
+           AND A.CORP_C            = #{CORP_C}
+          <if test = "SEARCH_NM != null and SEARCH_NM != ''"> /* 검색어 유무확인 */
+            <choose>
+                <when test="SEARCH_GBN == ''"> /* 검색조건이 전체인 경우 */
+                    AND (USR_ID LIKE '%' + #{SEARCH_NM} + '%'
+                         OR USR_NM LIKE '%' + #{SEARCH_NM} + '%')
+                </when>
+                <when test="SEARCH_GBN == 1"> /* 검색조건이 사용자ID인 경우 */
+                    AND USR_ID LIKE '%' + #{SEARCH_NM} + '%'
+                </when>
+                <when test="SEARCH_GBN == 2"> /* 검색조건이 사용자이름인 경우 */
+                    AND USR_NM LIKE '%' + #{SEARCH_NM} + '%'
+                </when>                
+            </choose>
+         </if>
+         <if test = "DEPT_C != null and DEPT_C != ''">
+           AND A.DEPT_C            = #{DEPT_C}
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN            = #{USE_YN}
+         </if>
+         
+           AND ( (B.ADMIN_YN = 'Y') AND ('' = '')          OR
+                 (B.ADMIN_YN = 'N') AND (A.ADMIN_YN = 'N')    )           
+             
+    </select>
+</mapper>

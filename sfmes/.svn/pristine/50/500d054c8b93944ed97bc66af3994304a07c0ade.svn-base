@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+
+    <insert id="insert_TB_SE_M_DVY_CUS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_DVY_CUS */ TB_SE_M_DVY_CUS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DVY_CUS_REG_DT      /* 배송고객등록일자     */
+            , DVY_CUS_REG_SQNO    /* 배송고객등록일련번호 */
+            , ODR_CUS_NM          /* 주문고객명           */
+            , ODR_CUS_TEL         /* 주문고객연락처       */
+            , RCP_CUS_NM          /* 수령고객명           */
+            , RCP_CUS_TEL         /* 수령고객연락처       */
+            , RCP_CNTN            /* 수령내용             */
+            , DVY_RQR_CNTN        /* 배송요청내용         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DVY_CUS_REG_DT}
+            , #{DVY_CUS_REG_SQNO}
+            , #{ODR_CUS_NM}
+            , REPLACE(#{ODR_CUS_TEL}, '-', '')
+            , #{RCP_CUS_NM}
+            , REPLACE(#{RCP_CUS_TEL}, '-', '')
+            , #{RCP_CNTN}
+            , #{DVY_RQR_CNTN}
+            , #{RMK_CNTN}
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_DVY_CUS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_DVY_CUS */ TB_SE_M_DVY_CUS
+           SET 
+               CORP_C              = #{CORP_C}                          /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                          /* 사업장코드           */
+             , DVY_CUS_REG_DT      = #{DVY_CUS_REG_DT}                  /* 배송고객등록일자     */
+             , DVY_CUS_REG_SQNO    = #{DVY_CUS_REG_SQNO}                /* 배송고객등록일련번호 */
+             , ODR_CUS_NM          = #{ODR_CUS_NM}                      /* 주문고객명           */
+             , ODR_CUS_TEL         = REPLACE(#{ODR_CUS_TEL}, '-', '')   /* 주문고객연락처       */
+             , RCP_CUS_NM          = #{RCP_CUS_NM}                      /* 수령고객명           */
+             , RCP_CUS_TEL         = REPLACE(#{RCP_CUS_TEL}, '-', '')   /* 수령고객연락처       */
+             , RCP_CNTN            = #{RCP_CNTN}                        /* 수령내용             */
+             , DVY_RQR_CNTN        = #{DVY_RQR_CNTN}                    /* 배송요청내용         */
+             , RMK_CNTN            = #{RMK_CNTN}                        /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                          /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                        /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                        /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                        /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                          /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                          /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND DVY_CUS_REG_DT      = #{DVY_CUS_REG_DT}
+           AND DVY_CUS_REG_SQNO    = #{DVY_CUS_REG_SQNO}
+    </update>
+
+    <delete id="delete_TB_SE_M_DVY_CUS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_DVY_CUS */ FROM TB_SE_M_DVY_CUS
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND DVY_CUS_REG_DT      = #{DVY_CUS_REG_DT}
+           AND DVY_CUS_REG_SQNO    = #{DVY_CUS_REG_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_M_DVY_CUS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_DVY_CUS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , A.ODR_CUS_NM                                        /* 주문고객명                */
+             , A.ODR_CUS_TEL                                       /* 주문고객연락처            */
+             , A.RCP_CUS_NM                                        /* 수령고객명                */
+             , A.RCP_CUS_TEL                                       /* 수령고객연락처            */
+             , A.RCP_CNTN                                          /* 수령내용                  */
+             , A.DVY_RQR_CNTN                                      /* 배송요청내용              */
+             , A.INV_NO                                            /* 송장번호                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_DVY_CUS A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DVY_CUS_REG_DT    = #{DVY_CUS_REG_DT}
+           AND A.DVY_CUS_REG_SQNO  = #{DVY_CUS_REG_SQNO}
+    </select>
+</mapper>

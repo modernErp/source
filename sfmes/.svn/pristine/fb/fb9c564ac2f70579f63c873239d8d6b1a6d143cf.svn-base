@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+    <!-- 배부차액 기본정보 조회 팝업-->
+    <select id="selectPd3070_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_YM                                        /* 원가_계산_년월            */
+             , A.PCS_CLC_SQNO                                      /* 원가_계산_일련번호        */
+             , A.PCS_CLC_ST_DT                                     /* 원가_계산_시작일자        */
+             , A.PCS_CLC_ED_DT                                     /* 원가_계산_종료일자        */
+             , A.PCSTP_YN                                          /* 원가_원가성여부           */
+             , A.WKIP_UG_METH_DSC                                  /* 재공품사용방법구분코드    */
+             , A.LBRCS_DSBN_DAM_BASCD                              /* 노무비배부차액기준코드    */
+             , A.MFT_XPN_DSBN_DAM_BASCD                            /* 제조경비배부차액기준코드  */
+             , A.PRC_CN                                            /* 처리건수                  */
+             , A.MTRCS                                             /* 재료비                    */
+             , A.LBRCS                                             /* 노무비                    */
+             , A.MFT_XPN                                           /* 제조경비                  */
+             , A.BASE_WKIP_AM                                      /* 기초재공품금액            */
+             , A.ETRM_WKIP_AM                                      /* 기말재공품금액            */
+             , A.OORD_MFCS                                         /* 외주가공비                */
+             , A.TOT_LBR_CST_AM                                    /* 총_노무_비용_금액         */
+             , A.TOT_MFT_XPN_AM                                    /* 총_제조_경비_금액         */
+             , A.TOT_LBR_WK_HR                                     /* 총_노무_작업_시간         */
+             , A.T0T_PTIN_AM                                       /* 총_투입_금액              */
+             , A.TOT_PD_AM                                         /* 총_생산_금액              */
+             , A.TOT_LBRCS_DSBN_CAM                                /* 총노무비배부적수          */
+             , A.TOT_MFT_XPN_DSBN_CAM                              /* 총제조경비배부적수        */
+             , A.DSBN_DAM_ARG_YN                                   /* 배부_차액_정리_여부       */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ARG_DT                                            /* 정리일자                  */
+             , A.ARG_SQNO                                          /* 정리일련번호              */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+         FROM TB_PD_M_PCS_CLC A
+        WHERE 1=1
+          AND A.CORP_C   = #{CORP_C}
+          AND A.ARG_DT   BETWEEN #{ST_DT} AND #{ED_DT}
+         <if test="ARG_SQNO != ''">
+          AND A.ARG_SQNO = #{ARG_SQNO}
+         </if>
+    </select>
+
+    <!-- 배부차액 상세정보 조회 -->
+    <select id="selectPd3070_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_YM                                        /* 원가_계산_년월            */
+             , A.PCS_CLC_SQNO                                      /* 원가_계산_일련번호        */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품명 + 규격) */
+             , B.GDS_STD_NM                                        /* 물품규격                  */
+             , B.UNT_C                                             /* 물품단위코드              */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.PD_METH_C                                         /* 생산방법코드              */
+             , A.BASE_WKIP_QT                                      /* 기초재공품수량            */
+             , A.BASE_WKIP_AM                                      /* 기초재공품금액            */
+             , A.ETRM_WKIP_QT                                      /* 기말재공품수량            */
+             , A.ETRM_WKIP_AM                                      /* 기말재공품금액            */
+             , A.LBR_WK_HR                                         /* 노무_작업_시간            */
+             , A.PD_QT                                             /* 생산수량                  */
+             , A.PD_AM                                             /* 생산금액                  */
+             , A.MFSCS_UPR                                         /* 제조비용단가              */
+             , A.MFSCS                                             /* 제조원가                  */
+             , A.PLA_PCS                                           /* 예정원가                  */
+             , A.LBRCS_DSBN_RTO                                    /* 노무비배부비율(적수)      */
+             , A.MFT_XPN_DSBN_RTO                                  /* 제조경비배부비율(적수)    */
+             , A.MTR_CST_AM                                        /* 재료비금액                */
+             , A.AJ_MTR_CST_AM                                     /* 추가_재료비금액           */
+             , A.LBR_CST_AM                                        /* 노무비금액                */
+             , A.MFT_XPN_AM                                        /* 제조경비금액              */
+             , A.PCS_CLC_UPR                                       /* 원가계산금액              */
+             , A.BF_LBR_CST_AM                                     /* 전공정_노무비금액         */
+             , A.BF_MFT_XPN_AM                                     /* 전공정_제조경비금액       */
+             , A.ACTL_PCS_AM                                       /* 실제원가금액              */
+             , A.DSBN_DAM                                          /* 배부차액금액              */
+             , A.DSBN_DAM_OBJ_SL_PCS                               /* 배부차액대상매출원가      */
+             , A.DSBN_DAM_ARG_SL_PCS                               /* 배부차액정리매출원가      */
+             , A.CLC_LBR_CST_AM                                    /* 계산노무비                */
+             , A.PCS_CLC_MFT_XPN_AM                                /* 원가계산제조경비          */
+             , A.OBJ_LBR_CST_AM                                    /* 대상노무비                */
+             , A.OBJ_MFT_XPN_AM                                    /* 대상제조경비              */
+             , A.ADT_PTIN_DSBN_AM                                  /* 추가_투입_배부금액        */
+             , A.DSBN_AM_TT                                        /* 배부금액_합계             */
+             , A.SBT_DSBN_AM_AAM                                   /* 차감_배부금액_누계        */
+             , A.DSBN_PCS_AM                                       /* 배부원가_금액             */
+             , A.ADT_LBRCS_DSBN_AM                                 /* 추가_노무비_배부금액      */
+             , A.ADT_XPN_DSBN_AM                                   /* 추가_경비_배부금액        */
+             , A.SBT_LBRCS_AM_AAM                                  /* 차감_노무비금액_누계      */
+             , A.SBT_XPN_AM_AAM                                    /* 차감_경비금액_누계        */
+             , A.PCS_CLC_FIN_STEP                                  /* 원가산출완료STEP          */
+             , A.PCS_ADT_DSBN_YN                                   /* 원가추가배부여부          */
+             , A.PCS_ADT_DSBN_DT                                   /* 원가추가배부일자          */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+         FROM TB_PD_D_PCS_CLC A
+         LFET OUTER JOIN TB_CO_M_GDS B
+        WHERE 1=1
+          AND A.CORP_C       = #{CORP_C} 
+          AND A.BZPL_C       = #{BZPL_C}
+          AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+          AND A.PCS_CLC_YM   = #{PCS_CLC_YM}
+    </select>
+</mapper>

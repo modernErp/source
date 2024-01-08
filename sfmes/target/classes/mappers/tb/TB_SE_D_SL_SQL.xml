@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_D_SL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_D_SL */ TB_SE_D_SL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , SL_DT               /* 매출일자             */
+            , SL_SQNO             /* 매출일련번호         */
+            , SL_DSQNO            /* 매출상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , SL_QT               /* 매출수량             */
+            , SL_BOX_QT           /* 매출박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , SL_UPR              /* 매출단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , SL_AM               /* 매출금액             */
+            , WHSE_C              /* 창고코드             */
+            , DSTR_TERDT          /* 유통기한일자         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , TOTE_CODE           /* 박스코드(TOTE)  20211130 rchkorea */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , SL_WT               /* 매출중량             */
+            , TXT_DSC             /* 과세구분코드         */
+            , SL_PCS              /* 매출원가             */
+            , SL_PCS_AM           /* 매출원가금액         */
+            , DUM_YN              /* 덤여부               */
+            , EVEN_SQNO           /* 행사일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{SL_DT}
+            , #{SL_SQNO}
+            , (
+               SELECT ISNULL(MAX(SL_DSQNO),0)+1 
+                 FROM TB_SE_D_SL
+                WHERE 1 = 1
+                  AND CORP_C  = #{CORP_C}
+                  AND BZPL_C  = #{BZPL_C}
+                  AND SL_DT   = #{SL_DT}
+                  AND SL_SQNO = #{SL_SQNO}
+              )
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{SL_QT})
+            , DBO.SF_GET_FLOAT(#{SL_BOX_QT})
+            , #{TR_UNT_C}
+            , DBO.SF_GET_FLOAT(#{SL_UPR})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{SL_AM})
+            , #{WHSE_C}
+            , #{DSTR_TERDT}
+            , #{HST_AMN_DSC}
+            , #{GDS_HST_NO}
+            , #{TOTE_CODE}
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_NUMERIC(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , DBO.SF_GET_FLOAT(#{SL_WT})
+            , #{TXT_DSC}
+            , DBO.SF_GET_NUMERIC(#{SL_PCS})
+            , DBO.SF_GET_NUMERIC(#{SL_PCS_AM})
+            , #{DUM_YN}
+            , DBO.SF_GET_NUMERIC(#{EVEN_SQNO})
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_D_SL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_D_SL */ TB_SE_D_SL
+           SET 
+               CORP_C              = #{CORP_C}                                    /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                    /* 사업장코드           */
+             , SL_DT               = #{SL_DT}                                     /* 매출일자             */
+             , SL_SQNO             = #{SL_SQNO}                                   /* 매출일련번호         */
+             , SL_DSQNO            = #{SL_DSQNO}                                  /* 매출상세일련번호     */
+             , GDS_C               = #{GDS_C}                                     /* 물품코드             */
+             , SL_QT               = DBO.SF_GET_FLOAT(#{SL_QT})                   /* 매출수량             */
+             , SL_BOX_QT           = DBO.SF_GET_FLOAT(#{SL_BOX_QT})               /* 매출박스수량         */
+             , TR_UNT_C            = #{TR_UNT_C}                                  /* 거래단위코드         */
+             , SL_UPR              = DBO.SF_GET_FLOAT(#{SL_UPR})                  /* 매출단가             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})                /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})                   /* 부가세               */
+             , SL_AM               = DBO.SF_GET_FLOAT(#{SL_AM})                   /* 매출금액             */
+             , WHSE_C              = #{WHSE_C}                                    /* 창고코드             */
+             , DSTR_TERDT          = #{DSTR_TERDT}                                /* 유통기한일자         */
+             , HST_AMN_DSC         = #{HST_AMN_DSC}                               /* 이력관리구분코드     */
+             , GDS_HST_NO          = #{GDS_HST_NO}                                /* 물품이력번호         */
+             , TOTE_CODE           = #{TOTE_CODE}                                 /* 박스코드(TOTE)  20211130  rchkorea   */
+             , QT_WT_DSC           = #{QT_WT_DSC}                                 /* 수(중)량형구분코드   */
+             , WHT_QT              = DBO.SF_GET_NUMERIC(#{WHT_QT})                /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                                 /* 단량단위코드         */
+             , SL_WT               = DBO.SF_GET_FLOAT(#{SL_WT})                   /* 매출중량             */
+             , TXT_DSC             = #{TXT_DSC}                                   /* 과세구분코드         */
+             , SL_PCS              = DBO.SF_GET_NUMERIC(#{SL_PCS})                /* 매출원가             */
+             , SL_PCS_AM           = DBO.SF_GET_NUMERIC(#{SL_PCS_AM})             /* 매출원가금액         */
+             , DUM_YN              = #{DUM_YN}                                    /* 덤여부               */
+             , EVEN_SQNO           = DBO.SF_GET_NUMERIC(#{EVEN_SQNO})             /* 행사일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}                                  /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                                    /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                                    /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND SL_DT               = #{SL_DT}           
+           AND SL_SQNO             = #{SL_SQNO}
+           AND SL_DSQNO            = #{SL_DSQNO}           
+    </update>
+
+    <delete id="delete_TB_SE_D_SL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_D_SL */ FROM TB_SE_D_SL
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND SL_DSQNO            = #{SL_DSQNO}
+           AND SL_DT               = #{SL_DT}
+           AND SL_SQNO             = #{SL_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_D_SL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_D_SL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.SL_DT                                             /* 매출일자                  */
+             , A.SL_SQNO                                           /* 매출일련번호              */
+             , A.SL_DSQNO                                          /* 매출상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.SL_QT                                             /* 매출수량                  */
+             , A.SL_BOX_QT                                         /* 매출박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.SL_UPR                                            /* 매출단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.SL_AM                                             /* 매출금액                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.DSTR_TERDT                                        /* 유통기한일자              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.TOTE_CODE                                         /* 박스코드(TOTE)     20211130  rchkorea */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.SL_WT                                             /* 매출중량                  */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.SL_PCS                                            /* 매출원가                  */
+             , A.SL_PCS_AM                                         /* 매출원가금액              */
+             , A.DUM_YN                                            /* 덤여부                    */
+             , A.EVEN_SQNO                                         /* 행사일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_D_SL A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.SL_DSQNO          = #{SL_DSQNO}
+           AND A.SL_DT             = #{SL_DT}
+           AND A.SL_SQNO           = #{SL_SQNO}
+    </select>
+</mapper>

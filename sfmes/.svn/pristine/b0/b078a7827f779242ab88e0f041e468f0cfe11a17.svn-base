@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <select id="selectCo1090List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectCo1090List */
+                A.CORP_C                                                /*    회사코드              */
+                , A.BZPL_C                                              /*    사업장코드            */
+                , A.TRPL_C                                              /*    거래처코드            */
+                ,(SELECT TRPL_NM
+                    FROM TB_CO_M_TRPL
+                WHERE 1 = 1
+                    AND A.CORP_C = CORP_C
+                    AND A.TRPL_C = TRPL_C
+                ) as TRPL_NM
+                , A.TRPL_GDS_BAR_C                                      /*    거래처물품바코드      */
+                , A.TRPL_GDS_NM                                         /*    거래처물품명          */
+                , A.GDS_C                                               /*    물품코드              */
+                , (
+                    SELECT B.GDS_NM
+                        FROM TB_CO_M_GDS B
+                        WHERE B.GDS_C = A.GDS_C
+                        AND B.BZPL_C = A.BZPL_C
+                    AND B.CORP_C = A.CORP_C
+                    ) AS GDS_NM                                        /*    거래처물품명           */
+                , A.BAR_CIP_GBN1                                       /*    바코드자릿수구분1      */
+                , A.BAR_CIP_GBN_NM1                                    /*    바코드자릿수구분명1    */
+                , A.BAR_CIP_GBN2                                       /*    바코드자릿수구분2      */
+                , A.BAR_CIP_GBN_NM2                                    /*    바코드자릿수구분명2    */
+                , A.BAR_CIP_GBN3                                       /*    바코드자릿수구분3      */
+                , A.BAR_CIP_GBN_NM3                                    /*    바코드자릿수구분명3    */
+                , A.BAR_CIP_GBN4                                       /*    바코드자릿수구분4      */
+                , A.BAR_CIP_GBN_NM4                                    /*    바코드자릿수구분명4    */
+                , A.BAR_CIP_GBN5                                       /*    바코드자릿수구분5      */
+                , A.BAR_CIP_GBN_NM5                                    /*    바코드자릿수구분명5    */
+                , A.BAR_CIP_GBN6                                       /*    바코드자릿수구분6      */
+                , A.BAR_CIP_GBN_NM6                                    /*    바코드자릿수구분명6    */
+                , A.BAR_CIP_GBN7                                       /*    바코드자릿수구분7      */
+                , A.BAR_CIP_GBN_NM7                                    /*    바코드자릿수구분명7    */
+                , A.RMK_CNTN                                           /*    비고내용               */
+                , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM     /*    최초등록일시           */
+                , A.FSRG_ID                                            /*    최초등록자ID           */
+                , A.FSRG_ID AS FSRG_NM                                 /*    최초등록자이름         */
+                , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM    /*    최종변경일시           */
+                , A.LSCHG_ID                                           /*    최종변경자ID           */
+                , A.LSCHG_ID  AS LSCHG_NM                              /*    최종변경자이름         */
+                FROM TB_CO_M_TRPL_BAR_INF A
+            WHERE 1=1 
+                AND A.BZPL_C            = #{BZPL_C}
+                AND A.CORP_C            = #{CORP_C}
+            <if test = "TRPL_C != null and TRPL_C != ''">
+                AND A.TRPL_C                    = #{TRPL_C}
+        </if>
+        <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+                    <when test = "searchCondition == 1">
+                AND A.TRPL_GDS_BAR_C LIKE '%' + #{searchKeyword} + '%'
+                    </when>
+                <when test = "searchCondition == 2">
+                AND A.TRPL_GDS_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+    </select>
+    
+    <select id="selectCo1090ValidCheck" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[
+        SELECT
+                (
+                CASE WHEN (
+                                SELECT COUNT(TRPL_GDS_BAR_C) 
+                                FROM TB_CO_M_TRPL_BAR_INF
+                                WHERE 1=1
+                                AND TRPL_GDS_BAR_C = #{TRPL_GDS_BAR_C}
+                                AND BZPL_C = #{BZPL_C}
+                                AND CORP_C = #{CORP_C}
+                                AND TRPL_C = #{TRPL_C}
+                                ) = 0 THEN 'OK'
+                    ELSE '입력하신 바코드는 이미 등록된 바코드 입니다.' END
+                ) AS RESULT_MSG
+        FROM DUAL
+    ]]>
+    </select>
+</mapper>

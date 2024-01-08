@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_GDS_BAS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_GDS_BAS */ TB_CO_M_GDS_BAS
+        (
+              CORP_C              /* 회사코드             */
+            , GDS_C               /* 물품코드             */
+            , REP_GDS_C           /* 대표물품코드         */
+            , GDS_NM              /* 물품명               */
+            , GDS_DTL_NM          /* 물품명상세(물품+규격 */
+            , GDS_ENM             /* 물품영문명           */
+            , GDS_STD_NM          /* 물품규격명           */
+            , GDS_TP_DSC          /* 물품유형구분코드     */
+            , GDS_LCLC            /* 물품대분류코드       */
+            , GDS_MCLC            /* 물품중분류코드       */
+            , GDS_SCLC            /* 물품소분류코드       */
+            , PART_C              /* 표준부위코드         */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , UNT_C               /* 단위코드             */
+            , CSTD_METH_C         /* 보관방식코드         */
+            , BAS_WHSE_C          /* 기본창고코드         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , TXT_DSC             /* 과세구분코드         */
+            , DEPT_C              /* 주관부서코드         */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{GDS_C}
+            , #{REP_GDS_C}
+            , #{GDS_NM}
+            , #{GDS_DTL_NM}
+            , #{GDS_ENM}
+            , #{GDS_STD_NM}
+            , #{GDS_TP_DSC}
+            , #{GDS_LCLC}
+            , #{GDS_MCLC}
+            , #{GDS_SCLC}
+            , #{PART_C}
+            , #{QT_WT_DSC}
+            , #{UNT_C}
+            , #{CSTD_METH_C}
+            , #{BAS_WHSE_C}
+            , #{HST_AMN_DSC}
+            , #{TXT_DSC}
+            , #{DEPT_C}
+            , #{USE_YN}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_GDS_BAS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_GDS_BAS */ TB_CO_M_GDS_BAS
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , REP_GDS_C           = #{REP_GDS_C}             /* 대표물품코드         */
+             , GDS_NM              = #{GDS_NM}                /* 물품명               */
+             , GDS_DTL_NM          = #{GDS_DTL_NM}            /* 물품명상세(물품+규격 */
+             , GDS_ENM             = #{GDS_ENM}               /* 물품영문명           */
+             , GDS_STD_NM          = #{GDS_STD_NM}            /* 물품규격명           */
+             , GDS_TP_DSC          = #{GDS_TP_DSC}            /* 물품유형구분코드     */
+             , GDS_LCLC            = #{GDS_LCLC}              /* 물품대분류코드       */
+             , GDS_MCLC            = #{GDS_MCLC}              /* 물품중분류코드       */
+             , GDS_SCLC            = #{GDS_SCLC}              /* 물품소분류코드       */
+             , PART_C              = #{PART_C}                /* 표준부위코드         */
+             , QT_WT_DSC           = #{QT_WT_DSC}             /* 수(중)량형구분코드   */
+             , UNT_C               = #{UNT_C}                 /* 단위코드             */
+             , CSTD_METH_C         = #{CSTD_METH_C}           /* 보관방식코드         */
+             , BAS_WHSE_C          = #{BAS_WHSE_C}            /* 기본창고코드         */
+             , HST_AMN_DSC         = #{HST_AMN_DSC}           /* 이력관리구분코드     */
+             , TXT_DSC             = #{TXT_DSC}               /* 과세구분코드         */
+             , DEPT_C              = #{DEPT_C}                /* 주관부서코드         */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_GDS_BAS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_GDS_BAS */ FROM TB_CO_M_GDS_BAS
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </delete>
+
+    <select id="select_TB_CO_M_GDS_BAS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_GDS_BAS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REP_GDS_C                                         /* 대표물품코드              */
+             , A.GDS_NM                                            /* 물품명                    */
+             , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , A.GDS_ENM                                           /* 물품영문명                */
+             , A.GDS_STD_NM                                        /* 물품규격명                */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.GDS_LCLC                                          /* 물품대분류코드            */
+             , A.GDS_MCLC                                          /* 물품중분류코드            */
+             , A.GDS_SCLC                                          /* 물품소분류코드            */
+             , A.PART_C                                            /* 표준부위코드              */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.UNT_C                                             /* 단위코드                  */
+             , A.CSTD_METH_C                                       /* 보관방식코드              */
+             , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.DEPT_C                                            /* 주관부서코드              */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_GDS_BAS A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+    </select>
+</mapper>

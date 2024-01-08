@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+    <!-- 위탁가공수불내역 조회(인수재료) -->
+    <select id="selectPd5110_TB_PD_D_TRU_MFC_OMTR_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT
+               A.CORP_C          AS CORP_C                   /* 회사코드                  */   
+             , A.BZPL_C          AS BZPLC                    /* 사업장코드                */   
+             , A.TRU_MFC_RC_DT   AS TRU_MFC_RC_DT            /* 위탁가공접수일자          */   
+             , A.TRU_MFC_RC_SQNO AS TRU_MFC_RC_SQNO          /* 위탁가공접수일련번호      */   
+             , B.OMTR_STDV_DT    AS STDV_DT                  /* 원부재료입출고일자        */   
+             , B.OMTR_STDV_SQNO  AS STDV_SQNO                /* 원부재료입출고일련번      */   
+             , B.WHSE_C                                      /* 창고코드                  */
+             , (SELECT 
+                       WHSE_NM
+                  FROM   TB_CO_M_WHSE D
+                 WHERE  1=1
+                   AND  D.BZPL_C = A.BZPL_C
+                   AND  D.CORP_C = A.CORP_C
+                   AND  D.WHSE_C = B.WHSE_C  ) AS WHSE_NM    /* 창고이름                  */
+             , B.GDS_C           AS GDS_C                    /* 물품코드                  */
+             , C.GDS_DTL_NM                                  /* 물품명상세(물품명 + 규격) */
+             , C.GDS_STD_NM                                  /* 물품규격                  */
+             , C.UNT_C                                       /* 물품단위코드              */
+             , C.GDS_TP_DSC                                  /* 물품유형구분코드          */
+             , B.STDV_DSC   AS STDV_DSC                      /* 원부재료입출고구분코      */
+             , B.STDV_QT         AS STDV_QT                  /* 입출고수량                */
+             , (CASE STDV_DSC WHEN  'I' THEN STDV_QT
+                                   ELSE  '0'
+                END)             AS STDV_QT_IN               /* 입고수량                  */
+             , (CASE STDV_DSC WHEN  'O' THEN STDV_QT
+                                   ELSE  '0'
+                END)             AS STDV_QT_OUT              /* 출고수량                  */
+             , B.DEL_YN          AS DEL_YN                   /* 삭제여부                  */
+             , B.ACG_DT          AS ACG_DT                   /* 회계일자                  */
+          FROM TB_PD_M_TRU_MFC_REQ A
+               INNER JOIN TB_PD_D_TRU_MFC_OMTR_STDV B
+                  ON A.CORP_C           = B.CORP_C
+                 AND A.BZPL_C           = B.BZPL_C
+                 AND A.TRU_MFC_RC_DT    = B.TRU_MFC_RC_DT
+                 AND A.TRU_MFC_RC_SQNO  = B.TRU_MFC_RC_SQNO
+               INNER JOIN TB_CO_M_GDS C
+                  ON C.CORP_C           = B.CORP_C
+                 AND C.BZPL_C           = B.BZPL_C
+                 AND C.GDS_C            = B.GDS_C
+         WHERE 1=1
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+         <if test='DATE_CHK == "1"'>
+           AND B.OMTR_STDV_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+           </if>
+         <if test='DATE_CHK == "2"'>
+           AND B.ACG_DT          BETWEEN #{ST_DT} AND #{ED_DT}
+         </if>
+         <if test="GDS_C != ''">
+           AND B.GDS_C           = #{GDS_C}
+         </if>
+         <if test="ETR_MFC_RC_SQNO != ''">
+           AND A.TRU_MFC_RC_DT   = #{TRU_MFC_RC_DT}
+           AND A.TRU_MFC_RC_SQNO = #{TRU_MFC_RC_SQNO}
+         </if>
+         <if test="DEL_YN != ''">
+           AND B.DEL_YN          = #{DEL_YN}
+         </if>
+    </select>
+    
+    <!-- 위탁가공수불내역 조회(제품출고) -->
+    <select id="selectPd5110_TB_PD_D_TRU_MFC_MFS_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT
+               A.CORP_C          AS CORP_C                      /* 회사코드                  */
+             , A.BZPL_C          AS BZPLC                       /* 사업장코드                */
+             , A.TRU_MFC_RC_DT   AS TRU_MFC_RC_DT               /* 위탁가공접수일자          */
+             , A.TRU_MFC_RC_SQNO AS TRU_MFC_RC_SQNO             /* 위탁가공접수일련번호      */
+             , B.MFS_STDV_DT     AS STDV_DT                     /* 제품입출고일자            */    
+             , B.MFS_STDV_SQNO   AS STDV_SQNO                   /* 제품입출고일련번호        */    
+             , B.WHSE_C                                         /* 창고코드                  */
+             , (SELECT 
+                       WHSE_NM
+                  FROM   TB_CO_M_WHSE D
+                 WHERE  1=1
+                   AND  D.BZPL_C = A.BZPL_C
+                   AND  D.CORP_C = A.CORP_C
+                   AND  D.WHSE_C = B.WHSE_C  ) AS WHSE_NM       /* 창고이름                  */
+             , A.GDS_C           AS GDS_C                       /* 물품코드                  */
+             , C.GDS_DTL_NM                                     /* 물품명상세(물품명 + 규격) */
+             , C.GDS_STD_NM                                     /* 물품규격                  */
+             , C.UNT_C                                          /* 물품단위코드              */
+             , C.GDS_TP_DSC                                     /* 물품유형구분코드          */
+             , B.STDV_DSC                                       /* 입출고구분코드            */    
+             , B.STDV_QT         AS STDV_QT                     /* 입출고수량                */
+             , (CASE STDV_DSC WHEN  'I' THEN STDV_QT                                    
+                              ELSE  '0'                                                 
+                END)             AS STDV_QT_IN                  /* 입고수량                  */
+             , (CASE STDV_DSC WHEN  'O' THEN STDV_QT                                    
+                              ELSE  '0'                                                 
+                END)             AS STDV_QT_OUT                 /* 출고수량                  */
+             , B.DEL_YN          AS DEL_YN                      /* 삭제여부                  */
+             , B.ACG_DT          AS ACG_DT                      /* 회계일자                  */
+          FROM TB_PD_M_TRU_MFC_REQ A
+               INNER JOIN TB_PD_D_TRU_MFC_MFS_STDV B
+                  ON A.CORP_C           = B.CORP_C    
+                 AND A.BZPL_C           = B.BZPL_C
+                 AND A.TRU_MFC_RC_DT    = B.TRU_MFC_RC_DT
+                 AND A.TRU_MFC_RC_SQNO  = B.TRU_MFC_RC_SQNO
+               INNER JOIN TB_CO_M_GDS C 
+                  ON C.CORP_C           = B.CORP_C
+                 AND C.BZPL_C           = B.BZPL_C
+                 AND C.GDS_C            = A.GDS_C
+         WHERE 1=1
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+         <if test='DATE_CHK == "1"'>
+           AND B.MFS_STDV_DT   BETWEEN #{ST_DT} AND #{ED_DT}
+         </if>
+         <if test='DATE_CHK == "2"'>
+           AND B.ACG_DT          BETWEEN #{ST_DT} AND #{ED_DT}
+         </if>
+         <if test="GDS_C != ''">
+           AND A.GDS_C           = #{GDS_C}
+         </if>
+         <if test="ETR_MFC_RC_SQNO != ''">
+           AND A.TRU_MFC_RC_DT   = #{ETR_MFC_RC_DT}
+           AND A.TRU_MFC_RC_SQNO = #{ETR_MFC_RC_SQNO}
+         </if>
+         <if test="DEL_YN != ''">
+           AND B.DEL_YN          = #{DEL_YN}
+         </if>
+    </select>
+</mapper>

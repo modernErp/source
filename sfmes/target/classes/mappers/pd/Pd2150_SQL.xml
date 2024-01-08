@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 원부자재투입현황 작업보고전 조회 -->
+    <select id="selectPd2150_Rpt_Mfs_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH DNTT_MFS AS 
+        (   
+          SELECT /*+ selectPd2150_Dntt_Mfs */
+                 A.CORP_C                                            /* 회사코드                  */
+               , A.BZPL_C                                            /* 사업장코드                */
+               , A.DNTT_DT                                           /* 일지일자                  */
+               , A.DNTT_SQNO                                         /* 일지일련번호              */
+               , B.GDS_C                                             /* 물품코드                  */
+            FROM TB_PD_M_WK_DNTT A
+                 INNER JOIN TB_PD_D_WK_DNTT_MFS B
+                 ON    A.CORP_C          = B.CORP_C
+                   AND A.BZPL_C          = B.BZPL_C
+                   AND A.DNTT_DT         = B.DNTT_DT
+                   AND A.DNTT_SQNO       = B.DNTT_SQNO
+           WHERE 1 = 1
+             AND A.CORP_C          = #{CORP_C}
+             AND A.BZPL_C          = #{BZPL_C}
+             AND A.DNTT_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+           <if test="GDS_C != ''">
+             AND B.GDS_C           = #{GDS_C}
+           </if>
+           <if test="MFC_DSC != ''">
+             AND A.MFC_DSC         = #{MFC_DSC}
+           </if>
+             AND A.DEL_YN          = 'N'
+        )
+        SELECT /*+ selectPd2150_Dntt_Mtrl */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , C.GDS_C                                             /* 생상물품코드                  */
+             , C.GDS_DTL_NM                                        /* 생산물품명상세(물품명 + 규격) */
+             , C.GDS_STD_NM                                        /* 생산물품규격                  */
+             , C.UNT_C                                             /* 생산물품단위코드              */
+             , Z.GDS_C             AS PTIN_GDS_C                   /* 투입물품코드                  */
+             , Z.GDS_TP_DSC                                        /* 투입물품유형구분코드          */
+             , Z.GDS_DTL_NM        AS PTIN_GDS_DTL_NM              /* 투입물품명상세(물품명 + 규격) */
+             , Z.GDS_STD_NM        AS PTIN_GDS_STD_NM              /* 투입물품규격                  */
+             , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+             , A.PTIN_DNTT_QT                                      /* 투입지시량                */
+             , A.MTRL_PTIN_QT                                      /* 자재투입량                */
+             , A.PTIN_UPR                                          /* 투입단가                  */
+             , A.PTIN_AM                                           /* 투입금액                  */
+             , B.DNTT_CNT       AS CNT                             /* 작업지시 건수             */
+          FROM (
+                SELECT
+                       A.CORP_C                                            /* 회사코드                  */
+                     , A.BZPL_C                                            /* 사업장코드                */
+                     , A.GDS_C                                             /* 생산물품코드              */
+                     , D.GDS_C             AS MFS_GDS_C                    /* 생산물품코드              */
+                     , SUM(A.PTIN_DNTT_QT) AS PTIN_DNTT_QT                 /* 투입지시량                */
+                     , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+                     , 0                   AS MTRL_PTIN_QT                 /* 자재투입량                */
+                     , ISNULL(MAX(DBO.SF_GET_STPL_UPR(A.CORP_C, A.BZPL_C, A.GDS_C, A.DNTT_DT)), 0)      AS PTIN_UPR                     /* 투입단가                  */
+                     , 0                   AS PTIN_AM                      /* 투입금액                  */
+                  FROM TB_PD_D_WK_DNTT_MTRL A
+                       INNER JOIN DNTT_MFS  D
+                       ON    A.CORP_C          = D.CORP_C
+                         AND A.BZPL_C          = D.BZPL_C
+                         AND A.DNTT_DT         = D.DNTT_DT
+                         AND A.DNTT_SQNO       = D.DNTT_SQNO
+                 WHERE 1 = 1
+                GROUP BY A.CORP_C                                            /* 회사코드                  */
+                        , A.BZPL_C                                            /* 사업장코드                */
+                        , A.GDS_C                                             /* 물품코드                  */
+                        , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+                        , D.GDS_C                                             /* 물품코드                  */
+               ) A
+               INNER JOIN TB_CO_M_GDS        C
+               ON    A.CORP_C          = C.CORP_C
+                 AND A.BZPL_C          = C.BZPL_C
+                 AND A.MFS_GDS_C       = C.GDS_C
+               INNER JOIN TB_CO_M_GDS   Z
+               ON    A.CORP_C          = Z.CORP_C
+                 AND A.BZPL_C          = Z.BZPL_C
+                 AND A.GDS_C           = Z.GDS_C
+               INNER JOIN 
+               (
+                SELECT 
+                       X.CORP_C                                            /* 회사코드                  */
+                     , X.BZPL_C                                            /* 사업장코드                */
+                     , Y.GDS_C                                             /* 물품코드                  */
+                     , COUNT(DISTINCT X.DNTT_SQNO) AS DNTT_CNT             /* 작업지시 건수             */
+                  FROM TB_PD_M_WK_DNTT  X
+                       INNER JOIN TB_PD_D_WK_DNTT_MTRL  Y
+                       ON    X.CORP_C          = Y.CORP_C
+                         AND X.BZPL_C          = Y.BZPL_C
+                         AND X.DNTT_DT         = Y.DNTT_DT
+                         AND X.DNTT_SQNO       = Y.DNTT_SQNO
+                 WHERE 1 = 1
+                   AND X.CORP_C             = #{CORP_C}
+                   AND X.BZPL_C             = #{BZPL_C}
+                   AND X.DNTT_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+                   AND X.DEL_YN          = 'N'
+                 <if test="MFC_DSC != ''">
+                   AND X.MFC_DSC         = #{MFC_DSC}
+                 </if>
+                 GROUP BY X.CORP_C
+                        , X.BZPL_C
+                        , Y.GDS_C
+               )  B
+               ON    A.CORP_C          = B.CORP_C
+                 AND A.BZPL_C          = B.BZPL_C
+                 AND A.GDS_C           = B.GDS_C
+        ORDER BY C.GDS_C
+               , Z.GDS_TP_DSC
+               , Z.GDS_C
+    </select>
+
+
+    <!-- 원부자재투입현황 작업보고후 조회 -->
+    <select id="selectPd2150_Rpt_Mfs_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH RPT_MFS AS 
+        (   
+          SELECT /*+ selectPd2150_Rpt_Mfs */
+                 A.CORP_C                                            /* 회사코드                  */
+               , A.BZPL_C                                            /* 사업장코드                */
+               , A.RPT_DT                                            /* 일지일자                  */
+               , A.RPT_SQNO                                          /* 일지일련번호              */
+               , B.GDS_C                                             /* 물품코드                  */
+            FROM TB_PD_M_WK_RPT A
+                 INNER JOIN TB_PD_D_WK_RPT_MFS B
+                 ON    A.CORP_C          = B.CORP_C
+                   AND A.BZPL_C          = B.BZPL_C
+                   AND A.RPT_DT          = B.RPT_DT
+                   AND A.RPT_SQNO        = B.RPT_SQNO
+           WHERE 1 = 1
+             AND A.CORP_C          = #{CORP_C}
+             AND A.BZPL_C          = #{BZPL_C}
+           <if test='DATE_CHK == "1"'>
+             AND A.RPT_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+           </if>
+           <if test='DATE_CHK == "2"'>
+             AND A.ACG_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+           </if>
+           <if test="GDS_C != ''">
+             AND B.GDS_C           = #{GDS_C}
+           </if>
+           <if test="MFC_DSC != ''">
+             AND A.MFC_DSC         = #{MFC_DSC}
+           </if>
+             AND A.DEL_YN          = 'N'
+        )
+        SELECT /*+ selectPd2150_Rpt_Mtrl */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , C.GDS_C                                             /* 생상물품코드                  */
+             , C.GDS_DTL_NM                                        /* 생산물품명상세(물품명 + 규격) */
+             , C.GDS_STD_NM                                        /* 생산물품규격                  */
+             , C.UNT_C                                             /* 생산물품단위코드              */
+             , Z.GDS_C           AS PTIN_GDS_C                     /* 투입물품코드                  */
+             , Z.GDS_TP_DSC                                        /* 투입물품유형구분코드          */
+             , Z.GDS_DTL_NM      AS PTIN_GDS_DTL_NM                /* 투입물품명상세(물품명 + 규격) */
+             , Z.GDS_STD_NM      AS PTIN_GDS_STD_NM                /* 투입물품규격                  */
+             , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+             , A.PTIN_DNTT_QT                                      /* 투입지시량                */
+             , A.MTRL_PTIN_QT                                      /* 자재투입량                */
+             , A.PTIN_UPR                                          /* 투입단가                  */
+             , A.PTIN_AM                                           /* 투입금액                  */
+             , B.RPT_CNT         AS CNT                            /* 작업보고 건수             */
+          FROM (
+                SELECT
+                       A.CORP_C                                            /* 회사코드                  */
+                     , A.BZPL_C                                            /* 사업장코드                */
+                     , A.GDS_C                                             /* 생산물품코드              */
+                     , D.GDS_C             AS MFS_GDS_C                    /* 생산물품코드              */
+                     , SUM(A.PTIN_DNTT_QT) AS PTIN_DNTT_QT                 /* 투입지시량                */
+                     , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+                     , SUM(A.MTRL_PTIN_QT) AS MTRL_PTIN_QT                 /* 자재투입량                */
+                     , MAX(A.PTIN_UPR)     AS PTIN_UPR                     /* 투입단가                  */
+                     , SUM(A.PTIN_AM)      AS PTIN_AM                      /* 투입금액                  */
+                  FROM TB_PD_D_WK_RPT_MTRL A
+                       INNER JOIN RPT_MFS  D
+                       ON    A.CORP_C          = D.CORP_C
+                         AND A.BZPL_C          = D.BZPL_C
+                         AND A.RPT_DT          = D.RPT_DT
+                         AND A.RPT_SQNO        = D.RPT_SQNO
+                 WHERE 1 = 1
+                GROUP BY A.CORP_C                                            /* 회사코드                  */
+                        , A.BZPL_C                                            /* 사업장코드                */
+                        , A.GDS_C                                             /* 물품코드                  */
+                        , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+                        , D.GDS_C                                             /* 물품코드                  */
+               ) A
+               INNER JOIN TB_CO_M_GDS        C
+               ON    A.CORP_C          = C.CORP_C
+                 AND A.BZPL_C          = C.BZPL_C
+                 AND A.MFS_GDS_C       = C.GDS_C
+               INNER JOIN TB_CO_M_GDS   Z
+               ON    A.CORP_C          = Z.CORP_C
+                 AND A.BZPL_C          = Z.BZPL_C
+                 AND A.GDS_C           = Z.GDS_C
+               INNER JOIN 
+               (
+                SELECT 
+                       X.CORP_C                                            /* 회사코드                  */
+                     , X.BZPL_C                                            /* 사업장코드                */
+                     , Y.GDS_C                                             /* 물품코드                  */
+                     , COUNT(DISTINCT X.RPT_SQNO) AS RPT_CNT               /* 작업보고 건수             */
+                  FROM TB_PD_M_WK_RPT  X
+                       INNER JOIN TB_PD_D_WK_RPT_MTRL  Y
+                       ON    X.CORP_C          = Y.CORP_C
+                         AND X.BZPL_C          = Y.BZPL_C
+                         AND X.RPT_DT          = Y.RPT_DT
+                         AND X.RPT_SQNO        = Y.RPT_SQNO
+                 WHERE 1 = 1
+                   AND X.CORP_C             = #{CORP_C}
+                   AND X.BZPL_C             = #{BZPL_C}
+                 <if test='DATE_CHK == "1"'>
+                   AND X.RPT_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+                 </if>
+                 <if test='DATE_CHK == "2"'>
+                   AND X.ACG_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+                 </if>
+                   AND X.DEL_YN          = 'N'
+                 <if test="MFC_DSC != ''">
+                   AND X.MFC_DSC         = #{MFC_DSC}
+                 </if>
+                 GROUP BY X.CORP_C
+                        , X.BZPL_C
+                        , Y.GDS_C
+               )  B
+               ON    A.CORP_C          = B.CORP_C
+                 AND A.BZPL_C          = B.BZPL_C
+                 AND A.GDS_C           = B.GDS_C
+        ORDER BY C.GDS_C
+               , Z.GDS_TP_DSC
+               , Z.GDS_C
+    </select>
+
+</mapper>

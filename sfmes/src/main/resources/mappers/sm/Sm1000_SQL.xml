@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 입출고 기본내역 사전 정합성 체크 -->
+    <select id="selectSm1000Valid" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSm1000Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{STDV_DSC} NOT IN ('I','O') THEN '입출고구분코드(I.입고,O.출고)가 형식에 맞지 않습니다. 입력값 : ' + #{STDV_DSC}
+            WHEN #{SLP_NML_YN} NOT IN ('Y','N') THEN '전표정상여부(Y.정상,N.삭제)가 형식에 맞지 않습니다. 입력값 : ' + #{SLP_NML_YN}
+            WHEN #{RLTR_DT} = '' THEN '입출고일자는 필수 입력항목입니다.'
+            WHEN #{TR_BSN_DSC} = '' THEN '거래업무구분코드는 필수 입력항목입니다.'
+            WHEN #{GUSRID} = '' THEN '사용자ID는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{TR_SQNO}) = 0 THEN '거래일련번호는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+    
+    <!-- 입출고 상세내역 사전 정합성 체크 -->
+    <select id="selectSm1000ValidDet" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSm1000ValidDet */
+       CASE WHEN #{GDS_C} = '' THEN '물품코드는 필수 입력항목입니다.'
+            WHEN #{TR_UNT_C} = '' THEN '거래단위코드는 필수 입력항목입니다.'
+            WHEN #{WHSE_C} = '' THEN '창고코드는 필수 입력항목입니다.'
+            WHEN #{TXT_DSC} = '' THEN '과세구분코드는 필수 입력항목입니다.'
+            WHEN #{DEL_YN} NOT IN ('Y','N') THEN '삭제여부(Y.,N)가 형식에 맞지 않습니다. 입력값 : ' + #{DEL_YN}
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+    
+    <!-- 입출고 기본내역 사전 정합성 체크2 -->
+    <select id="selectSm1000Valid2" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSm1000Valid2 */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{STDV_DT} = '' THEN '입출고일자는 필수 입력항목입니다.'
+            WHEN #{STDV_DSC} NOT IN ('I','O') THEN '입출고구분코드(I.입고,O.출고)가 형식에 맞지 않습니다. 입력값 : ' + #{STDV_DSC}
+            WHEN #{STDV_STS_DSC} = '' THEN '입출고상태구분코드는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{STDV_SQNO}) = 0 THEN '입출고일련번호는 필수 입력항목입니다.'
+            WHEN #{GUSRID} = '' THEN '사용자ID는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+    
+    <!-- 입출고 기본내역 사전 정합성 체크3 -->
+    <select id="selectSm1000Valid3" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSm1000Valid3 */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{STDV_STS_DSC} = '' THEN '입출고상태구분코드는 필수 입력항목입니다.'
+            WHEN #{GUSRID} = '' THEN '사용자ID는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{TR_SQNO}) = 0 THEN '거래일련번호는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>    
+    
+    <!-- 기 입력된 입출고내역이 있는 지 확인한다. -->
+    <select id="selectSm1000ValidCnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSm1000ValidCnt */
+               COUNT(1) AS CHK_CNT
+          FROM TB_SM_M_GDS_RL_STDV A
+         WHERE 1=1 
+           AND A.CORP_C    = #{CORP_C}       
+           AND A.BZPL_C    = #{BZPL_C}
+           AND A.TR_SQNO   = #{TR_SQNO}
+           AND A.DEL_YN    = 'N'
+    </select>
+    
+    <!-- 기 발생된 내역 중 최근 자료를 조회한다. -->
+    <select id="selectSm1000_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ selectSm1000_01 */
+		       A.*
+		  FROM (
+		       SELECT 
+		              CORP_C
+		            , BZPL_C
+		            , STDV_DT
+		            , STDV_SQNO
+		            , RLTR_DT
+		            , LSCHG_ID AS GUSRID
+		            , ROW_NUMBER() OVER( ORDER BY STDV_DT, STDV_SQNO DESC) AS NUM     /* 기 발생된 내역중 최근 자료순으로 정렬한다. */
+		         FROM TB_SM_M_GDS_RL_STDV
+		        WHERE CORP_C  = #{CORP_C}
+		          AND BZPL_C  = #{BZPL_C}
+		          AND TR_SQNO = #{TR_SQNO}
+		          AND DEL_YN  = 'N'
+		        ) A
+		 WHERE NUM = 1     
+    </select>
+    
+    <!-- 기 입력된 입출고내역은 삭제처리한다.(변경인 경우) -->
+    <update id="updateSm1000_01" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSm1000_01 */ TB_SM_M_GDS_RL_STDV
+           SET 
+               DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND STDV_DT             = #{STDV_DT}
+           AND STDV_SQNO           = #{STDV_SQNO}
+           AND DEL_YN              = 'N'
+    </update>
+    
+    <!-- 2022.01.12 서광석 실시간 물품 월집계 프로시저 호출 -->
+    <select id="selectSm1000_GDS_RL_MON_TOT" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_SM_GDS_RL_MON_TOT (
+        #{CORP_C       , mode=IN , jdbcType=VARCHAR},
+        #{BZPL_C       , mode=IN , jdbcType=VARCHAR},
+        #{RLTR_DT      , mode=IN , jdbcType=VARCHAR},
+        #{STDV_DT      , mode=IN , jdbcType=VARCHAR},
+        #{STDV_SQNO    , mode=IN , jdbcType=INTEGER},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>    
+    
+    <select id="selectSm1000_GDS_RL_MON_TOT_LE" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_SM_GDS_RL_MON_TOT_RE (
+        #{CORP_C       , mode=IN , jdbcType=VARCHAR},
+        #{BZPL_C       , mode=IN , jdbcType=VARCHAR},
+        #{ACG_MN       , mode=IN , jdbcType=VARCHAR},
+        #{GDS_C        , mode=IN , jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>    
+
+    <!-- 실시간 신규 재고 원장 상세 집계(정상) -->
+    <insert id="insertSm1000_01" parameterType="LinkedHashMap">
+        <![CDATA[
+	    WITH TMP AS
+		(
+		    SELECT 1 LV
+		     UNION ALL
+		    SELECT LV + 1 LV 
+		      FROM TMP 
+		     WHERE LV + 1 <= DATEDIFF(month, #{RLTR_DT}, GETDATE())+1
+		)
+		MERGE INTO TB_SM_D_GDS_RL_MON_TOT A
+		USING
+		(
+            SELECT 
+                   CONVERT(VARCHAR(6), DATEADD(MM, LV-1, #{RLTR_DT}),112) AS TOT_MN
+                 , A.*
+              FROM TMP
+                 , (
+				    SELECT
+				           B.CORP_C
+				         , B.BZPL_C
+				         , B.GDS_C
+				         , B.WHSE_C
+				         , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+				                    CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+				                         ELSE B.STDV_QT * -1 
+				                    END
+				                    ELSE 0
+				                END) AS DB_QT
+				         , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+				                    CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+				                         ELSE B.STDV_QT * -1 
+				                    END
+				                    ELSE 0
+				                END) AS CR_QT
+				      FROM TB_SM_M_GDS_RL_STDV A
+				         , TB_SM_D_GDS_RL_STDV B
+				     WHERE 1=1
+		               AND A.CORP_C    = B.CORP_C
+		               AND A.BZPL_C    = B.BZPL_C
+		               AND A.STDV_DT   = B.STDV_DT
+		               AND A.STDV_SQNO = B.STDV_SQNO
+		               AND A.STDV_DSC  = B.STDV_DSC
+				       AND B.CORP_C    = #{CORP_C}
+				       AND B.BZPL_C    = #{BZPL_C}
+				       AND B.STDV_DT   = #{STDV_DT}                   
+				       AND B.STDV_SQNO = #{STDV_SQNO}                 
+				       AND A.DEL_YN    = 'N'
+				       AND B.DEL_YN    = 'N'
+				     GROUP BY
+				           B.CORP_C
+				         , B.BZPL_C
+				         , B.GDS_C
+				         , B.WHSE_C
+				     ) A
+		) B
+		ON
+		(
+		    A.CORP_C = B.CORP_C AND
+		    A.BZPL_C = B.BZPL_C AND 
+		    A.TOT_MN = B.TOT_MN AND 
+		    A.GDS_C  = B.GDS_C AND
+		    A.WHSE_C = B.WHSE_C
+		)
+		WHEN MATCHED THEN
+		    UPDATE 
+		       SET BAS_STPL_QT = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN BAS_STPL_QT
+		                              ELSE A.STPL_QT + B.DB_QT - B.CR_QT END        
+		         , A.DB_QT     = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN A.DB_QT + B.DB_QT
+                                      ELSE A.DB_QT END
+		         , A.DB_AAM_QT = A.DB_AAM_QT + B.DB_QT
+		         , A.CR_QT     = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN A.CR_QT + B.CR_QT
+                                      ELSE A.CR_QT END
+		         , A.CR_AAM_QT = A.CR_AAM_QT + B.CR_QT
+		         , A.STPL_QT   = A.STPL_QT + B.DB_QT - B.CR_QT
+		         , LSCHG_DTM   = GETDATE()
+		         , LSCHG_ID    = #{GUSRID}
+		
+		WHEN NOT MATCHED THEN
+		    INSERT 
+		    (
+		          CORP_C
+		        , BZPL_C
+		        , TOT_MN
+		        , GDS_C
+		        , WHSE_C
+		        , BAS_STPL_QT
+		        , STPL_QT
+		        , DB_QT
+		        , DB_AAM_QT
+		        , CR_QT
+		        , CR_AAM_QT
+		        , FSRG_DTM
+		        , FSRG_ID
+		        , LSCHG_DTM
+		        , LSCHG_ID
+		    )
+		    VALUES
+		    (
+		          B.CORP_C
+		        , B.BZPL_C
+		        , B.TOT_MN
+		        , B.GDS_C
+		        , B.WHSE_C
+		        , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN 0 ELSE B.DB_QT - B.CR_QT END
+		        , B.DB_QT - B.CR_QT
+		        , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN B.DB_QT
+                                      ELSE 0 END
+		        , B.DB_QT
+		        , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN B.CR_QT
+                                      ELSE 0 END
+		        , B.CR_QT
+		        , GETDATE()
+		        , #{GUSRID}
+		        , GETDATE()
+		        , #{GUSRID}
+		    );
+	   ]]>
+    </insert>
+    
+    <!-- 실시간 신규 재고 원장 집계(정상) -->
+    <insert id="insertSm1000_02" parameterType="LinkedHashMap">
+        <![CDATA[
+        WITH TMP AS     
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM TMP 
+             WHERE LV + 1 <= DATEDIFF(month, #{RLTR_DT}, GETDATE())+1
+        )
+        MERGE INTO TB_SM_M_GDS_RL_MON_TOT A
+        USING
+        (
+            SELECT 
+                   CONVERT(VARCHAR(6), DATEADD(MM, LV-1, #{RLTR_DT}),112) AS TOT_MN
+                 , A.*
+              FROM TMP
+                 , (
+                    SELECT 
+                           B.CORP_C
+                         , B.BZPL_C
+                         , B.GDS_C
+                         , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+                                    CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+                                         ELSE B.STDV_QT * -1 
+                                    END
+                                    ELSE 0
+                                END) AS DB_QT
+                         , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+                                    CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+                                         ELSE B.STDV_QT * -1 
+                                    END
+                                    ELSE 0
+                                END) AS CR_QT
+                      FROM TB_SM_M_GDS_RL_STDV A
+                         , TB_SM_D_GDS_RL_STDV B
+                     WHERE 1=1
+                       AND A.CORP_C    = B.CORP_C
+                       AND A.BZPL_C    = B.BZPL_C
+                       AND A.STDV_DT   = B.STDV_DT
+                       AND A.STDV_SQNO = B.STDV_SQNO
+                       AND A.STDV_DSC  = B.STDV_DSC
+                       AND B.CORP_C    = #{CORP_C}
+                       AND B.BZPL_C    = #{BZPL_C}
+                       AND B.STDV_DT   = #{STDV_DT}                   
+                       AND B.STDV_SQNO = #{STDV_SQNO}                 
+                       AND A.DEL_YN    = 'N'
+                       AND B.DEL_YN    = 'N'
+                     GROUP BY
+                           B.CORP_C
+                         , B.BZPL_C
+                         , B.GDS_C
+                     ) A
+        ) B
+        ON
+        (
+            A.CORP_C = B.CORP_C AND
+            A.BZPL_C = B.BZPL_C AND
+            A.TOT_MN = B.TOT_MN AND 
+            A.GDS_C  = B.GDS_C
+        )
+        WHEN MATCHED THEN
+            UPDATE 
+               SET BAS_STPL_QT = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN BAS_STPL_QT    
+                                      ELSE A.STPL_QT + B.DB_QT - B.CR_QT END        
+                 , A.DB_QT     = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN A.DB_QT + B.DB_QT
+                                      ELSE A.DB_QT END
+                 , A.DB_AAM_QT = A.DB_AAM_QT + B.DB_QT
+                 , A.CR_QT     = CASE WHEN A.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN A.CR_QT + B.CR_QT
+                                      ELSE A.CR_QT END
+                 , A.CR_AAM_QT = A.CR_AAM_QT + B.CR_QT
+                 , A.STPL_QT   = A.STPL_QT + B.DB_QT - B.CR_QT
+                 , LSCHG_DTM   = GETDATE()
+                 , LSCHG_ID    = #{GUSRID}
+        
+        WHEN NOT MATCHED THEN
+            INSERT 
+            (
+                  CORP_C
+                , BZPL_C
+                , TOT_MN
+                , GDS_C
+                , BAS_STPL_QT
+                , STPL_QT
+                , DB_QT
+                , DB_AAM_QT
+                , CR_QT
+                , CR_AAM_QT
+                , FSRG_DTM
+                , FSRG_ID
+                , LSCHG_DTM
+                , LSCHG_ID
+            )
+            VALUES
+            (
+                  B.CORP_C
+                , B.BZPL_C
+                , B.TOT_MN
+                , B.GDS_C
+                , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN 0 ELSE B.DB_QT - B.CR_QT END
+                , B.DB_QT - B.CR_QT
+                , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN B.DB_QT
+                                      ELSE 0 END
+                , B.DB_QT
+                , CASE WHEN B.TOT_MN = SUBSTRING(#{RLTR_DT}, 1, 6) THEN B.CR_QT
+                                      ELSE 0 END
+                , B.CR_QT
+                , GETDATE()
+                , #{GUSRID}
+                , GETDATE()
+                , #{GUSRID}
+            );
+       ]]>
+    </insert>    
+
+    <!-- 실시간 재고 원장  집계(수정) 상세 -->
+    <update id="updateSm1000_02" parameterType="LinkedHashMap">
+        <![CDATA[
+        MERGE INTO TB_SM_D_GDS_RL_MON_TOT A
+        USING
+        (
+             SELECT 
+                    B.CORP_C
+                  , B.BZPL_C
+                  , SUBSTRING(#{RLTR_DT}, 1, 6) AS TOT_MN
+                  , B.GDS_C
+                  , B.WHSE_C
+                  , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+                                  ELSE B.STDV_QT  * -1
+                             END
+                             ELSE 0
+                         END) AS DB_QT
+                  , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT
+                                  ELSE B.STDV_QT  * -1
+                             END
+                             ELSE 0
+                         END) AS CR_QT
+               FROM TB_SM_M_GDS_RL_STDV A
+                  , TB_SM_D_GDS_RL_STDV B
+              WHERE 1=1
+                AND A.CORP_C    = B.CORP_C
+                AND A.BZPL_C    = B.BZPL_C
+                AND A.STDV_DT   = B.STDV_DT
+                AND A.STDV_SQNO = B.STDV_SQNO
+                AND A.STDV_DSC  = B.STDV_DSC
+                AND B.CORP_C    = #{CORP_C}
+                AND B.BZPL_C    = #{BZPL_C}
+                AND B.STDV_DT   = #{STDV_DT}                   
+                AND B.STDV_SQNO = #{STDV_SQNO}                 
+                AND A.DEL_YN    = 'Y' 
+                AND B.DEL_YN    = 'N'
+              GROUP BY
+                    B.CORP_C
+                  , B.BZPL_C
+                  , B.GDS_C
+                  , B.WHSE_C
+        ) B
+        ON
+        (
+            A.CORP_C = B.CORP_C AND
+            A.BZPL_C = B.BZPL_C AND
+            A.TOT_MN >= B.TOT_MN AND 
+            A.GDS_C  = B.GDS_C AND
+            A.WHSE_C = B.WHSE_C
+        )
+        WHEN MATCHED THEN
+            UPDATE 
+		       SET BAS_STPL_QT = CASE WHEN A.TOT_MN = B.TOT_MN THEN BAS_STPL_QT
+		                              ELSE A.STPL_QT - B.DB_QT + B.CR_QT END        
+		         , A.DB_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.DB_QT - B.DB_QT
+		                              ELSE A.DB_QT END
+		         , A.DB_AAM_QT = A.DB_AAM_QT - B.DB_QT
+		         , A.CR_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.CR_QT - B.CR_QT
+                                      ELSE A.CR_QT END
+		         , A.CR_AAM_QT = A.CR_AAM_QT - B.CR_QT
+		         , A.STPL_QT   = A.STPL_QT - B.DB_QT + B.CR_QT
+		         , LSCHG_DTM   = GETDATE()
+		         , LSCHG_ID    = #{GUSRID}
+       ;
+       ]]>
+    </update>
+    
+    <!-- 실시간 재고 원장 집계(수정) 기본 -->
+    <update id="updateSm1000_03" parameterType="LinkedHashMap">
+        <![CDATA[
+        MERGE INTO TB_SM_M_GDS_RL_MON_TOT A
+        USING
+        (
+             SELECT 
+                    B.CORP_C
+                  , B.BZPL_C
+                  , SUBSTRING(#{RLTR_DT}, 1, 6) AS TOT_MN
+                  , B.GDS_C
+                  , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+                                  ELSE B.STDV_QT * -1
+                             END
+                             ELSE 0
+                         END) AS DB_QT
+                  , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT 
+                                  ELSE B.STDV_QT * -1
+                             END
+                             ELSE 0
+                         END) AS CR_QT
+               FROM TB_SM_M_GDS_RL_STDV A
+                  , TB_SM_D_GDS_RL_STDV B
+              WHERE 1=1
+                AND A.CORP_C    = B.CORP_C
+                AND A.BZPL_C    = B.BZPL_C
+                AND A.STDV_DT   = B.STDV_DT
+                AND A.STDV_SQNO = B.STDV_SQNO
+                AND A.STDV_DSC  = B.STDV_DSC
+                AND B.CORP_C    = #{CORP_C}
+                AND B.BZPL_C    = #{BZPL_C}
+                AND B.STDV_DT   = #{STDV_DT}                   
+                AND B.STDV_SQNO = #{STDV_SQNO}                 
+                AND A.DEL_YN    = 'Y' 
+                AND B.DEL_YN    = 'N'
+              GROUP BY
+                    B.CORP_C
+                  , B.BZPL_C
+                  , B.GDS_C
+        ) B
+        ON
+        (
+            A.CORP_C = B.CORP_C AND
+            A.BZPL_C = B.BZPL_C AND
+            A.TOT_MN >= B.TOT_MN AND 
+            A.GDS_C  = B.GDS_C
+        )
+        WHEN MATCHED THEN
+            UPDATE 
+               SET BAS_STPL_QT = CASE WHEN A.TOT_MN = B.TOT_MN THEN BAS_STPL_QT
+                                      ELSE A.STPL_QT - B.DB_QT + B.CR_QT END        
+                 , A.DB_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.DB_QT - B.DB_QT
+                                      ELSE A.DB_QT END
+                 , A.DB_AAM_QT = A.DB_AAM_QT - B.DB_QT
+                 , A.CR_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.CR_QT - B.CR_QT
+                                      ELSE A.CR_QT END
+                 , A.CR_AAM_QT = A.CR_AAM_QT - B.CR_QT
+                 , A.STPL_QT   = A.STPL_QT - B.DB_QT + B.CR_QT
+                 , LSCHG_DTM   = GETDATE()
+                 , LSCHG_ID    = #{GUSRID}
+       ;
+       ]]>
+    </update>
+    
+    <!-- 재고 입고내역의 상태값을 변경하는 인터페이스 -->
+    <update id="updateSm1000_M_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSm1000_M_STS */ TB_SM_M_GDS_RL_STDV
+           SET                                                    /* 회계일자                   */      
+               STDV_STS_DSC = #{STDV_STS_DSC}                     /* 입고상태구분코드           */ 
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND STDV_DT      = #{STDV_DT}
+           AND STDV_DSC     = #{STDV_DSC}           
+           AND STDV_SQNO    = #{STDV_SQNO}
+           AND DEL_YN       = 'N'
+    </update>
+    
+    <!-- 재고 입고내역의 상태값을 변경하는 인터페이스(거래일련번호기준) -->
+    <update id="updateSm1000_M_STS_TR" parameterType="LinkedHashMap">
+        UPDATE /*+ updateSm1000_M_STS_TR */ TB_SM_M_GDS_RL_STDV
+           SET                                                    /* 회계일자                   */      
+               STDV_STS_DSC = #{STDV_STS_DSC}                     /* 입고상태구분코드           */ 
+             , LSCHG_DTM    = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID     = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND TR_SQNO      = #{TR_SQNO}
+           AND DEL_YN       = 'N'
+    </update>
+    
+     <!-- 전표등록전표삭제 -->
+    <update id="deleteSm1000_SLP_NML_YN" parameterType="linkedHashMap">
+        UPDATE /*+ deleteSm1000_SLP_NML_YN */ TB_SM_M_GDS_RL_STDV
+           SET  
+                SLP_NML_YN  = 'N'                                 /* 전표정상여부         */
+           ,    LSCHG_DTM   = GETDATE()                           /* 최종변경일시           */
+           ,    LSCHG_ID    = #{GUSRID}                           /* 최종변경자ID     */                
+        WHERE   1=1
+        AND     CORP_C      = #{CORP_C}
+        AND     BZPL_C      = #{BZPL_C}
+        AND     STDV_DT     = #{STDV_DT}
+        AND     STDV_SQNO   = #{STDV_SQNO}
+        AND     SLP_NML_YN  = 'Y'
+        AND     DEL_YN      = 'N'
+    </update>
+    
+    
+    <!-- 실시간 재고 원장  집계(삭제) 상세 -->
+    <update id="updateSm1000_04" parameterType="LinkedHashMap">
+        <![CDATA[
+        MERGE INTO TB_SM_D_GDS_RL_MON_TOT A
+        USING
+        (
+             SELECT 
+                    B.CORP_C
+                  , B.BZPL_C
+                  , SUBSTRING(#{RLTR_DT}, 1, 6) AS TOT_MN
+                  , B.GDS_C
+                  , B.WHSE_C
+                  , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT * -1
+                                  ELSE B.STDV_QT 
+                             END
+                             ELSE 0
+                         END) AS DB_QT
+                  , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT * -1
+                                  ELSE B.STDV_QT 
+                             END
+                             ELSE 0
+                         END) AS CR_QT
+               FROM TB_SM_M_GDS_RL_STDV A
+                  , TB_SM_D_GDS_RL_STDV B
+              WHERE 1=1
+                AND A.CORP_C    = B.CORP_C
+                AND A.BZPL_C    = B.BZPL_C
+                AND A.STDV_DT   = B.STDV_DT
+                AND A.STDV_SQNO = B.STDV_SQNO
+                AND A.STDV_DSC  = B.STDV_DSC
+                AND B.CORP_C    = #{CORP_C}
+                AND B.BZPL_C    = #{BZPL_C}
+                AND B.STDV_DT   = #{STDV_DT}                   
+                AND B.STDV_SQNO = #{STDV_SQNO}                 
+                AND A.SLP_NML_YN = 'N'
+                AND B.DEL_YN    = 'N'
+              GROUP BY
+                    B.CORP_C
+                  , B.BZPL_C
+                  , B.GDS_C
+                  , B.WHSE_C
+        ) B
+        ON
+        (
+            A.CORP_C = B.CORP_C AND
+            A.BZPL_C = B.BZPL_C AND
+            A.TOT_MN >= B.TOT_MN AND 
+            A.GDS_C  = B.GDS_C AND
+            A.WHSE_C = B.WHSE_C
+        )
+        WHEN MATCHED THEN
+            UPDATE 
+               SET BAS_STPL_QT = CASE WHEN A.TOT_MN = B.TOT_MN THEN BAS_STPL_QT
+                                      ELSE A.STPL_QT - B.DB_QT + B.CR_QT END        
+                 , A.DB_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.DB_QT - B.DB_QT
+                                      ELSE A.DB_QT END
+                 , A.DB_AAM_QT = A.DB_AAM_QT - B.DB_QT
+                 , A.CR_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.CR_QT - B.CR_QT
+                                      ELSE A.CR_QT END
+                 , A.CR_AAM_QT = A.CR_AAM_QT - B.CR_QT
+                 , A.STPL_QT   = A.STPL_QT - B.DB_QT + B.CR_QT
+                 , LSCHG_DTM   = GETDATE()
+                 , LSCHG_ID    = #{GUSRID}
+       ;
+       ]]>
+    </update>
+    
+    <!-- 실시간 재고 원장 집계(삭제) 기본  -->
+    <update id="updateSm1000_05" parameterType="LinkedHashMap">
+        <![CDATA[
+        MERGE INTO TB_SM_M_GDS_RL_MON_TOT A
+        USING
+        (
+             SELECT 
+                    B.CORP_C
+                  , B.BZPL_C
+                  , SUBSTRING(#{RLTR_DT}, 1, 6) AS TOT_MN
+                  , B.GDS_C
+                  , SUM(CASE WHEN B.STDV_DSC = 'I' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT * -1
+                                  ELSE B.STDV_QT 
+                             END
+                             ELSE 0
+                         END) AS DB_QT
+                  , SUM(CASE WHEN B.STDV_DSC = 'O' THEN 
+                             CASE WHEN A.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N' THEN B.STDV_QT * -1
+                                  ELSE B.STDV_QT 
+                             END
+                             ELSE 0
+                         END) AS CR_QT
+               FROM TB_SM_M_GDS_RL_STDV A
+                  , TB_SM_D_GDS_RL_STDV B
+              WHERE 1=1
+                AND A.CORP_C    = B.CORP_C
+                AND A.BZPL_C    = B.BZPL_C
+                AND A.STDV_DT   = B.STDV_DT
+                AND A.STDV_SQNO = B.STDV_SQNO
+                AND A.STDV_DSC  = B.STDV_DSC
+                AND B.CORP_C    = #{CORP_C}
+                AND B.BZPL_C    = #{BZPL_C}
+                AND B.STDV_DT   = #{STDV_DT}                   
+                AND B.STDV_SQNO = #{STDV_SQNO}                 
+                AND A.SLP_NML_YN = 'N'
+                AND B.DEL_YN    = 'N'
+              GROUP BY
+                    B.CORP_C
+                  , B.BZPL_C
+                  , B.GDS_C
+        ) B
+        ON
+        (
+            A.CORP_C = B.CORP_C AND
+            A.BZPL_C = B.BZPL_C AND
+            A.TOT_MN >= B.TOT_MN AND 
+            A.GDS_C  = B.GDS_C
+        )
+        WHEN MATCHED THEN
+            UPDATE 
+               SET BAS_STPL_QT = CASE WHEN A.TOT_MN = B.TOT_MN THEN BAS_STPL_QT
+                                      ELSE A.STPL_QT - B.DB_QT + B.CR_QT END        
+                 , A.DB_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.DB_QT - B.DB_QT
+                                      ELSE A.DB_QT END
+                 , A.DB_AAM_QT = A.DB_AAM_QT - B.DB_QT
+                 , A.CR_QT     = CASE WHEN A.TOT_MN = B.TOT_MN THEN A.CR_QT - B.CR_QT
+                                      ELSE A.CR_QT END
+                 , A.CR_AAM_QT = A.CR_AAM_QT - B.CR_QT
+                 , A.STPL_QT   = A.STPL_QT - B.DB_QT + B.CR_QT
+                 , LSCHG_DTM   = GETDATE()
+                 , LSCHG_ID    = #{GUSRID}
+       ;
+       ]]>
+    </update>
+    
+    <!-- 축산물이력처리를 위한 입출고 기본내역 사전 정합성 체크 -->
+    <select id="selectSm1000Valid04" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectSm1000Valid04 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{STDV_DT}, '') = '' THEN '전표일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{STDV_SQNO}, '') = '' THEN '전표일련번호는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+
+
+    <!-- 출고등록 축산물이력처리 대상조회.[출고입고 정보중 입고창고가 'ZZZ'(생산창고)인 대상을 조회] -->
+    <select id="selectSm1000_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSm1000_02 */
+               A.CORP_C
+             , A.BZPL_C
+             , A.STDV_DT
+             , A.STDV_SQNO
+             , A.STDV_DSC
+             , A.RLTR_DT
+             , B.STDV_QT
+             , B.WHSE_C  AS WHSE_C_O       -- 출고창고코드
+             , D.WHSE_C  AS WHSE_C_I       -- 입고창고코드
+             , B.GDS_HST_NO
+             , B.CONDU_NO                  -- 개체번호
+             , B.HST_AMN_DSC               -- 출고축종관리구분
+          FROM TB_SM_M_GDS_RL_STDV A             -- 출고기본정보
+         INNER JOIN TB_SM_M_GDS_RL_STDV C        -- 입고상세정보
+            ON A.CORP_C     = C.CORP_C
+           AND A.BZPL_C     = C.BZPL_C
+           AND A.STDV_DT    = C.STDV_DT
+           AND A.STDV_SQNO  = C.STDV_SQNO
+           AND C.STDV_DSC   = 'I'
+           AND C.DEL_YN     = 'N'
+           AND C.SLP_NML_YN = 'Y'
+         INNER JOIN TB_SM_D_GDS_RL_STDV B       -- 출고상세정보
+            ON A.CORP_C     = B.CORP_C
+           AND A.BZPL_C     = B.BZPL_C
+           AND A.STDV_DT    = B.STDV_DT
+           AND A.STDV_SQNO  = B.STDV_SQNO
+           AND A.STDV_DSC   = B.STDV_DSC
+           AND B.DEL_YN     = 'N'
+           AND B.WHSE_C != 'ZZZ'
+         INNER JOIN TB_SM_D_GDS_RL_STDV D       -- 입고상세정보
+            ON B.CORP_C     = D.CORP_C
+           AND B.BZPL_C     = D.BZPL_C
+           AND B.STDV_DT    = D.STDV_DT
+           AND B.STDV_SQNO  = D.STDV_SQNO
+           AND B.STDV_DSC   != D.STDV_DSC
+           AND B.STDV_DSQNO = D.STDV_DSQNO
+           AND D.DEL_YN     = 'N'
+           AND D.WHSE_C     = 'ZZZ'
+         WHERE 1=1
+           AND A.CORP_C     = #{CORP_C}
+           AND A.BZPL_C     = #{BZPL_C}
+           AND A.STDV_DT    = #{STDV_DT}
+           AND A.STDV_SQNO  = #{STDV_SQNO}
+           AND A.STDV_DSC   = 'O'
+           AND A.DEL_YN     = 'N'
+           AND A.SLP_NML_YN = 'Y'
+    </select>
+
+</mapper>

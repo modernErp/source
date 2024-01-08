@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">
+
+    <!-- 발주기본내역 사전 정합성 체크 -->
+    <select id="selectBy2010Valid" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectBy2010Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드를 확인하십시요.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드를 확인하십시요.'
+            WHEN #{ODR_STS_DSC} = '' THEN '발주상태구분을 확인하십시요.'
+            WHEN #{ODR_ST} = '' THEN '발주일자를 확인하십시요.'
+            WHEN #{TRPL_C} = '' THEN '거래처코드를 확인하십시요.'
+            WHEN #{ADJPL_C} = '' THEN '정산처코드를 확인하십시요.'
+            WHEN #{RCPL_C} = '' THEN '수령처코드를 확인하십시요.'
+            WHEN #{DVY_DT} = '' THEN '배송일자를 확인하십시요.'
+            WHEN #{OEM_YN} != 'Y' AND DBO.SF_GET_NUMERIC(#{ODR_AM}) = 0 THEN '합계금액이 0원입니다. 수량/단가/공급가액을 확인하십시요.'     
+            WHEN LEN(#{ODR_AM}) > 12 THEN '합계금액이 너무 큽니다. 수량/단가/공급가액을 확인하십시요.'       
+       ELSE 'OK' END AS RESULT_MSG 
+    ]]>                  
+    </select>
+    
+    <!-- 발주상세내역 사전 정합성 체크 -->
+    <select id="selectBy2010ValidDet" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectBy2010ValidDet */
+       CASE WHEN #{GDS_C} = '' THEN '물품코드를 확인하십시요.'
+            WHEN #{UNT_C} = '' THEN '관리단위를 확인하십시요.'
+            WHEN #{TR_UNT_C} = '' THEN '거래단위를 확인하십시요.'
+            WHEN DBO.SF_GET_FLOAT(#{ODR_INP_QT}) = 0 THEN '입력 수(중)량을 확인하십시요.'
+            WHEN LEN(#{ODR_QT}) > 12 THEN '발주 수(중)량이 너무 많습니다. 입력 수(중)량을 확인하십시요.'
+            WHEN #{OEM_YN} != 'Y' AND DBO.SF_GET_FLOAT(#{ODR_UPR}) = 0 THEN '발주단가를 확인하십시요.'
+            WHEN #{OEM_YN} != 'Y' AND DBO.SF_GET_NUMERIC(#{SPY_AM}) = 0 THEN '공급가액을 확인하십시요.'
+            WHEN #{OEM_YN} != 'Y' AND (#{TXT_DSC} = '1' AND DBO.SF_GET_NUMERIC(#{VAT}) = 0) THEN '세액을 확인하십시요.'
+            WHEN #{OEM_YN} != 'Y' AND DBO.SF_GET_NUMERIC(#{ODR_AM}) = 0 THEN '합계금액이 0원입니다. 수량/단가/공급가액을 확인하십시요.'
+            WHEN LEN(#{ODR_AM}) > 12 THEN '합계금액이 너무 큽니다. 수량/단가/공급가액을 확인하십시요.'
+            WHEN LEN(#{RMK_CNTN}) > 150 THEN '비고내용을 올바르게 입력하십시요.'
+       ELSE 'OK' END AS RESULT_MSG  
+    ]]>                           
+    </select>  
+
+    <!-- 발주취소 사전 정합성 체크 -->
+    <select id="selectBy2010Valid_02" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectBy2010Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드를 확인하십시오.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드를 확인하십시오.'
+            WHEN #{ODR_STS_DSC} = '' THEN '발주상태구분을 확인하십시오.'
+            WHEN #{ODR_DT} = '' THEN '발주일자를 확인하십시오.'
+            WHEN #{ODR_SQNO} = '' THEN '발주일련번호를 확인하십시오.'
+            WHEN #{CANCEL_RSN} = '' THEN '발주취소사유를 입력하십시오.'
+       ELSE 'OK' END AS RESULT_MSG 
+    ]]>                  
+    </select>
+    
+    <!-- 발주기본내역 등록 시 중복체크 -->
+    <select id="selectBy2010Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectBy2010Cnt */
+               COUNT(1)
+          FROM TB_BY_M_ODR A
+         WHERE 1 = 1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.ODR_DT            = #{ODR_DT}
+           AND A.ODR_SQNO          = DBO.SF_GET_NUMERIC(#{ODR_SQNO})
+           AND A.DEL_YN            = #{DEL_YN}
+    </select>
+    
+    <!-- 발주기본내역조회 -->
+    <select id="selectBy2010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2010_01 */
+               A.CORP_C                                            /* 회사코드                 */
+             , A.BZPL_C                                            /* 사업장코드               */
+             , A.ODR_DT                                            /* 발주일자                 */
+             , A.ODR_SQNO                                          /* 발주일련번호             */
+             , A.ODR_STS_DSC                                       /* 발주상태구분코드         */
+             , A.TRPL_C                                            /* 거래처코드               */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                 */
+             , A.ADJPL_C                                           /* 정산처코드               */   
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C
+                   AND ADJPL_C = A.ADJPL_C
+               ) AS ADJPL_NM                                       /* 정산처명                 */ 
+             , A.RCPL_C                                            /* 배송처코드               */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.RCPL_C
+               ) AS RCPL_NM                                        /* 배송처명                 */             
+             , A.DVY_DT                                            /* 배송일자                 */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드       */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호           */
+             , A.DVYAA_ADR1                                        /* 배송지주소1       */
+             , A.DVYAA_ADR2                                        /* 배송지주소2       */
+             , A.ODR_AM                                            /* 발주금액                 */
+             , A.SPY_AM                                            /* 공급금액                 */
+             , A.VAT                                               /* 부가세                   */
+             , A.ODR_VLD_YN                                        /* 발주유효여부             */
+             , A.STR_DT                                            /* 입고일자                 */
+             , A.STR_SQNO                                          /* 입고일련번호             */ 
+             , A.RMK_CNTN                                          /* 비고내용                 */
+             , A.DEL_YN                                            /* 삭제여부                 */
+             , A.ETC_DSC1                                          /* 기타구분1         */
+             , A.ETC_DSC2                                          /* 기타구분2         */
+             , A.ETC_DSC3                                          /* 기타구분3         */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시             */
+             , A.FSRG_ID                                           /* 최초등록자ID       */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시             */
+             , A.LSCHG_ID                                          /* 최종변경자ID       */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명             */
+             , A.CANCEL_RSN                                        /* 취소사유                 */
+             , A.OEM_YN                                            /* OEM여부                */
+          FROM TB_BY_M_ODR A    
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.ODR_DT            = #{ODR_DT}
+           AND A.ODR_SQNO          = #{ODR_SQNO}
+    </select>
+        
+    <!-- 발주상세내역조회 -->    
+    <select id="selectBy2010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2010_02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ODR_DT                                            /* 발주일자                  */
+             , A.ODR_SQNO                                          /* 발주일련번호              */
+             , A.ODR_DSQNO                                         /* 발주상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.ODR_INP_QT                                        /* 발주입력수량              */
+             , A.ODR_QT                                            /* 발주수량                  */
+             , A.ODR_BOX_QT                                        /* 발주박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.ODR_UPR                                           /* 발주단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.ODR_AM                                            /* 발주금액                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.ODR_WT                                            /* 발주중량                  */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , B.GDS_DTL_NM                                        /* 물품명                    */ 
+             , B.GDS_STD_NM                                        /* 물품규격                  */ 
+             , B.UNT_C                                             /* 물품관리단위              */ 
+             , B.OEM_YN                                            /* OEM여부 추가 20211223 rchkorea */
+          FROM TB_BY_D_ODR            A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}          
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.ODR_DT            = #{ODR_DT}
+           AND A.ODR_SQNO          = #{ODR_SQNO}
+           AND A.DEL_YN            = 'N'
+    </select>
+    
+    <!-- 발주내역찾기팝업조회 -->    
+    <select id="selectBy2010_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2010_03 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ODR_DT                                            /* 발주일자                  */
+             , A.ODR_SQNO                                          /* 발주일련번호              */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.ODR_STS_DSC                                       /* 발주상태구분코드          */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                  */
+             , A.ADJPL_C                                           /* 정산처코드                */   
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C
+                   AND ADJPL_C = A.ADJPL_C
+               ) AS ADJPL_NM                                       /* 정산처명                  */ 
+             , A.RCPL_C                                            /* 수령처코드                */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.RCPL_C
+               ) AS RCPL_NM                                        /* 수령처명                  */             
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.ODR_AM                                            /* 발주금액                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.ODR_VLD_YN                                        /* 발주유효여부              */
+             , A.STR_DT                                            /* 입고일자                  */ 
+             , A.STR_SQNO                                          /* 입고일련번호              */ 
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명              */
+             , A.OEM_YN                                            /* OEM여부                */
+          FROM TB_BY_M_ODR A
+         WHERE 1=1
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}
+           AND A.DEL_YN      = 'N'
+          <if test="S_ODR_STS_DSC != null and S_ODR_STS_DSC != ''">
+           AND A.ODR_STS_DSC IN (#{S_ODR_STS_DSC}) 
+          </if>                        
+          <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C      = #{TRPL_C}
+          </if>           
+      <choose>
+        <when test="DT_GUBUN == 1">            
+           AND A.ODR_DT BETWEEN #{ST_DT} AND #{ED_DT}                   
+        </when>
+        <when test="DT_GUBUN == 2">
+           AND A.DVY_DT BETWEEN #{ST_DT} AND #{ED_DT}         
+        </when>
+      </choose> 
+    </select>   
+    
+    <!-- 발주서 -->         
+	<select id="selectBy2010_04" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy2010_04 */
+               A.CORP_C                                            /* 회사코드                 */
+		     , A.ODR_DT                                            /* 발주일자                 */
+		     , A.ODR_SQNO                                          /* 발주일련번호             */
+		     , A.TRPL_C                                            /* 거래처코드               */
+		     , (
+		        SELECT TRPL_NM
+		          FROM TB_CO_M_TRPL
+		         WHERE 1 = 1
+		           AND CORP_C = A.CORP_C
+		           AND TRPL_C = A.TRPL_C
+		       ) TRPL_NM                                           /* 거래처명                 */
+		     , A.DVY_DT                                            /* 배송일자                 */
+		     , A.RCPL_C                                            /* 수령처코드               */
+		     , (
+		        SELECT TRPL_NM
+		          FROM TB_CO_M_TRPL
+		         WHERE 1 = 1
+		           AND CORP_C = A.CORP_C
+		           AND TRPL_C = A.RCPL_C
+		       ) RCPL_NM                                           /* 수령처명*/
+		     , A.ODR_AM                                            /* 발주금액*/
+		     , A.LSCHG_ID                                          /* 발주자ID                  */
+		     , (
+		        SELECT USR_NM
+		          FROM TB_SY_M_USR
+		         WHERE 1 = 1
+		           AND CORP_C = A.CORP_C
+		           AND BZPL_C = A.BZPL_C
+		           AND USR_ID = A.LSCHG_ID
+		       ) AS LSCHG_NM                                       /* 발주자명                  */
+		     , A.BZPL_C                                            /* 사업장코드                */
+		     , A.RMK_CNTN                                          /* 비고내용                  */
+		     , B.BZPL_NM                                           /* 사업장명                  */
+		     , B.ADR1+ADR2 AS ADR                                  /* 주소                      */
+		     , B.BZMN_NO                                           /* 사업자번호                */    
+		     , B.TEL_NO                                            /* 전화번호                  */
+		     , B.FAX_NO                                            /* FAX번호                   */
+		     , B.REPM_NM                                           /* 대표자이름                */
+		  FROM TB_BY_M_ODR              A
+		  LEFT OUTER JOIN TB_CO_M_BZPL  B
+		    ON A.CORP_C = B.CORP_C
+		   AND A.BZPL_C = B.BZPL_C
+		 WHERE 1 = 1
+		   AND A.CORP_C   = #{CORP_C}
+		   AND A.BZPL_C   = #{BZPL_C}
+		   AND A.ODR_DT   = #{ODR_DT}
+		   AND A.ODR_SQNO = #{ODR_SQNO}
+	</select>             
+    
+    <!-- 발주상태구분 변경 -->
+    <update id="updateBy2010_STS" parameterType="LinkedHashMap">
+        UPDATE /*+ updateBy2010_STS */ TB_BY_M_ODR
+           SET ODR_STS_DSC = #{ODR_STS_DSC}                      /* 발주상태구분코드           */
+             , STR_DT      = #{STR_DT}                           /* 입고일자                   */
+             , STR_SQNO    = #{STR_SQNO}                         /* 입고일련번호               */
+             , LSCHG_DTM   = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID    = #{GUSRID}                           /* 최종변경자ID               */                         
+         WHERE 1 = 1
+           AND CORP_C      = #{CORP_C}
+           AND BZPL_C      = #{BZPL_C}
+           AND ODR_DT      = #{ODR_DT}
+           AND ODR_SQNO    = #{ODR_SQNO}
+    </update>
+    
+    <!-- 발주취소 -->
+    <update id="updateBy2010_cancel" parameterType="LinkedHashMap">
+		UPDATE /*+ updateBy2010_cancel */
+		       TB_BY_M_ODR
+		   SET CANCEL_RSN   = #{CANCEL_RSN}
+		     , ODR_STS_DSC = '9'             /* 9:발주취소 */
+             , LSCHG_DTM   = GETDATE()                           /* 최종변경일시               */
+             , LSCHG_ID    = #{GUSRID}                           /* 최종변경자ID               */                         
+		 WHERE 1=1
+		   AND CORP_C       = #{CORP_C}              
+		   AND BZPL_C       = #{BZPL_C}              
+		   AND ODR_DT       = #{ODR_DT}              
+		   AND ODR_SQNO     = #{ODR_SQNO}              
+		   AND ODR_STS_DSC  = '1'             
+    </update>
+
+    <!-- 발주상태구분 체크쿼리 20200903 김지혜 추가-->
+    <select id="select_validationBy2010" parameterType="LinkedHashMap" resultType="Integer">
+       SELECT /*+ select_validationBy2010 */
+              COUNT(1)
+         FROM TB_BY_M_ODR
+        WHERE 1 = 1
+          AND CORP_C      = #{CORP_C}
+          AND BZPL_C      = #{BZPL_C}
+          AND ODR_DT      = #{ODR_DT}
+          AND ODR_SQNO    = #{ODR_SQNO}
+          AND ODR_STS_DSC = '2'
+    </select> 
+
+    <!-- 발주취소 수정 전, 발주상태가 [1]발주상태 인 전표 cnt -->
+    <select id="selectBy2010_cnt_01" parameterType="LinkedHashMap" resultType="Integer">
+		SELECT /*+ selectBy2010_cnt_01 */
+		       COUNT(*) AS CNT
+		  FROM TB_BY_M_ODR
+		 WHERE 1=1
+		   AND CORP_C       = #{CORP_C}              
+		   AND BZPL_C       = #{BZPL_C}              
+		   AND ODR_DT       = #{ODR_DT}              
+		   AND ODR_SQNO     = #{ODR_SQNO}              
+		   AND ODR_STS_DSC  = '1'   /* 1:발주상태 */    
+    </select>
+</mapper>

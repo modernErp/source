@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 가격군별거래처등록 전 Validation Check -->
+    <select id="selectSe1030_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ selectSe1030_ValidCheck */
+               CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{BZPL_C} = '' THEN '사업장코드는 필수입력 항목입니다.'
+                    WHEN #{TRPL_C} = '' THEN '거래처코드는 필수입력 항목입니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>  
+
+    <!-- 거래처등록여부체크 -->
+    <select id="selectSe1030_chk1" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1030_chk1 */
+               count(1)
+          FROM TB_CO_M_TRPL
+         WHERE CORP_C    = #{CORP_C}
+           AND TRPL_C    = #{TRPL_C}
+    </select>
+    
+    <!-- 가격군별거래처등록여부체크 -->
+    <select id="selectSe1030_chk2" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1030_chk2 */
+               count(1)
+          FROM TB_SE_M_PRGR_TRPL
+         WHERE CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND TRPL_C     = #{TRPL_C}
+           AND DEL_YN     = 'N'
+    </select>
+    
+    <!-- 매출단가부가세포함여부조회 -->
+    <!-- 2021.10.16 서광석
+         ISNULL시 기본값처리 변경("Y" -> "N") 부가세미포함이 기본임
+      -->       
+    <select id="selectSe1030_sl_upr_vat" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe1030_sl_upr_vat */
+               ISNULL(MAX(SL_UPR_VAT_INCD_YN), 'N') AS SL_UPR_VAT_INCD_YN
+          FROM TB_SE_M_PRGR_TRPL
+         WHERE 1 = 1
+           AND CORP_C            = #{CORP_C}         
+           AND BZPL_C            = #{BZPL_C}
+           AND TRPL_C            = #{TRPL_C}
+           AND DEL_YN            = 'N'
+    </select>
+
+</mapper>

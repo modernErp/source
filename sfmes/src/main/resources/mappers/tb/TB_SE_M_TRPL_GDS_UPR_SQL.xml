@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_TRPL_GDS_UPR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_TRPL_GDS_UPR */ TB_SE_M_TRPL_GDS_UPR
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TRPL_C              /* 거래처코드           */
+            , GDS_C               /* 물품코드             */
+            , REG_SQNO            /* 등록일련번호         */
+            , APL_ST_DT           /* 적용시작일자         */
+            , APL_ED_DT           /* 적용종료일자         */
+            , SL_UPR              /* 매출단가             */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{TRPL_C}
+            , #{GDS_C}
+            , #{REG_SQNO}
+            , #{APL_ST_DT}
+            , #{APL_ED_DT}
+            , #{SL_UPR}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_TRPL_GDS_UPR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_TRPL_GDS_UPR */ TB_SE_M_TRPL_GDS_UPR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , REG_SQNO            = #{REG_SQNO}              /* 등록일련번호         */
+             , APL_ST_DT           = #{APL_ST_DT}             /* 적용시작일자         */
+             , APL_ED_DT           = #{APL_ED_DT}             /* 적용종료일자         */
+             , SL_UPR              = #{SL_UPR}                /* 매출단가             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND REG_SQNO            = #{REG_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </update>
+
+    <delete id="delete_TB_SE_M_TRPL_GDS_UPR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_TRPL_GDS_UPR */ FROM TB_SE_M_TRPL_GDS_UPR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND REG_SQNO            = #{REG_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </delete>
+
+    <select id="select_TB_SE_M_TRPL_GDS_UPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_TRPL_GDS_UPR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REG_SQNO                                          /* 등록일련번호              */
+             , A.APL_ST_DT                                         /* 적용시작일자              */
+             , A.APL_ED_DT                                         /* 적용종료일자              */
+             , A.SL_UPR                                            /* 매출단가                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_TRPL_GDS_UPR A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.REG_SQNO          = #{REG_SQNO}
+           AND A.TRPL_C            = #{TRPL_C}
+    </select>
+</mapper>

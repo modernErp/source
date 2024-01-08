@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.et">
+
+    <!-- 데이터 등록 -->
+    <insert id="insertEt9962" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insertEt9962 */ TB_SY_B_DDL_test01
+        (
+            CORP_C              /* 회사코드     */
+          , BZPL_C              /* 사업장코드     */
+          , BAS_DT              /* 기준일자     */
+          , BAS_YY              /* 기준년도     */
+          , BAS_MM              /* 기준월     */
+          , BAS_DD              /* 기준일     */
+          , ALL_DDL_YN          /* 전체마감여부     */
+          , FSRG_DTM            /* 최초등록일시     */
+          , FSRG_ID             /* 최초등록자ID     */
+          , LSCHG_DTM           /* 최종변경일시     */
+          , LSCHG_ID            /* 최종변경자ID     */
+          , USE_YN              /* 사용여부     */
+          , TEST_NAME           /* 이름     */
+          , TEST_PHONE          /* 전화번호     */
+        )
+        VALUES
+        (
+            #{CORP_C}
+          , #{BZPL_C}
+          , #{BAS_DT}
+          , #{BAS_YY}
+          , #{BAS_MM}
+          , #{BAS_DD}
+          , #{ALL_DDL_YN}
+          , GETDATE()
+          , #{GUSRID}
+          , GETDATE()
+          , #{GUSRID}
+          , #{USE_YN}
+          , #{TEST_NAME}
+          , #{TEST_PHONE}
+        )
+    </insert>
+
+    <!-- 데이터 수정 -->
+    <update id="updateEt9962" parameterType="LinkedHashMap">
+        UPDATE /*+ updateEt9962*/
+                TB_SY_B_DDL_test01
+           SET
+                ALL_DDL_YN          = #{ALL_DDL_YN}     /* 전체마감여부     */
+              , LSCHG_DTM           = GETDATE()         /* 최종변경일     */
+              , LSCHG_ID            = #{GUSRID}         /* 최종변경자ID     */
+              , USE_YN              = #{USE_YN}         /* 사용여부     */
+              , TEST_NAME           = #{TEST_NAME}      /* 이름     */
+              , TEST_PHONE          = #{TEST_PHONE}     /* 전화번호     */
+          WHERE 1=1
+            AND CORP_C              = #{CORP_C}
+            AND BAS_DT              = #{BAS_DT}
+    </update>
+    
+    
+    <!-- 데이터 조회 -->
+    <select id="selectEt9962" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt9962 */
+             *
+          FROM TB_SY_B_DDL_test01
+         WHERE 1=1
+           AND CORP_C               = #{CORP_C}
+           AND BAS_DT               = #{BAS_DT}
+    </select>
+</mapper>

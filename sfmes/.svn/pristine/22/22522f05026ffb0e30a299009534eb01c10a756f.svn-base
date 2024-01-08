@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+    <!-- 재고실사준비내역 -->
+    <select id="select_Sm5015_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+       
+            SELECT  /*+ select_Sm5015_01 */
+                        A.CORP_C
+                    ,   A.BZPL_C
+                    ,   A.SSVY_RSV_DT
+                    ,   A.SSVY_RSV_SQNO
+                    ,   A.BAS_DT
+                    ,   A.SSVY_STS_DSC
+                    ,   A.DFN_YN
+                    ,   A.RMK_CNTN
+                    ,   A.DEL_YN
+                    ,   CONVERT(CHAR(23), A.FSRG_DTM, 20)   AS FSRG_DTM
+                    ,   A.FSRG_ID
+                    ,   A.FSRG_ID                           AS FSRG_NM
+                    ,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)  AS LSCHG_DTM
+                    ,   A.LSCHG_DTM
+                    ,   A.LSCHG_ID
+                    ,   A.LSCHG_ID                          AS LSCHG_NM
+                    ,   B.WHSE_C
+                    ,   C.WHSE_NM
+                    ,   C.WHSE_CFC
+                    ,   C.WHSE_DSC
+                FROM TB_SM_M_SSVY_RSV               A
+                INNER JOIN (SELECT DISTINCT CORP_C, BZPL_C, SSVY_RSV_DT, SSVY_RSV_SQNO, WHSE_C
+                              FROM TB_SM_D_SSVY_RSV_WHSE
+                             WHERE 1=1
+                               AND CORP_C         = #{CORP_C}
+                               AND BZPL_C         = #{BZPL_C}
+                               AND SSVY_RSV_DT    BETWEEN #{ST_DT}  AND #{ED_DT}
+                           ) B
+                ON  A.CORP_C         = B.CORP_C     
+                AND A.BZPL_C         = B.BZPL_C     
+                AND A.SSVY_RSV_DT    = B.SSVY_RSV_DT
+                AND A.SSVY_RSV_SQNO  = B.SSVY_RSV_SQNO
+                LEFT OUTER JOIN TB_CO_M_WHSE        C 
+                ON  B.CORP_C         = C.CORP_C
+                AND B.BZPL_C         = C.BZPL_C
+                AND B.WHSE_C         = C.WHSE_C
+                WHERE 1=1
+                AND A.CORP_C         = #{CORP_C}
+                AND A.BZPL_C         = #{BZPL_C}
+                AND A.DEL_YN         = 'N'
+                AND A.SSVY_RSV_DT    BETWEEN #{ST_DT}  AND #{ED_DT}
+                
+                <if test = "DFN_YN != null and DFN_YN != ''">
+                AND A.DFN_YN         = #{DFN_YN}
+                </if>
+                <if test = "WHSE_C != null and WHSE_C != ''"> 
+                AND B.WHSE_C         = #{WHSE_C}
+                </if>
+                
+    </select>    
+</mapper>

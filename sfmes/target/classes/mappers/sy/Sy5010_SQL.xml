@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 그룹코드내역 조회 -->
+    <select id="selectSy5010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy5010List */
+               A.CORP_C                                        /* 회사코드       */
+             , A.COMN_GRP_C                                    /* 공통그룹코드   */
+             , A.COMN_GRPC_NM                                  /* 공통그룹코드명 */
+             , A.AMN_HDNG_EXPL1                                /* 관리항목설명1  */
+             , A.AMN_HDNG_EXPL2                                /* 관리항목설명2  */
+             , A.AMN_HDNG_EXPL3                                /* 관리항목설명3  */
+             , A.AMN_HDNG_EXPL4                                /* 관리항목설명4  */
+             , A.AMN_HDNG_EXPL5                                /* 관리항목설명5  */
+             , A.CODE_CIP                                      /* 코드자리수     */
+             , A.AMN_LVL                                       /* 관리레벨       */
+             , A.USE_YN                                        /* 사용여부       */
+             , A.RMK_CNTN                                      /* 비고내용       */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM  /* 최초등록일시   */
+             , A.FSRG_ID                                       /* 최초등록자ID   */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM /* 최종변경일시   */
+             , A.LSCHG_ID                                      /* 최종변경자ID   */
+          FROM TB_SY_M_COMNGRP A
+         WHERE 1 = 1 
+           AND A.CORP_C = #{CORP_C}
+         
+         <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+	            <when test="SerchGbn == ''">
+		           AND (A.COMN_GRP_C    LIKE '%'+#{searchKeyword}+'%'
+		            OR  A.COMN_GRPC_NM  LIKE '%'+#{searchKeyword}+'%') 
+	            </when>
+                <when test="SerchGbn == 1">
+                    AND A.COMN_GRP_C     LIKE '%'+#{searchKeyword}+'%'
+                </when>
+                <when test="SerchGbn == 2">
+                    AND A.COMN_GRPC_NM   LIKE '%'+#{searchKeyword}+'%'
+                </when>
+            </choose>
+         </if>
+    </select>
+    
+    <!-- 공통코드내역 조회 -->
+    <select id="selectSy5010List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy5010List02 */
+               A.CORP_C
+             , A.COMN_GRP_C                                    /* 공통그룹코드  */
+             , A.COMN_C                                        /* 공통코드      */
+             , A.COMN_CNM                                      /* 공통코드명    */
+             , A.AMN_HCNT1                                     /* 관리항목내용1 */
+             , A.AMN_HCNT2                                     /* 관리항목내용2 */
+             , A.AMN_HCNT3                                     /* 관리항목내용3 */
+             , A.AMN_HCNT4                                     /* 관리항목내용4 */
+             , A.AMN_HCNT5                                     /* 관리항목내용5 */
+             , A.SORT_SEQ                                      /* 정렬순서      */
+             , A.USE_YN                                        /* 사용여부      */
+             , A.RMK_CNTN                                      /* 비고내용      */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM  /* 최초등록일시  */
+             , A.FSRG_ID                                       /* 최초등록자ID  */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM /* 최종변경일시  */
+             , A.LSCHG_ID                                      /* 최종변경자ID  */
+          FROM TB_SY_D_COMNC A
+         WHERE 1=1
+           AND A.CORP_C     = #{CORP_C}
+           AND A.COMN_GRP_C = #{COMN_GRP_C}
+    </select>
+
+    <!-- 공통코드내역조회(메모리적재용) -->
+    <select id="selectSy5010List03" parameterType="LinkedHashMap" resultType="LinkedHashMap">  
+        SELECT /*+ selectSy5010List03 */
+               A.CORP_C
+             , A.COMN_GRP_C                                    /* 공통그룹코드  */
+             , A.COMN_C                                        /* 공통코드      */
+             , A.COMN_CNM                                      /* 공통코드명    */
+             , A.AMN_HCNT1                                     /* 관리항목내용1 */
+             , A.AMN_HCNT2                                     /* 관리항목내용2 */
+             , A.AMN_HCNT3                                     /* 관리항목내용3 */
+             , A.AMN_HCNT4                                     /* 관리항목내용4 */
+             , A.AMN_HCNT5                                     /* 관리항목내용5 */
+             , A.SORT_SEQ                                      /* 정렬순서      */
+             , A.USE_YN                                        /* 사용여부      */
+             , A.RMK_CNTN                                      /* 비고내용      */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM  /* 최초등록일시  */
+             , A.FSRG_ID                                       /* 최초등록자ID  */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM /* 최종변경일시  */
+             , A.LSCHG_ID                                      /* 최종변경자ID  */
+          FROM TB_SY_D_COMNC A
+         WHERE 1 = 1
+           AND A.CORP_C = #{CORP_C}
+           AND A.USE_YN = 'Y'
+           
+    </select>
+    
+    <!-- 그룹코드 밸리데이션 체크(신규등록시 중복건수 체크쿼리) -->
+    <select id="validationSy5010" parameterType="LinkedHashMap" resultType="Int">
+        SELECT /*+ validationSy5010 */
+               COUNT(*) AS M_CNT
+          FROM TB_SY_M_COMNGRP 
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND COMN_GRP_C = #{COMN_GRP_C}
+    </select> 
+    
+        
+    <!-- 공통코드 밸리데이션 체크(신규등록시 중복건수 체크쿼리) -->
+    <select id="validation2Sy5010" parameterType="LinkedHashMap" resultType="Int">
+        SELECT /*+ validation2Sy5010 */
+               COUNT(*) AS D_CNT
+        FROM TB_SY_D_COMNC
+       WHERE 1 = 1
+         AND CORP_C      = #{CORP_C}
+         AND COMN_GRP_C  = #{COMN_GRP_C}
+         AND COMN_C      = #{COMN_C}
+    </select>
+
+    
+   <!-- 그룹코드내역 조회(사용자용) -->
+   <select id="selectSy5015List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+       SELECT /*+ selectSy5015List */
+               A.CORP_C                                        /* 회사코드       */
+             , A.COMN_GRP_C                                    /* 공통그룹코드   */
+             , A.COMN_GRPC_NM                                  /* 공통그룹코드명 */
+             , A.AMN_HDNG_EXPL1                                /* 관리항목설명1  */
+             , A.AMN_HDNG_EXPL2                                /* 관리항목설명2  */
+             , A.AMN_HDNG_EXPL3                                /* 관리항목설명3  */
+             , A.AMN_HDNG_EXPL4                                /* 관리항목설명4  */
+             , A.AMN_HDNG_EXPL5                                /* 관리항목설명5  */
+             , A.CODE_CIP                                      /* 코드자리수     */
+             , A.AMN_LVL                                       /* 관리레벨       */
+             , A.USE_YN                                        /* 사용여부       */
+             , A.RMK_CNTN                                      /* 비고내용       */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM  /* 최초등록일시   */
+             , A.FSRG_ID                                       /* 최초등록자ID   */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM /* 최종변경일시   */
+             , A.LSCHG_ID                                      /* 최종변경자ID   */
+          FROM TB_SY_M_COMNGRP A
+         WHERE 1 = 1 
+           AND A.CORP_C = #{CORP_C}
+           AND A.AMN_LVL != '1' 
+         <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="SerchGbn == ''">
+                    AND (A.COMN_GRP_C    LIKE '%'+#{searchKeyword}+'%'
+                     OR  A.COMN_GRPC_NM  LIKE '%'+#{searchKeyword}+'%') 
+                </when>
+                <when test="SerchGbn == 1">
+                    AND A.COMN_GRP_C     LIKE '%'+#{searchKeyword}+'%'
+                </when>
+                <when test="SerchGbn == 2">
+                    AND A.COMN_GRPC_NM   LIKE '%'+#{searchKeyword}+'%'
+                </when>
+            </choose>
+         </if>
+    </select>
+        
+     <insert id="insert_TB_SY_M_COMNGRP_sy5010p01" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_M_COMNGRP_sy5010p01 */ TB_SY_M_COMNGRP
+        (
+              CORP_C                   /* 회사코드             */
+            , COMN_GRP_C               /* 공통그룹코드         */
+            , COMN_GRPC_NM             /* 공통그룹명           */
+            , AMN_HDNG_EXPL1           /* 관리항목설명1        */
+            , AMN_HDNG_EXPL2           /* 관리항목설명2        */
+            , AMN_HDNG_EXPL3           /* 관리항목설명3        */
+            , AMN_HDNG_EXPL4           /* 관리항목설명4        */
+            , AMN_HDNG_EXPL5           /* 관리항목설명5        */
+            , CODE_CIP                 /* 코드자리수           */
+            , AMN_LVL                  /* 관리레벨             */
+            , USE_YN                   /* 사용여부             */
+            , RMK_CNTN                 /* 비고내용             */
+            , FSRG_DTM                 /* 최초등록자ID         */
+            , FSRG_ID                  /* 최초등록일시         */
+            , LSCHG_DTM                /* 최종변경자ID         */
+            , LSCHG_ID                 /* 최종변경일시         */
+        )
+	    SELECT             
+	           #{S_CORP_C} AS CORP_C   /* 회사코드             */              
+	         , A.COMN_GRP_C            /* 공통그룹코드         */
+	         , A.COMN_GRPC_NM          /* 공통그룹코드명       */
+	         , A.AMN_HDNG_EXPL1        /* 관리항목설명1        */
+	         , A.AMN_HDNG_EXPL2        /* 관리항목설명2        */
+	         , A.AMN_HDNG_EXPL3        /* 관리항목설명3        */
+             , A.AMN_HDNG_EXPL4        /* 관리항목설명4        */
+	         , A.AMN_HDNG_EXPL5        /* 관리항목설명5        */
+	         , A.CODE_CIP              /* 코드자리수           */
+	         , A.AMN_LVL               /* 관리레벨             */
+	         , A.USE_YN                /* 사용여부             */
+	         , A.RMK_CNTN              /* 비고내용             */
+	         , GETDATE()  AS FSRG_DTM  /* 최초등록일시         */
+	         , #{GUSRID}  AS FSRG_ID   /* 최초등록자ID         */
+	         , GETDATE()  AS LSCHG_DTM /* 최종변경일시         */
+	         , #{GUSRID}  AS LSCHG_ID  /* 최종변경자ID         */
+	      FROM TB_SY_M_COMNGRP A
+	     WHERE 1 = 1 
+	       AND A.CORP_C     = #{A_CORP_C}
+	       AND A.COMN_GRP_C = #{COMN_GRP_C}
+    </insert>
+    
+    <insert id="insert_TB_SY_D_COMNC_sy5010p01" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_D_COMNC_sy5010p01 */ TB_SY_D_COMNC
+        (
+              CORP_C              /* 회사코드             */
+            , COMN_GRP_C          /* 공통그룹코드         */
+            , COMN_C              /* 공통코드             */
+            , COMN_CNM            /* 공통코드명           */
+            , AMN_HCNT1           /* 관리항목참조값1      */
+            , AMN_HCNT2           /* 관리항목참조값2      */
+            , AMN_HCNT3           /* 관리항목참조값3      */
+            , AMN_HCNT4           /* 관리항목참조값4      */
+            , AMN_HCNT5           /* 관리항목참조값5      */
+            , SORT_SEQ            /* 정렬순서             */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT 
+               #{S_CORP_C} AS CORP_C                               /* 회사코드             */
+             , A.COMN_GRP_C                                        /* 공통그룹코드         */
+             , A.COMN_C                                            /* 공통코드             */
+             , A.COMN_CNM                                          /* 공통코드명           */
+             , A.AMN_HCNT1                                         /* 관리항목참조값1      */
+             , A.AMN_HCNT2                                         /* 관리항목참조값2      */
+             , A.AMN_HCNT3                                         /* 관리항목참조값3      */
+             , A.AMN_HCNT4                                         /* 관리항목참조값4      */
+             , A.AMN_HCNT5                                         /* 관리항목참조값5      */
+             , A.SORT_SEQ                                          /* 정렬순서             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , GETDATE()  AS FSRG_DTM                              /* 최초등록일시         */
+             , #{GUSRID}  AS FSRG_ID                               /* 최초등록자ID         */
+             , GETDATE()  AS LSCHG_DTM                             /* 최종변경일시         */
+             , #{GUSRID}  AS LSCHG_ID                              /* 최종변경자ID         */
+          FROM TB_SY_D_COMNC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{A_CORP_C}
+           AND A.COMN_GRP_C        = #{COMN_GRP_C}
+    </insert>
+    
+    <!-- 그룹코드 밸리데이션 체크(SY5010P01_복제화면) -->
+    <select id="validationSy5010P01" parameterType="LinkedHashMap" resultType="Int">
+        SELECT /*+ validationSy5010P01 */
+               COUNT(*) AS M_CNT
+          FROM TB_SY_M_COMNGRP 
+         WHERE 1 = 1
+           AND CORP_C     = #{S_CORP_C}
+           AND COMN_GRP_C = #{COMN_GRP_C}
+    </select> 
+    
+      <select id="select_TB_SY_M_COMNGRPP_COPY" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ select_TB_SY_M_COMNGRPP_COPY */
+               A.CORP_C                                            /* 회사코드             */
+             , A.COMN_GRP_C                                        /* 공통그룹코드         */
+             , A.COMN_GRPC_NM                                      /* 공통그룹명           */
+             , A.AMN_HDNG_EXPL1                                    /* 관리항목설명1        */
+             , A.AMN_HDNG_EXPL2                                    /* 관리항목설명2        */
+             , A.AMN_HDNG_EXPL3                                    /* 관리항목설명3        */
+             , A.AMN_HDNG_EXPL4                                    /* 관리항목설명4        */
+             , A.AMN_HDNG_EXPL5                                    /* 관리항목설명5        */
+             , A.CODE_CIP                                          /* 코드자리수           */
+             , A.AMN_LVL                                           /* 관리레벨             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록자ID         */
+             , A.FSRG_ID                                           /* 최초등록일시         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경자ID         */
+             , A.LSCHG_ID                                          /* 최종변경일시         */
+          FROM TB_SY_M_COMNGRP A
+         WHERE 1=1 
+           AND A.CORP_C            = #{S_CORP_C}
+      </select>
+           
+    
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.et">
+
+    <select id="selectEt0010Check" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN 1 < (SELECT COUNT(1) 
+                                FROM TB_TE_M_TEST_USR
+                               WHERE CORP_C = #{CORP_C}
+                                 AND USRID = #{USRID}) THEN '동일한 ID가 존재합니다.확인 후 다시 처리하세요'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+
+    <select id="selectEt0010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt0010List */
+               A.CORP_C                                  /* 회사코드             */
+             , A.USRID                                   /* 사용자아이디         */
+             , A.USRNM                                   /* 사용자명             */
+             , A.PW                                      /* 암호화된비밀번호     */
+             , A.BZPL_C                                  /* 사업장코드           */
+             , A.DEPT_C                                  /* 부서코드             */
+             , A.PZ_C                                    /* 직급코드             */
+             , A.OFT_C                                   /* 직명코드             */
+             , A.LSCONNDTM                               /* 최종접속일시         */
+             , A.LSCONNIP                                /* 최종IP               */
+             , A.CONN_YN                                 /* 접속여부             */
+             , A.PW_CHG_DTM                              /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                            /* 로그인시도횟수       */
+             , A.LOCK_YN                                 /* 잠김여부             */
+             , A.ACC_ST_DT                               /* 계정시작일자         */
+             , A.ACC_ED_DT                               /* 계정종료일자         */
+             , A.MPSVNO                                  /* 휴대전화서비스번호   */
+             , A.MPHNO                                   /* 휴대전화국번호       */
+             , A.MPSQNO                                  /* 휴대전화일련번호     */
+             , A.IN_HTEL                                 /* 내선전화서비스번호   */
+             , A.IN_ATEL                                 /* 내선전화국번호       */
+             , A.IN_STEL                                 /* 내선전화일련번호     */
+             , A.EMAIL_ADR                               /* 이메일주소           */
+             , A.ANC_RMS_METH                            /* 알림수신방법         */
+             , A.UYN                                     /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM
+             , A.FSRG_ID                                 /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID                                /* 최종변경자ID         */
+          FROM TB_TE_M_TEST_USR A
+         WHERE 1=1 
+           AND A.CORP_C              = #{CORP_C}
+    </select>
+
+    <select id="selectEt0010List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt0010List02 */
+               A.CORP_C                                  /* 회사코드             */
+             , A.USRID                                   /* 사용자아이디         */
+             , A.USRNM                                   /* 사용자명             */
+             , A.PW                                      /* 암호화된비밀번호     */
+             , A.BZPL_C                                  /* 사업장코드           */
+             , A.DEPT_C                                  /* 부서코드             */
+             , A.PZ_C                                    /* 직급코드             */
+             , A.OFT_C                                   /* 직명코드             */
+             , A.LSCONNDTM                               /* 최종접속일시         */
+             , A.LSCONNIP                                /* 최종IP               */
+             , A.CONN_YN                                 /* 접속여부             */
+             , A.PW_CHG_DTM                              /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                            /* 로그인시도횟수       */
+             , A.LOCK_YN                                 /* 잠김여부             */
+             , A.ACC_ST_DT                               /* 계정시작일자         */
+             , A.ACC_ED_DT                               /* 계정종료일자         */
+             , A.MPSVNO                                  /* 휴대전화서비스번호   */
+             , A.MPHNO                                   /* 휴대전화국번호       */
+             , A.MPSQNO                                  /* 휴대전화일련번호     */
+             , A.IN_HTEL                                 /* 내선전화서비스번호   */
+             , A.IN_ATEL                                 /* 내선전화국번호       */
+             , A.IN_STEL                                 /* 내선전화일련번호     */
+             , A.EMAIL_ADR                               /* 이메일주소           */
+             , A.ANC_RMS_METH                            /* 알림수신방법         */
+             , A.UYN                                     /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM
+             , A.FSRG_ID                                 /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID                                /* 최종변경자ID         */
+          FROM TB_TE_M_TEST_USR A
+         WHERE 1=1 
+           AND A.CORP_C  = #{CORP_C}
+           <if test="SEARCH_GBN == 1">
+           AND A.USRNM LIKE #{SEARCH_NM} + '%'
+            </if>
+           <if test="SEARCH_GBN == 2">
+           AND A.USRID LIKE #{SEARCH_NM} + '%'
+           </if>
+    </select>
+
+</mapper>

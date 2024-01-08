@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_WK_RPT_MFS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_WK_RPT_MFS */ TB_PD_D_WK_RPT_MFS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , RPT_DT              /* 일지일자             */
+            , RPT_SQNO            /* 일지일련번호         */
+            , GDS_C               /* 물품코드             */
+            , BOM_C               /* BOM코드(밀키트)      */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , MFT_DT              /* 제조일자             */
+            , DSTR_TER_DT         /* 유통기한일자         */
+            , MFS_DNTT_QT         /* 제품지시량           */
+            , PD_QT               /* 생산수량             */
+            , PD_UPR              /* 생산단가             */
+            , PD_AM               /* 생산금액             */
+            , WHSE_C              /* 창고코드             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{RPT_DT}
+            , #{RPT_SQNO}
+            , #{GDS_C}
+            , #{BOM_C}
+            , #{GDS_HST_NO}
+            , #{MFT_DT}
+            , #{DSTR_TER_DT}
+            , DBO.SF_GET_FLOAT(#{MFS_DNTT_QT})
+            , DBO.SF_GET_FLOAT(#{PD_QT})
+            , DBO.SF_GET_FLOAT(#{PD_UPR})
+            , DBO.SF_GET_FLOAT(#{PD_AM})
+            , #{WHSE_C}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_WK_RPT_MFS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_WK_RPT_MFS */ TB_PD_D_WK_RPT_MFS
+           SET 
+               BOM_C               = #{BOM_C}                 /* BOM코드(밀키트)      */
+             , GDS_HST_NO          = #{GDS_HST_NO}            /* 물품이력번호         */
+             , MFT_DT              = #{MFT_DT}                /* 제조일자             */
+             , DSTR_TER_DT         = #{DSTR_TER_DT}           /* 유통기한일자         */
+             , MFS_DNTT_QT         = #{MFS_DNTT_QT}           /* 제품지시량           */
+             , PD_QT               = #{PD_QT}                 /* 생산수량             */
+             , PD_UPR              = #{PD_UPR}                /* 생산단가             */
+             , PD_AM               = #{PD_AM}                 /* 생산금액             */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND RPT_DT              = #{RPT_DT}
+           AND RPT_SQNO            = #{RPT_SQNO}
+           AND GDS_C               = #{GDS_C}
+    </update>
+
+    <delete id="delete_TB_PD_D_WK_RPT_MFS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_WK_RPT_MFS */ FROM TB_PD_D_WK_RPT_MFS
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND RPT_DT              = #{RPT_DT}
+           AND RPT_SQNO            = #{RPT_SQNO}
+           AND GDS_C               = #{GDS_C}
+    </delete>
+
+    <select id="select_TB_PD_D_WK_RPT_MFS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_WK_RPT_MFS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RPT_DT                                            /* 일지일자                  */
+             , A.RPT_SQNO                                          /* 일지일련번호              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.BOM_C                                             /* BOM코드(밀키트)           */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.MFT_DT                                            /* 제조일자                  */
+             , A.DSTR_TER_DT                                       /* 유통기한일자              */
+             , A.MFS_DNTT_QT                                       /* 제품지시량                */
+             , A.PD_QT                                             /* 생산수량                  */
+             , A.PD_UPR                                            /* 생산단가                  */
+             , A.PD_AM                                             /* 생산금액                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_RPT_MFS A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.RPT_DT            = #{RPT_DT}
+           AND A.RPT_SQNO          = #{RPT_SQNO}
+           AND A.GDS_C             = #{GDS_C}
+    </select>
+</mapper>

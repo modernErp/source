@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_L_PGM_UG" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_L_PGM_UG */ TB_SY_L_PGM_UG
+        (
+              CORP_C              /* 회사코드             */
+            , USR_ID              /* 사용자아이디         */
+            , UG_DTM              /* 사용일시             */
+            , PGM_ID              /* 프로그램ID           */
+            , CLASS_NM            /* CLASS명              */
+            , METHOD_NM           /* METHOD명             */
+            , CONN_IP             /* 접속IP               */
+            , PARA_DSC_NM         /* 파라미터구분명       */
+            , PARA_DSC_VAL        /* 파라미터구분값       */
+            , PARA1_NM            /* 파라미터명1          */
+            , PARA1_VAL           /* 파라미터값1          */
+            , PARA2_NM            /* 파라미터명2          */
+            , PARA2_VAL           /* 파라미터값2          */
+            , PARA3_NM            /* 파라미터명3          */
+            , PARA3_VAL           /* 파라미터값3          */
+            , PARA4_NM            /* 파라미터명4          */
+            , PARA4_VAL           /* 파라미터값4          */
+            , PARA5_NM            /* 파라미터명5          */
+            , PARA5_VAL           /* 파라미터값5          */
+            , PARA6_NM            /* 파라미터명6          */
+            , PARA6_VAL           /* 파라미터값6          */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USR_ID}
+            , GETDATE()
+            , #{PGM_ID}
+            , #{CLASS_NM}
+            , #{METHOD_NM}
+            , #{CONN_IP}
+            , #{PARA_DSC_NM}
+            , #{PARA_DSC_VAL}
+            , #{PARA1_NM}
+            , #{PARA1_VAL}
+            , #{PARA2_NM}
+            , #{PARA2_VAL}
+            , #{PARA3_NM}
+            , #{PARA3_VAL}
+            , #{PARA4_NM}
+            , #{PARA4_VAL}
+            , #{PARA5_NM}
+            , #{PARA5_VAL}
+            , #{PARA6_NM}
+            , #{PARA6_VAL}
+            , GETDATE()
+            , #{USR_ID}
+            , GETDATE()
+            , #{USR_ID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_L_PGM_UG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_L_PGM_UG */ TB_SY_L_PGM_UG
+           SET 
+               PGM_ID              = #{PGM_ID}                /* 프로그램ID           */
+             , CLASS_NM            = #{CLASS_NM}              /* CLASS명              */
+             , METHOD_NM           = #{METHOD_NM}             /* METHOD명             */
+             , CONN_IP             = #{CONN_IP}               /* 접속IP               */
+             , PARA_DSC_NM         = #{PARA_DSC_NM}           /* 파라미터구분명       */
+             , PARA_DSC_VAL        = #{PARA_DSC_VAL}          /* 파라미터구분값       */
+             , PARA1_NM            = #{PARA1_NM}              /* 파라미터명1          */
+             , PARA1_VAL           = #{PARA1_VAL}             /* 파라미터값1          */
+             , PARA2_NM            = #{PARA2_NM}              /* 파라미터명2          */
+             , PARA2_VAL           = #{PARA2_VAL}             /* 파라미터값2          */
+             , PARA3_NM            = #{PARA3_NM}              /* 파라미터명3          */
+             , PARA3_VAL           = #{PARA3_VAL}             /* 파라미터값3          */
+             , PARA4_NM            = #{PARA4_NM}              /* 파라미터명4          */
+             , PARA4_VAL           = #{PARA4_VAL}             /* 파라미터값4          */
+             , PARA5_NM            = #{PARA5_NM}              /* 파라미터명5          */
+             , PARA5_VAL           = #{PARA5_VAL}             /* 파라미터값5          */
+             , PARA6_NM            = #{PARA6_NM}              /* 파라미터명6          */
+             , PARA6_VAL           = #{PARA6_VAL}             /* 파라미터값6          */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{USR_ID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+           AND UG_DTM              = #{UG_DTM}
+    </update>
+
+    <delete id="delete_TB_SY_L_PGM_UG" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_L_PGM_UG */ FROM TB_SY_L_PGM_UG
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+           AND UG_DTM              = #{UG_DTM}
+    </delete>
+
+    <select id="select_TB_SY_L_PGM_UG" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_L_PGM_UG */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , CONVERT(CHAR(23), A.UG_DTM, 20)  AS   UG_DTM        /* 사용일시             */
+             , A.PGM_ID                                            /* 프로그램ID           */
+             , A.CLASS_NM                                          /* CLASS명              */
+             , A.METHOD_NM                                         /* METHOD명             */
+             , A.CONN_IP                                           /* 접속IP               */
+             , A.PARA_DSC_NM                                       /* 파라미터구분명       */
+             , A.PARA_DSC_VAL                                      /* 파라미터구분값       */
+             , A.PARA1_NM                                          /* 파라미터명1          */
+             , A.PARA1_VAL                                         /* 파라미터값1          */
+             , A.PARA2_NM                                          /* 파라미터명2          */
+             , A.PARA2_VAL                                         /* 파라미터값2          */
+             , A.PARA3_NM                                          /* 파라미터명3          */
+             , A.PARA3_VAL                                         /* 파라미터값3          */
+             , A.PARA4_NM                                          /* 파라미터명4          */
+             , A.PARA4_VAL                                         /* 파라미터값4          */
+             , A.PARA5_NM                                          /* 파라미터명5          */
+             , A.PARA5_VAL                                         /* 파라미터값5          */
+             , A.PARA6_NM                                          /* 파라미터명6          */
+             , A.PARA6_VAL                                         /* 파라미터값6          */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_L_PGM_UG A
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+           AND UG_DTM              = #{UG_DTM}
+    </select>
+</mapper>

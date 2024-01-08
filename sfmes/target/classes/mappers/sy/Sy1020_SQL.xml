@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 01. 메뉴전체조회 -->
+    <select id="selectAllMenu" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		WITH MENU_TREE AS(
+            SELECT A.MENU_ID                                         
+                 , A.MENU_DSC                                        
+                 , A.MENU_NM                                                 
+                 , A.MENU_LVL_DSC                                    
+                 , A.UP_MENU_ID                                      
+                 , (SELECT X2.MENU_NM                                
+                      FROM TB_SY_M_MENU X2
+                     WHERE 1 = 1
+                       AND X2.MENU_ID = A.UP_MENU_ID) AS UP_MENU_NM
+                 , A.MENU_SEQ                                          
+                 , A.PGM_ID
+                 , A.DG_PGM_ID                                            
+                 , (SELECT X1.PGM_NM 
+                      FROM TB_SY_M_PGID X1 
+                     WHERE 1 = 1
+                       AND X1.PGM_ID = A.PGM_ID) AS PGM_NM               
+                 , A.PGM_EXE_PATH                                      
+                 , A.PGM_EXPL                                          
+                 , A.USE_YN                                            
+                 , CONVERT(CHAR(23), A.FSRG_DTM) AS FSRG_DTM   
+                 , A.FSRG_ID                                   
+                 , CONVERT(CHAR(23), A.LSCHG_DTM) AS LSCHG_DTM 
+                 , A.LSCHG_ID                                            
+                 , CONVERT(NVARCHAR(1000), A.MENU_ID + ' / ' + CONVERT(NVARCHAR(100), A.MENU_SEQ)) AS SORT  
+              FROM TB_SY_M_MENU A
+             WHERE (A.MENU_DSC = '1' or A.MENU_DSC = '2')
+               AND A.UP_MENU_ID = ''
+               AND A.CORP_C = #{CORP_C}
+            
+             UNION ALL
+            
+            SELECT B.MENU_ID                                            
+                 , B.MENU_DSC                                           
+                 , B.MENU_NM                                                
+                 , B.MENU_LVL_DSC                                       
+                 , B.UP_MENU_ID                                         
+                 , (SELECT X2.MENU_NM                                   
+                      FROM TB_SY_M_MENU X2
+                     WHERE 1 = 1
+                       AND X2.MENU_ID = B.UP_MENU_ID) AS UP_MENU_NM
+                 , B.MENU_SEQ                                           
+                 , B.PGM_ID
+                 , B.DG_PGM_ID                                             
+                 , (SELECT X1.PGM_NM 
+                      FROM TB_SY_M_PGID X1 
+                    WHERE 1 = 1
+                      AND X1.PGM_ID = B.PGM_ID) AS PGM_NM                
+                 , B.PGM_EXE_PATH                                       
+                 , B.PGM_EXPL                                           
+                 , B.USE_YN                                             
+                 , CONVERT(CHAR(23), B.FSRG_DTM) AS FSRG_DTM    
+                 , B.FSRG_ID                                    
+                 , CONVERT(CHAR(23), B.LSCHG_DTM) AS LSCHG_DTM  
+                 , B.LSCHG_ID                                            
+                 , CONVERT(NVARCHAR(1000), C.SORT + ' / ' + CONVERT(NVARCHAR(100), B.MENU_SEQ)) AS SORT  
+              FROM TB_SY_M_MENU B, MENU_TREE C
+             WHERE 1=1
+               AND B.UP_MENU_ID = C.MENU_ID
+               AND B.CORP_C = #{CORP_C}
+        )
+        SELECT MENU_TREE.* FROM MENU_TREE ORDER BY SORT
+	</select>
+
+    <!-- 02.사용중메뉴조회 -->	
+    <!-- 2021.10.22 서광석
+                관리자권한(ADMIN_YN) 이 아닌 경우에는 SY(운영관리) 메뉴 활성화 시키지 않음
+                사원역할구분코드(EMP_ROL_DSC) 로 프로그램역할에서 제외를 해도, 사용자등록/내역 프로그램을 공통업무로 이관시, 
+                업무는 CO나 프로그램이 SY영역이라서 시스템관리 대메뉴가 안빠지네....
+                대표님하고 논의해서 일반관리자/디지관리자는 SY(시스템관리)에 대한 권한을 주지않기로 했기 때문에 위와 같이 정의함
+                사실 이렇게 써놔도 100% 이해못함 그냥 나한테 전화해서 왜 이렇게 했냐고 물어보는게 빠름                 
+         -->
+    <select id="selectUsingMenu" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		WITH MENU_TREE AS( 
+		    SELECT A.CORP_C
+		         , A.MENU_ID                                         
+		         , A.MENU_DSC                                        
+		         , A.MENU_NM                                                 
+		         , A.MENU_LVL_DSC                                    
+		         , A.UP_MENU_ID                                      
+		         , (SELECT X2.MENU_NM                                
+		              FROM TB_SY_M_MENU X2
+		             WHERE 1 = 1
+		               AND X2.CORP_C  = A.CORP_C
+		               AND X2.MENU_ID = A.UP_MENU_ID) AS UP_MENU_NM
+		         , A.MENU_SEQ                                          
+		         , A.PGM_ID
+		         , A.DG_PGM_ID
+		         , (SELECT X1.PGM_NM 
+		              FROM TB_SY_M_PGID X1 
+		             WHERE 1 = 1
+		               AND X1.CORP_C = A.CORP_C
+		               AND X1.PGM_ID = A.PGM_ID) AS PGM_NM               
+		         , (SELECT X1.PGM_EXE_PATH 
+		              FROM TB_SY_M_PGID X1 
+		            WHERE 1 = 1
+		              AND X1.CORP_C = A.CORP_C
+		              AND X1.PGM_ID = A.PGM_ID) AS PGM_EXE_PATH                                     
+		         , (SELECT X1.PGM_EXPL 
+		              FROM TB_SY_M_PGID X1 
+		            WHERE 1 = 1
+		              AND X1.CORP_C = A.CORP_C
+		              AND X1.PGM_ID = A.PGM_ID) AS PGM_EXPL                                          
+		         , A.USE_YN                                            
+		         , CONVERT(CHAR(23), A.FSRG_DTM) AS FSRG_DTM   
+		         , A.FSRG_ID                                   
+		         , CONVERT(CHAR(23), A.LSCHG_DTM) AS LSCHG_DTM 
+		         , A.LSCHG_ID                                            
+		         , CONVERT(NVARCHAR(1000), A.MENU_ID + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))) AS SORT  
+		      FROM TB_SY_M_MENU A
+		     WHERE (A.MENU_DSC = '1' or A.MENU_DSC = '2')
+		       AND A.UP_MENU_ID = ''
+		       AND A.CORP_C = #{CORP_C}
+		    
+		     UNION ALL
+		    
+		    SELECT B.CORP_C
+		         , B.MENU_ID                                            
+		         , B.MENU_DSC                                           
+		         , B.MENU_NM                                                
+		         , B.MENU_LVL_DSC                                       
+		         , B.UP_MENU_ID                                         
+		         , (SELECT X2.MENU_NM                                   
+		              FROM TB_SY_M_MENU X2
+		             WHERE 1 = 1
+		               AND X2.CORP_C  = B.CORP_C
+		               AND X2.MENU_ID = B.UP_MENU_ID) AS UP_MENU_NM
+		         , B.MENU_SEQ                                           
+		         , B.PGM_ID
+		         , B.DG_PGM_ID                                             
+		         , (SELECT X1.PGM_NM 
+		              FROM TB_SY_M_PGID X1 
+		            WHERE 1 = 1
+		              AND X1.CORP_C = B.CORP_C
+		              AND X1.PGM_ID = B.PGM_ID) AS PGM_NM    
+		         , (SELECT X1.PGM_EXE_PATH 
+		              FROM TB_SY_M_PGID X1 
+		            WHERE 1 = 1
+		              AND X1.CORP_C = B.CORP_C
+		              AND X1.PGM_ID = B.PGM_ID) AS PGM_EXE_PATH  
+		         , (SELECT X1.PGM_EXPL 
+		              FROM TB_SY_M_PGID X1 
+		            WHERE 1 = 1
+		              AND X1.CORP_C = B.CORP_C
+		              AND X1.PGM_ID = B.PGM_ID) AS PGM_EXPL                                          
+		         , B.USE_YN                                             
+		         , CONVERT(CHAR(23), B.FSRG_DTM) AS FSRG_DTM    
+		         , B.FSRG_ID                                    
+		         , CONVERT(CHAR(23), B.LSCHG_DTM) AS LSCHG_DTM  
+		         , B.LSCHG_ID                                            
+		         , CONVERT(NVARCHAR(1000), C.SORT + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))) AS SORT  
+		      FROM TB_SY_M_MENU B, MENU_TREE C
+		     WHERE 1=1
+		       and B.CORP_C     = C.CORP_C
+		       AND B.UP_MENU_ID = C.MENU_ID
+		       AND B.CORP_C = #{CORP_C}
+		) 
+		SELECT DISTINCT
+		       A.CORP_C
+		     , A.MENU_ID
+		     , A.MENU_DSC
+		     , A.MENU_NM
+		     , A.MENU_LVL_DSC
+		     , A.UP_MENU_ID
+		     , A.UP_MENU_NM
+		     , A.MENU_SEQ
+		     , A.PGM_ID
+		     , A.DG_PGM_ID
+		     , A.PGM_NM 
+		     , MIN(B.PGM_AUTH) AS PGM_AUTH
+		     , A.PGM_EXE_PATH
+		     , A.PGM_EXPL
+		     , A.USE_YN
+		     , A.FSRG_DTM
+		     , A.FSRG_ID
+		     , A.LSCHG_DTM
+		     , A.LSCHG_ID
+		     , A.SORT
+		  FROM MENU_TREE A
+		     , (SELECT DISTINCT
+		               B.*
+		          FROM (
+		                SELECT DISTINCT
+		                       A.CORP_C
+		                     , A.PGM_ID
+		                     , B.MENU_ID 
+		                     , A.PGM_AUTH
+		                  FROM TB_SY_D_ROLE_PGM A
+		                     , TB_SY_M_MENU B
+		                 WHERE 1=1
+		                   AND A.CORP_C = B.CORP_C
+		                   AND A.PGM_ID = B.PGM_ID
+		                   AND A.CORP_C = #{CORP_C}
+		                   AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+		                                           FROM TB_SY_D_USR_ROLE
+		                                          WHERE 1=1
+		                                            AND CORP_C = #{CORP_C}
+		                                            AND USR_ID = #{GUSRID})
+		                 UNION
+		
+		                SELECT DISTINCT
+		                       A.CORP_C
+		                     , A.PGM_ID
+		                     , C.MENU_ID
+		                     , A.PGM_AUTH
+		                  FROM TB_SY_D_ROLE_PGM A
+		                     , TB_SY_M_MENU B
+		                     , TB_SY_M_MENU C
+		                 WHERE 1=1
+		                   AND A.CORP_C = B.CORP_C
+		                   AND B.CORP_C = C.CORP_C
+		                   AND A.PGM_ID = B.PGM_ID
+		                   AND B.UP_MENU_ID = C.MENU_ID
+		                   AND A.CORP_C     = #{CORP_C}
+		                   AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+		                                           FROM TB_SY_D_USR_ROLE
+		                                          WHERE 1=1
+		                                            AND CORP_C = #{CORP_C}
+		                                            AND USR_ID = #{GUSRID})
+		                 UNION
+		
+		                SELECT DISTINCT
+		                       A.CORP_C
+		                     , A.PGM_ID
+		                     , D.MENU_ID
+		                     , A.PGM_AUTH
+		                 FROM TB_SY_D_ROLE_PGM A
+		                    , TB_SY_M_MENU B
+		                    , TB_SY_M_MENU C
+		                    , TB_SY_M_MENU D
+		                WHERE 1=1
+		                  AND A.CORP_C = B.CORP_C
+		                  AND B.CORP_C = C.CORP_C
+		                  AND C.CORP_C = D.CORP_C
+		                  AND A.PGM_ID = B.PGM_ID
+		                  AND B.UP_MENU_ID = C.MENU_ID
+		                  AND C.UP_MENU_ID = D.MENU_ID
+		                  AND A.CORP_C     = #{CORP_C}
+		                  AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+		                                          FROM TB_SY_D_USR_ROLE
+		                                         WHERE 1=1
+		                                           AND CORP_C = #{CORP_C}
+		                                           AND USR_ID = #{GUSRID})
+		               ) B
+		       ) B
+             , (SELECT
+                       ISNULL(ADMIN_YN, 'N') AS ADMIN_YN
+                  FROM TB_SY_M_USR
+                 WHERE 1 = 1
+                   AND CORP_C = #{CORP_C}
+                   AND USR_ID = #{GUSRID}
+               ) C		       
+		 WHERE 1=1
+		   AND A.CORP_C  = B.CORP_C
+		   AND A.MENU_ID = B.MENU_ID
+		   AND A.USE_YN  = 'Y'
+		   AND ISNULL(PGM_AUTH, '') <![CDATA[ <> ]]> ''
+           AND ( (C.ADMIN_YN = 'Y') AND ('' = '') OR
+                 (C.ADMIN_YN = 'N') AND (SUBSTRING(A.MENU_ID, 1, 2) <![CDATA[ <> ]]> 'SY') ) 		   
+		 GROUP BY A.CORP_C
+		    , A.MENU_ID
+		    , A.MENU_DSC
+		    , A.MENU_NM
+		    , A.MENU_LVL_DSC
+		    , A.UP_MENU_ID
+		    , A.UP_MENU_NM
+		    , A.MENU_SEQ
+		    , A.PGM_ID
+		    , A.DG_PGM_ID
+		    , A.PGM_NM 
+		    , A.PGM_EXE_PATH
+		    , A.PGM_EXPL
+		    , A.USE_YN
+		    , A.FSRG_DTM
+		    , A.FSRG_ID
+		    , A.LSCHG_DTM
+		    , A.LSCHG_ID
+		    , A.SORT
+		ORDER BY SORT
+    </select>	
+	
+	<!-- 03.사업장전체조회 -->
+	<select id="selectBzpl_c" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_BZPL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.BZPL_NM                                           /* 사업장명                  */
+             , A.BZPL_ABR_NM                                       /* 사업장약어명              */
+             , A.TXBZ_RPT_FORM_C                                   /* 세무신고형태코드          */
+             , A.BZMN_NM                                           /* 사업자명                  */
+             , A.BZMN_NO                                           /* 사업자번호                */
+             , A.COP_NO                                            /* 법인번호                  */
+             , A.REPM_NM                                           /* 대표자명                  */
+             , A.BZC_NM                                            /* 업종명                    */
+             , A.BZTP_NM                                           /* 업태명                    */
+             , A.ZIP                                               /* 우편번호                  */
+             , A.ADR1                                              /* 주소1                     */
+             , A.ADR2                                              /* 주소2                     */
+             , A.TEL_NO                                            /* 전화번호                  */
+             , A.FAX_NO                                            /* FAX번호                   */
+             , A.MBCO_DSC                                          /* 본지사구분코드            */
+             , A.CLSD_DT                                           /* 폐업일자                  */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이메일  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_BZPL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+	</select>
+	
+	<!-- 04. 권한사업장 내역 조회 -->
+    <select id="selectAuthBzpl_c" parameterType="LinkedHashMap" resultType="LinkedHashMap">	
+		SELECT A.CORP_C
+		     , A.USR_ID
+		     , A.BZPL_C
+		     , (SELECT BZPL_NM 
+		          FROM TB_CO_M_BZPL X1
+		         WHERE A.CORP_C = X1.CORP_C
+		           AND A.BZPL_C = X1.BZPL_C) AS BZPL_NM
+		     , A.BAS_BZPL_YN
+		     , A.USE_YN
+		     , (SELECT 
+		               ENV_EST_STR_CNTN1
+		          FROM TB_CO_M_BZPL_ENV  X2
+		         WHERE 1=1
+		           AND A.CORP_C = X2.CORP_C
+                   AND A.BZPL_C = X2.BZPL_C) AS PRW_DSC
+		  FROM TB_SY_D_USR_BZPLC A
+		 WHERE 1=1
+		   AND A.CORP_C = #{CORP_C}
+		   AND A.USR_ID = #{USR_ID}
+		   AND A.USE_YN = 'Y'   
+	</select>
+	
+    <!-- 05.사용자id, 사용자명 조회 -->
+    <select id="selectUsrList" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_BZPL */
+               USR_ID  AS COMN_C
+             , USR_NM  AS COMN_CNM
+          FROM TB_SY_M_USR
+         WHERE CORP_C = #{CORP_C}
+    </select>	
+    
+    
+    <!-- 06. 프로그램ID에 따른 권한 찾기 (최소권한) -->
+    <select id="selectUsrPgmAuthMin" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT A.PGM_ID
+             , MIN(A.PGM_AUTH) AS PGM_AUTH
+          FROM TB_SY_D_ROLE_PGM A
+         WHERE EMP_ROL_DSC IN (
+                                SELECT EMP_ROL_DSC
+                                  FROM TB_SY_D_USR_ROLE
+                                 WHERE CORP_C = #{CORP_C}
+                                   AND USR_ID = #{GUSRID}
+                               )
+           AND CORP_C = #{CORP_C}
+           AND PGM_ID = #{PGM_ID}
+           AND ISNULL(PGM_AUTH, '') <![CDATA[ <> ]]> ''
+         GROUP BY PGM_ID
+    </select>
+
+    <!-- 07. 프로그램ID에 따른 권한 찾기 (최대권한) -->
+    <select id="selectUsrPgmAuthMax" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT A.PGM_ID
+             , MAX(A.PGM_AUTH) AS PGM_AUTH
+          FROM TB_SY_D_ROLE_PGM A
+         WHERE EMP_ROL_DSC IN (
+                                SELECT EMP_ROL_DSC
+                                  FROM TB_SY_D_USR_ROLE
+                                 WHERE CORP_C = #{CORP_C}
+                                   AND USR_ID = #{GUSRID}
+                               )
+           AND CORP_C = #{CORP_C}
+           AND PGM_ID = #{PGM_ID}
+           AND ISNULL(PGM_AUTH, '') <![CDATA[ <> ]]> ''
+         GROUP BY PGM_ID 
+    </select>
+
+<!--=====================================================================================
+    마이메뉴 내역 조회
+    =====================================================================================-->
+    <select id="selectSy1020_MyMenu" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	WITH MENU_TREE AS(
+	            SELECT A.CORP_C
+	                 , A.MENU_ID                                         
+	                 , A.MENU_DSC                                        
+	                 , A.MENU_NM                                                 
+	                 , A.MENU_LVL_DSC                                    
+	                 , A.UP_MENU_ID                                      
+	                 , (SELECT X2.MENU_NM                                
+	                      FROM TB_SY_M_MENU X2
+	                     WHERE 1 = 1
+	                       AND X2.CORP_C  = A.CORP_C
+	                       AND X2.MENU_ID = A.UP_MENU_ID) AS UP_MENU_NM
+	                 , A.MENU_SEQ                                          
+	                 , A.PGM_ID
+	                 , A.DG_PGM_ID
+	                 , (SELECT X1.PGM_NM 
+	                      FROM TB_SY_M_PGID X1 
+	                     WHERE 1 = 1
+	                       AND X1.CORP_C = A.CORP_C
+	                       AND X1.PGM_ID = A.PGM_ID) AS PGM_NM               
+	                 , (SELECT X1.PGM_EXE_PATH 
+	                      FROM TB_SY_M_PGID X1 
+	                    WHERE 1 = 1
+	                      AND X1.CORP_C = A.CORP_C
+	                      AND X1.PGM_ID = A.PGM_ID) AS PGM_EXE_PATH                                     
+	                 , (SELECT X1.PGM_EXPL 
+	                      FROM TB_SY_M_PGID X1 
+	                    WHERE 1 = 1
+	                      AND X1.CORP_C = A.CORP_C
+	                      AND X1.PGM_ID = A.PGM_ID) AS PGM_EXPL                                          
+	                 , A.USE_YN                                            
+	                 , CONVERT(CHAR(23), A.FSRG_DTM) AS FSRG_DTM   
+	                 , A.FSRG_ID                                   
+	                 , CONVERT(CHAR(23), A.LSCHG_DTM) AS LSCHG_DTM 
+	                 , A.LSCHG_ID                                            
+	                 , CONVERT(NVARCHAR(1000), A.MENU_ID + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))) AS SORT  
+	              FROM TB_SY_M_MENU A
+	             WHERE (A.MENU_DSC = '1' or A.MENU_DSC = '2')
+	               AND A.UP_MENU_ID = ''
+	               AND A.CORP_C = #{CORP_C}
+	            
+	             UNION ALL
+	            
+	            SELECT B.CORP_C
+	                 , B.MENU_ID                                            
+	                 , B.MENU_DSC                                           
+	                 , B.MENU_NM                                                
+	                 , B.MENU_LVL_DSC                                       
+	                 , B.UP_MENU_ID                                         
+	                 , (SELECT X2.MENU_NM                                   
+	                      FROM TB_SY_M_MENU X2
+	                     WHERE 1 = 1
+	                       AND X2.CORP_C  = B.CORP_C
+	                       AND X2.MENU_ID = B.UP_MENU_ID) AS UP_MENU_NM
+	                 , B.MENU_SEQ                                           
+	                 , B.PGM_ID
+	                 , B.DG_PGM_ID                                             
+	                 , (SELECT X1.PGM_NM 
+	                      FROM TB_SY_M_PGID X1 
+	                    WHERE 1 = 1
+	                      AND X1.CORP_C = B.CORP_C
+	                      AND X1.PGM_ID = B.PGM_ID)       AS PGM_NM    
+	                 , (SELECT X1.PGM_EXE_PATH            
+	                      FROM TB_SY_M_PGID X1            
+	                    WHERE 1 = 1                       
+	                      AND X1.CORP_C = B.CORP_C        
+	                      AND X1.PGM_ID = B.PGM_ID)       AS PGM_EXE_PATH  
+	                 , (SELECT X1.PGM_EXPL                
+	                      FROM TB_SY_M_PGID X1            
+	                    WHERE 1 = 1                       
+	                      AND X1.CORP_C = B.CORP_C        
+	                      AND X1.PGM_ID = B.PGM_ID)       AS PGM_EXPL                                          
+	                 , B.USE_YN                                                 
+	                 , CONVERT(CHAR(23), B.FSRG_DTM)      AS FSRG_DTM    
+	                 , B.FSRG_ID                                        
+	                 , CONVERT(CHAR(23), B.LSCHG_DTM)     AS LSCHG_DTM  
+	                 , B.LSCHG_ID                                            
+	                 , CONVERT(NVARCHAR(1000), C.SORT + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))) AS SORT  
+	              FROM TB_SY_M_MENU B, MENU_TREE C
+	             WHERE 1=1
+	               AND B.UP_MENU_ID = C.MENU_ID
+	               AND B.CORP_C = #{CORP_C}
+	        ) 
+	        SELECT DISTINCT
+	               A.CORP_C
+	             , A.MENU_ID
+	             , A.MENU_DSC
+	             , A.MENU_NM
+	             , A.MENU_LVL_DSC
+	             , A.UP_MENU_ID
+	             , A.UP_MENU_NM
+	             , A.MENU_SEQ
+	             , A.PGM_ID
+	             , A.DG_PGM_ID
+	             , A.PGM_NM 
+	             , MIN(B.PGM_AUTH) AS PGM_AUTH
+	             , A.PGM_EXE_PATH
+	             , A.PGM_EXPL
+	             , A.USE_YN
+	             , A.FSRG_DTM
+	             , A.FSRG_ID
+	             , A.LSCHG_DTM
+	             , A.LSCHG_ID
+	             , A.SORT
+	          FROM MENU_TREE A
+	             , (SELECT DISTINCT
+	                       B.*
+	                  FROM (
+	                        SELECT DISTINCT
+	                               A.CORP_C
+	                             , A.PGM_ID
+	                             , B.MENU_ID 
+	                             , A.PGM_AUTH
+	                          FROM TB_SY_D_ROLE_PGM A
+	                             , TB_SY_M_MENU B
+	                         WHERE 1=1
+	                           AND A.PGM_ID = B.PGM_ID
+	                           AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+	                                                   FROM TB_SY_D_USR_ROLE
+	                                                  WHERE 1=1
+	                                                    AND CORP_C = #{CORP_C}
+	                                                    AND USR_ID = #{USR_ID})
+	                         UNION
+	        
+	                        SELECT DISTINCT
+	                               A.CORP_C
+	                             , A.PGM_ID
+	                             , C.MENU_ID
+	                             , A.PGM_AUTH
+	                          FROM TB_SY_D_ROLE_PGM A
+	                             , TB_SY_M_MENU B
+	                             , TB_SY_M_MENU C
+	                         WHERE 1=1
+	                           AND A.PGM_ID = B.PGM_ID
+	                           AND B.UP_MENU_ID = C.MENU_ID
+	                           AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+	                                                   FROM TB_SY_D_USR_ROLE
+	                                                  WHERE 1=1
+	                                                    AND CORP_C = #{CORP_C}
+	                                                    AND USR_ID = #{USR_ID})
+	                         UNION
+	        
+	                        SELECT DISTINCT
+	                               A.CORP_C
+	                             , A.PGM_ID
+	                             , D.MENU_ID
+	                             , A.PGM_AUTH
+	                         FROM TB_SY_D_ROLE_PGM A
+	                            , TB_SY_M_MENU B
+	                            , TB_SY_M_MENU C
+	                            , TB_SY_M_MENU D
+	                        WHERE 1=1
+	                          AND A.PGM_ID = B.PGM_ID
+	                          AND B.UP_MENU_ID = C.MENU_ID
+	                          AND C.UP_MENU_ID = D.MENU_ID
+	                          AND A.EMP_ROL_DSC IN (SELECT EMP_ROL_DSC 
+	                                                  FROM TB_SY_D_USR_ROLE
+	                                                 WHERE 1=1
+	                                                   AND CORP_C = #{CORP_C}
+	                                                   AND USR_ID = #{USR_ID})
+	                       ) B
+	               ) B
+	             , (SELECT
+	                       ISNULL(ADMIN_YN, 'N') AS ADMIN_YN
+	                  FROM TB_SY_M_USR
+	                 WHERE 1 = 1
+	                   AND CORP_C = #{CORP_C}
+	                   AND USR_ID = #{USR_ID}
+	               ) C             
+	         , TB_SY_D_USR_MYMNU D    /* 운영_사용자별마이메뉴 */
+	         WHERE 1=1
+	           AND A.CORP_C  = B.CORP_C
+	           AND A.MENU_ID = B.MENU_ID
+	           AND A.USE_YN  = 'Y'
+	           AND A.CORP_C  = D.CORP_C
+	           AND A.MENU_ID = D.MENU_ID
+	           AND D.USR_ID  = #{USR_ID}
+	           AND ISNULL(PGM_AUTH, '')   !=   ''
+	     --AND ( (C.ADMIN_YN = 'Y') AND ('' = '') OR
+	     --      (C.ADMIN_YN = 'N') AND (SUBSTRING(A.MENU_ID, 1, 2) != 'SY') )         
+	         GROUP BY A.CORP_C
+	            , A.MENU_ID
+	            , A.MENU_DSC
+	            , A.MENU_NM
+	            , A.MENU_LVL_DSC
+	            , A.UP_MENU_ID
+	            , A.UP_MENU_NM
+	            , A.MENU_SEQ
+	            , A.PGM_ID
+	            , A.DG_PGM_ID
+	            , A.PGM_NM 
+	            , A.PGM_EXE_PATH
+	            , A.PGM_EXPL
+	            , A.USE_YN
+	            , A.FSRG_DTM
+	            , A.FSRG_ID
+	            , A.LSCHG_DTM
+	            , A.LSCHG_ID
+	            , A.SORT
+	        ORDER BY SORT
+    </select>
+
+    
+</mapper>

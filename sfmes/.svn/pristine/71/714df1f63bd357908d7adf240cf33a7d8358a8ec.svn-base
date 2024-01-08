@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 배부차액 상세정보 조회 -->
+    <select id="selectPd3080_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT 
+               A.CORP_C
+             , A.BZPL_C
+             , B.PD_QT                  /* 생산수량             */
+             , B.PD_AM                  /* 생산금액             */
+             , B.GDS_C                  /* 물품코드             */
+             , B.BASE_WKIP_AM           /* 기초재공품금액       */
+             , C.RVS_OBJ_QT             /* 보정대상수량         */
+             , C.RVS_RTO                /* 보정_비율            */
+             , C.RVS_PCS                /* 보정_원가            */
+             , C.SL_RVS_AM              /* 매출_보정_금액       */
+             , C.SL_RVS_RMD_AM          /* 매출_보정_나머지_금  */
+             , D.DB_CR_DSC              /* 차대구분코드         */
+             , D.DFC_DSC                /* 적자구분코드         */
+             , D.FILP_AM                /* 기표금액             */
+             , E.PCS_FCTR_C             /* 원가요소코드         */
+             , E.ACG_ACC_C              /* 계정코드             */
+             , E.ACC_CST_AM             /* 계정_비용_금액       */
+             , E.RMD_CST_AM             /* 나머지_비용_금액     */
+        FROM TB_PD_M_PCS_DBSN_DAM_ACG A
+             INNER JOIN TB_PD_D_PCS_CLC B
+                ON B.CORP_C       = A.CORP_C
+               AND B.BZPL_C       = A.BZPL_C
+               AND B.PCS_CLC_YM   = A.PCS_CLC_YM
+               AND B.PCS_CLC_SQNO = A.PCS_CLC_SQNO
+              LEFT OUTER JOIN TB_PD_D_PCS_DBSN_SL_RVS C
+                ON C.CORP_C       = A.CORP_C
+               AND C.BZPL_C       = A.BZPL_C
+               AND C.ARG_YM       = A.ARG_DT
+               AND C.ARG_SQNO     = A.ARG_SQNO
+               AND C.GDS_C        = B.GDS_C
+              LEFT OUTER JOIN TB_PD_D_PCS_DBSN_DAM_ACG D
+                ON D.CORP_C       = A.CORP_C
+               AND D.BZPL_C       = A.BZPL_C
+               AND D.ARG_DT       = A.ARG_DT
+               AND D.ARG_SQNO     = A.ARG_SQNO
+              LEFT OUTER JOIN TB_PD_D_PCS_ACC_DBSN E
+                ON E.CORP_C       = A.CORP_C
+               AND E.BZPL_C       = A.BZPL_C
+               AND E.PCS_CLC_YM   = A.PCS_CLC_YM
+               AND E.PCS_CLC_SQNO = A.PCS_CLC_SQNO
+               AND E.GDS_C        = B.GDS_C
+               AND E.ACG_ACC_C    = D.ACG_ACC_C
+              LEFT OUTER JOIN TB_CO_M_GDS F
+                ON F.CORP_C       = A.CORP_C
+               AND F.BZPL_C       = A.BZPL_C
+               AND F.GDS_C        = B.GDS_C
+        WHERE 1=1
+          AND A.CORP_C          = #{CORP_C} 
+          AND A.BZPL_C          = #{BZPL_C}
+          AND A.ARG_DT          = #{ARG_DT}
+          AND A.ARG_SQNO        = #{ARG_SQNO}
+    </select>
+</mapper>

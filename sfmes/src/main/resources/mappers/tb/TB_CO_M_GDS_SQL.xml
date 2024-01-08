@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+
+    <!-- 물품저장 -->
+    <insert id="insert_TB_CO_M_GDS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_GDS */ TB_CO_M_GDS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , GDS_C               /* 물품코드             */
+            , REP_GDS_C           /* 대표물품코드         */
+            , GDS_NM              /* 물품명               */
+            , GDS_DTL_NM          /* 물품명상세(물품+규격 */
+            , GDS_ENM             /* 물품영문명           */
+            , GDS_STD_NM          /* 물품규격명           */
+            , GDS_TP_DSC          /* 물품유형구분코드     */
+            , GDS_LCLC            /* 물품대분류코드       */
+            , GDS_MCLC            /* 물품중분류코드       */
+            , GDS_SCLC            /* 물품소분류코드       */
+            , DEPT_C              /* 주관부서             */
+            , TXT_DSC             /* 과세구분코드         */
+            , PART_C              /* 표준부위코드         */
+            , GRD_C               /* 축산물등급코드       */
+            , UZ_DSC              /* 용도                 */            
+            , DIGI_GDS_C          /* 디지장비물품코드     */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , UNT_C               /* 단위코드             */
+            , GDS_SGRT            /* 물품비중(Kg/L)       */
+            , GDS_WT              /* 물품중량(Kg)         */
+            , BAS_WHSE_C          /* 기본창고코드         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , OPDAA_DSC           /* 원산지구분코드       */
+            , PDAA_C              /* 산지코드             */
+            , CSTD_METH_C         /* 보관방식코드         */
+            , PAK_METH_C          /* 진공포장방법코드     */
+            , MFT_TRPL_NM         /* 제조원명             */
+            , SEL_TRPL_NM         /* 판매원명             */
+            , REP_GDS_QT          /* 대표물품수량(내품수  */
+            , TOTE_QT             /* 토트수량(작업박스수  */
+            , PAK_STP_DSC         /* 포장단계구분코드     */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , WHT_PAK_C           /* 단량포장코드         */
+            , WHT_BAR_C           /* 단량바코드           */
+            , IN_QT               /* 입수량(내포장)       */
+            , IN_UNT_C            /* 입수량단위코드(내포  */
+            , IN_PAK_C            /* 입수량포장코드(내포  */
+            , IN_BAR_C            /* 입수량물품바코드(내  */
+            , OUT_QT              /* 포장수량(외포장)     */
+            , OUT_UNT_C           /* 포장단위코드(외포장) */
+            , OUT_PAK_C           /* 포장코드(외포장)     */
+            , OUT_BAR_C           /* 포장바코드(외포장)   */
+            , PKMTR_C             /* 포장재질코드         */            
+            , PAK_NEWT            /* 포장순중량(N.W)      */
+            , PAK_GRWT            /* 포장총중량(G.W)      */
+            , GDS_HGHT            /* 물품높이             */
+            , GDS_LEN_LEN         /* 물품세로길이         */
+            , GDS_WDTH_LEN        /* 물품가로길이         */
+            , GDS_CBM             /* 물품부피CBM(㎥)      */
+            , GDS_RPT_NO          /* 물품보고번호         */
+            , GDS_DTL_EXPL        /* 물품상세설명         */
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호     */
+            , HS_C                /* HS코드               */
+            , ERP_GDS_C           /* ERP품목코드          */
+            , RVO_YN              /* 수주여부             */
+            , RVO_TR_STOP_DT      /* 수주거래중지일자     */
+            , RVO_TR_STOP_RSNC    /* 수주거래중지사유코드 */
+            , RVO_MIN_QT          /* 판매(수주)최소수량   */
+            , ODR_YN              /* 발주여부             */
+            , ODR_TR_STOP_DT      /* 발주거래중지일자     */
+            , ODR_TR_STOP_RSNC    /* 발주거래중지사유코드 */
+            , ODR_BAS_QT          /* 발주기준수량         */
+            , GDS_STR_BAS_DDS     /* 물품입고기준일수     */
+            , SL_YN               /* 판매여부             */
+            , SL_TR_STOP_RSNC     /* 판매거래중지사유     */
+            , GDS_PROENV_DSC      /* 물품친환경구분코드   */
+            , DSTR_TER_AMN_YN     /* 유통기한관리여부     */
+            , DSTR_TER_MRK_DSC    /* 유통기한표기구분코드 */
+            , DSTR_PRD_CN         /* 유통기한수           */
+            , PD_GDS_DSC          /* 생산물품구분코드     */
+            , PD_LINE_C           /* 주생산라인코드       */
+            , BAS_BOM_C           /* 기본BOM코드          */
+            , OEM_YN              /* OEM여부              */
+            , STPL_AMN_YN         /* 재고관리여부         */
+            , XPO_GDS_YN          /* 수출물품여부         */
+            , IPO_GDS_YN          /* 수입물품여부         */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{GDS_C}
+            , #{REP_GDS_C}
+            , #{GDS_NM}
+            , #{GDS_DTL_NM}
+            , #{GDS_ENM}
+            , #{GDS_STD_NM}
+            , #{GDS_TP_DSC}
+            , #{GDS_LCLC}
+            , #{GDS_MCLC}
+            , #{GDS_SCLC}
+            , #{DEPT_C}
+            , #{TXT_DSC}
+            , #{PART_C}
+            , #{GRD_C}              
+            , #{UZ_DSC}                          
+            , #{DIGI_GDS_C}
+            , #{QT_WT_DSC}
+            , #{UNT_C}
+            , DBO.SF_GET_FLOAT(#{GDS_SGRT})
+            , DBO.SF_GET_FLOAT(#{GDS_WT})
+            , #{BAS_WHSE_C}
+            , #{HST_AMN_DSC}
+            , #{OPDAA_DSC}
+            , #{PDAA_C}
+            , #{CSTD_METH_C}
+            , #{PAK_METH_C}
+            , #{MFT_TRPL_NM}
+            , #{SEL_TRPL_NM}
+            , DBO.SF_GET_NUMERIC(#{REP_GDS_QT})
+            , DBO.SF_GET_FLOAT(#{TOTE_QT})
+            , #{PAK_STP_DSC}
+            , CASE WHEN DBO.SF_GET_NUMERIC(#{WHT_QT}) = '0' then '1' 
+                   ELSE #{WHT_QT}
+               END 
+            , #{WHT_UNT_C}
+            , #{WHT_PAK_C}
+            , #{WHT_BAR_C}
+            , DBO.SF_GET_NUMERIC(#{IN_QT})
+            , #{IN_UNT_C}
+            , #{IN_PAK_C}
+            , #{IN_BAR_C}
+            , DBO.SF_GET_NUMERIC(#{OUT_QT})
+            , #{OUT_UNT_C}
+            , #{OUT_PAK_C}
+            , #{OUT_BAR_C}
+            , #{PKMTR_C}
+            , DBO.SF_GET_FLOAT(#{PAK_NEWT})
+            , DBO.SF_GET_FLOAT(#{PAK_GRWT})
+            , DBO.SF_GET_FLOAT(#{GDS_HGHT})
+            , DBO.SF_GET_FLOAT(#{GDS_LEN_LEN})
+            , DBO.SF_GET_FLOAT(#{GDS_WDTH_LEN})
+            , DBO.SF_GET_FLOAT(#{GDS_CBM})
+            , #{GDS_RPT_NO}
+            , #{GDS_DTL_EXPL}
+            , #{APD_FILE_AMN_NO}
+            , #{HS_C}
+            , #{ERP_GDS_C}
+            , #{RVO_YN}
+            , #{RVO_TR_STOP_DT}
+            , #{RVO_TR_STOP_RSNC}
+            , DBO.SF_GET_NUMERIC(#{RVO_MIN_QT})
+            , #{ODR_YN}
+            , #{ODR_TR_STOP_DT}
+            , #{ODR_TR_STOP_RSNC} 
+            , DBO.SF_GET_NUMERIC(#{ODR_BAS_QT})
+            , DBO.SF_GET_NUMERIC(#{GDS_STR_BAS_DDS})
+            , #{SL_YN}
+            , #{SL_TR_STOP_RSNC}
+            , #{GDS_PROENV_DSC}
+            , #{DSTR_TER_AMN_YN}
+            , #{DSTR_TER_MRK_DSC}
+            , DBO.SF_GET_NUMERIC(#{DSTR_PRD_CN})
+            , #{PD_GDS_DSC}
+            , #{PD_LINE_C}
+            , #{BAS_BOM_C}
+            , #{OEM_YN}
+            , #{STPL_AMN_YN}
+            , #{XPO_GDS_YN}
+            , #{IPO_GDS_YN}
+            , #{USE_YN}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_GDS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_GDS */ TB_CO_M_GDS
+           SET 
+               REP_GDS_C           = #{REP_GDS_C}                                 /* 대표물품코드         */
+             , GDS_NM              = #{GDS_NM}                                    /* 물품명               */
+             , GDS_DTL_NM          = #{GDS_DTL_NM}                                /* 물품명상세(물품+규격 */
+             , GDS_ENM             = #{GDS_ENM}                                   /* 물품영문명           */
+             , GDS_STD_NM          = #{GDS_STD_NM}                                /* 물품규격명           */
+             , GDS_TP_DSC          = #{GDS_TP_DSC}                                /* 물품유형구분코드     */
+             , GDS_LCLC            = #{GDS_LCLC}                                  /* 물품대분류코드       */
+             , GDS_MCLC            = #{GDS_MCLC}                                  /* 물품중분류코드       */
+             , GDS_SCLC            = #{GDS_SCLC}                                  /* 물품소분류코드       */
+             , DEPT_C              = #{DEPT_C}                                    /* 주관부서코드         */
+             , TXT_DSC             = #{TXT_DSC}                                   /* 과세구분코드         */
+             , PART_C              = #{PART_C}                                    /* 표준부위코드         */
+             , GRD_C               = #{GRD_C}                                     /* 축산물등급코드       */
+             , UZ_DSC              = #{UZ_DSC}                                    /* 용도                 */
+             , DIGI_GDS_C          = #{DIGI_GDS_C}                                /* 디지장비물품코드     */
+             , QT_WT_DSC           = #{QT_WT_DSC}                                 /* 수(중)량형구분코드   */
+             , UNT_C               = #{UNT_C}                                     /* 단위코드             */
+             , GDS_SGRT            = DBO.SF_GET_FLOAT(#{GDS_SGRT})                /* 물품비중(Kg/L)       */
+             , GDS_WT              = DBO.SF_GET_FLOAT(#{GDS_WT})                  /* 물품중량(Kg)         */
+             , BAS_WHSE_C          = #{BAS_WHSE_C}                                /* 기본창고코드         */
+             , HST_AMN_DSC         = #{HST_AMN_DSC}                               /* 이력관리구분코드     */
+             , OPDAA_DSC           = #{OPDAA_DSC}                                 /* 원산지구분코드       */
+             , PDAA_C              = #{PDAA_C}                                    /* 산지코드             */
+             , CSTD_METH_C         = #{CSTD_METH_C}                               /* 보관방식코드         */
+             , PAK_METH_C          = #{PAK_METH_C}                                /* 진공포장방법코드     */
+             , MFT_TRPL_NM         = #{MFT_TRPL_NM}                               /* 제조원명             */
+             , SEL_TRPL_NM         = #{SEL_TRPL_NM}                               /* 판매원명             */
+             , REP_GDS_QT          = DBO.SF_GET_NUMERIC(#{REP_GDS_QT})            /* 대표물품수량(내품수  */
+             , TOTE_QT             = DBO.SF_GET_NUMERIC(#{TOTE_QT})               /* 토트수량(작업박스수  */
+             , PAK_STP_DSC         = #{PAK_STP_DSC}                               /* 포장단계구분코드     */
+             , WHT_QT              = DBO.SF_GET_NUMERIC(#{WHT_QT})                /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                                 /* 단량단위코드         */
+             , WHT_PAK_C           = #{WHT_PAK_C}                                 /* 단량포장코드         */
+             , WHT_BAR_C           = #{WHT_BAR_C}                                 /* 단량바코드           */
+             , IN_QT               = DBO.SF_GET_NUMERIC(#{IN_QT})                 /* 입수량(내포장)       */
+             , IN_UNT_C            = #{IN_UNT_C}                                  /* 입수량단위코드(내포  */
+             , IN_PAK_C            = #{IN_PAK_C}                                  /* 입수량포장코드(내포  */
+             , IN_BAR_C            = #{IN_BAR_C}                                  /* 입수량물품바코드(내  */
+             , OUT_QT              = DBO.SF_GET_NUMERIC(#{OUT_QT})                /* 포장수량(외포장)     */
+             , OUT_UNT_C           = #{OUT_UNT_C}                                 /* 포장단위코드(외포장) */
+             , OUT_PAK_C           = #{OUT_PAK_C}                                 /* 포장코드(외포장)     */
+             , OUT_BAR_C           = #{OUT_BAR_C}                                 /* 포장바코드(외포장)   */
+             , PKMTR_C             = #{PKMTR_C}                                   /* 포장재질코드         */
+             , PAK_NEWT            = DBO.SF_GET_FLOAT(#{PAK_NEWT})                /* 포장순중량(N.W)      */
+             , PAK_GRWT            = DBO.SF_GET_FLOAT(#{PAK_GRWT})                /* 포장총중량(G.W)      */
+             , GDS_HGHT            = DBO.SF_GET_FLOAT(#{GDS_HGHT})                /* 물품높이             */
+             , GDS_LEN_LEN         = DBO.SF_GET_FLOAT(#{GDS_LEN_LEN})             /* 물품세로길이         */
+             , GDS_WDTH_LEN        = DBO.SF_GET_FLOAT(#{GDS_WDTH_LEN})            /* 물품가로길이         */
+             , GDS_CBM             = DBO.SF_GET_FLOAT(#{GDS_CBM})                 /* 물품부피CBM(㎥)      */
+             , GDS_RPT_NO          = #{GDS_RPT_NO}                                /* 물품보고번호         */
+             , GDS_DTL_EXPL        = #{GDS_DTL_EXPL}                              /* 물품상세설명         */
+             , APD_FILE_AMN_NO     = #{APD_FILE_AMN_NO}                           /* 첨부파일관리번호     */
+             , HS_C                = #{HS_C}                                      /* HS코드               */
+             , ERP_GDS_C           = #{ERP_GDS_C}                                 /* ERP품목코드          */
+             , RVO_YN              = #{RVO_YN}                                    /* 수주여부             */
+             , RVO_TR_STOP_DT      = #{RVO_TR_STOP_DT}                            /* 수주거래중지일자     */
+             , RVO_TR_STOP_RSNC    = #{RVO_TR_STOP_RSNC}                          /* 수주거래중지사유코드 */
+             , RVO_MIN_QT          = DBO.SF_GET_NUMERIC(#{RVO_MIN_QT})            /* 판매(수주)최소수량   */
+             , ODR_YN              = #{ODR_YN}                                    /* 발주여부             */
+             , ODR_TR_STOP_DT      = #{ODR_TR_STOP_DT}                            /* 발주거래중지일자     */
+             , ODR_TR_STOP_RSNC    = #{ODR_TR_STOP_RSNC}                          /* 발주거래중지사유코드 */
+             , ODR_BAS_QT          = DBO.SF_GET_NUMERIC(#{ODR_BAS_QT})            /* 발주기준수량         */
+             , GDS_STR_BAS_DDS     = DBO.SF_GET_NUMERIC(#{GDS_STR_BAS_DDS})       /* 물품입고기준일수     */
+             , SL_YN               = #{SL_YN}                                     /* 판매여부             */
+             , SL_TR_STOP_RSNC     = #{SL_TR_STOP_RSNC}                           /* 판매거래중지사유     */
+             , GDS_PROENV_DSC      = #{GDS_PROENV_DSC}                            /* 물품친환경구분코드   */
+             , DSTR_TER_AMN_YN     = #{DSTR_TER_AMN_YN}                           /* 유통기한관리여부     */
+             , DSTR_TER_MRK_DSC    = #{DSTR_TER_MRK_DSC}                          /* 유통기한표기구분코드 */
+             , DSTR_PRD_CN         = DBO.SF_GET_NUMERIC(#{DSTR_PRD_CN})           /* 유통기한수           */
+             , PD_GDS_DSC          = #{PD_GDS_DSC}                                /* 생산물품구분코드     */
+             , PD_LINE_C           = #{PD_LINE_C}                                 /* 주생산라인코드       */
+             , BAS_BOM_C           = #{BAS_BOM_C}                                 /* 기본BOM코드          */
+             , OEM_YN              = #{OEM_YN}                                    /* OEM여부              */
+             , STPL_AMN_YN         = #{STPL_AMN_YN}                               /* 재고관리여부         */
+             , XPO_GDS_YN          = #{XPO_GDS_YN}                                /* 수출물품여부         */
+             , IPO_GDS_YN          = #{IPO_GDS_YN}                                /* 수입물품여부         */
+             , USE_YN              = #{USE_YN}                                    /* 사용여부             */
+             , RMK_CNTN            = #{RMK_CNTN}                                  /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}                                  /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                                  /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                                  /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                                    /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND GDS_C               = #{GDS_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_GDS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_GDS */ FROM TB_CO_M_GDS
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </delete>
+
+    <!-- CO1040 물품조회 -->
+    <select id="select_TB_CO_M_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_GDS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REP_GDS_C                                         /* 대표물품코드              */
+             , (SELECT GDS_DTL_NM 
+                  FROM TB_CO_M_GDS
+                 WHERE CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND GDS_C  = A.REP_GDS_C) AS REP_GDS_NM         /* 대표물품명(물품명상세대체)*/
+             , A.GDS_NM                                            /* 물품명                    */
+             , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , A.GDS_ENM                                           /* 물품영문명                */
+             , A.GDS_STD_NM                                        /* 물품규격명                */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.GDS_LCLC                                          /* 물품대분류코드            */
+             , (SELECT DISTINCT GDS_LCLC_NM                        /* 물품대분류명              */
+                 FROM TB_CO_M_GDS_CLF
+                WHERE CORP_C   = A.CORP_C
+                  AND GDS_LCLC = A.GDS_LCLC
+              ) AS GDS_LCLC_NM
+             , A.GDS_MCLC                                          /* 물품중분류코드            */
+             , (SELECT DISTINCT GDS_MCLC_NM                        /* 물품중분류명              */
+                  FROM TB_CO_M_GDS_CLF
+                 WHERE CORP_C   = A.CORP_C
+                   AND GDS_LCLC = A.GDS_LCLC 
+                   AND GDS_MCLC = A.GDS_MCLC
+              ) AS GDS_MCLC_NM
+             , A.GDS_SCLC                                          /* 물품소분류코드            */
+             , (SELECT DISTINCT GDS_SCLC_NM                        /* 물품소분류명              */
+                  FROM TB_CO_M_GDS_CLF
+                 WHERE CORP_C   = A.CORP_C
+                   AND GDS_LCLC = A.GDS_LCLC  
+                   AND GDS_MCLC = A.GDS_MCLC
+                   AND GDS_SCLC = A.GDS_SCLC
+               ) AS GDS_SCLC_NM 
+             , A.DEPT_C                                            /* 주관부서                  */                                  
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.PART_C                                            /* 표준부위코드              */
+             , A.GRD_C                                             /* 축산물등급코드            */
+             , A.UZ_DSC                                            /* 용도                      */
+             , (SELECT LATC_SCLC_NM
+                  FROM TB_CO_M_LATC_CLF_STD
+                 WHERE LATC_SCLC = A.PART_C
+               ) AS PART_NM
+             , A.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.UNT_C                                             /* 단위코드                  */
+             , A.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , A.GDS_WT                                            /* 물품중량(Kg)              */
+             , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , (SELECT WHSE_NM 
+                  FROM TB_CO_M_WHSE
+                 WHERE CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND WHSE_C = A.BAS_WHSE_C) AS WHSE_NM           /* 기본창고명                */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.OPDAA_DSC                                         /* 원산지구분코드            */
+             , A.PDAA_C                                            /* 산지코드                  */
+             , (SELECT COMN_CNM 
+                  FROM TB_SY_D_COMNC
+                 WHERE CORP_C = A.CORP_C
+                   AND COMN_GRP_C = 'PDAA_C'
+                   AND COMN_C = A.PDAA_C
+               ) AS PDAA_C_NM                                      /* 산지코드명                */
+             , A.CSTD_METH_C                                       /* 보관방식코드              */
+             , A.PAK_METH_C                                        /* 진공포장방법코드          */
+             , A.MFT_TRPL_NM                                       /* 제조원명                  */
+             , A.SEL_TRPL_NM                                       /* 판매원명                  */
+             , A.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , A.TOTE_QT                                           /* 토트수량(작업박스수량)    */
+             , A.PAK_STP_DSC                                       /* 포장단계구분코드          */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.WHT_PAK_C                                         /* 단량포장코드              */
+             , A.WHT_BAR_C                                         /* 단량바코드                */
+             , A.IN_QT                                             /* 입수량(내포장)            */
+             , A.IN_UNT_C                                          /* 입수량단위코드(내포장)    */
+             , A.IN_PAK_C                                          /* 입수량포장코드(내포장)    */
+             , A.IN_BAR_C                                          /* 입수량물품바코드(내포장)  */
+             , A.OUT_QT                                            /* 포장수량(외포장)          */
+             , A.OUT_UNT_C                                         /* 포장단위코드(외포장)      */
+             , A.OUT_PAK_C                                         /* 포장코드(외포장)          */
+             , A.OUT_BAR_C                                         /* 포장바코드(외포장)        */
+             , A.PAK_NEWT                                          /* 포장순중량(N.W)           */
+             , A.PAK_GRWT                                          /* 포장총중량(G.W)           */
+             , A.PKMTR_C                                           /* 포장재질코드              */
+             , A.GDS_HGHT                                          /* 물품높이                  */
+             , A.GDS_LEN_LEN                                       /* 물품세로길이              */
+             , A.GDS_WDTH_LEN                                      /* 물품가로길이              */
+             , A.GDS_CBM                                           /* 물품부피CBM(㎥)           */
+             , A.GDS_RPT_NO                                        /* 물품보고번호              */
+             , A.GDS_DTL_EXPL                                      /* 물품상세설명              */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+             , A.HS_C                                              /* HS코드                    */
+             , A.ERP_GDS_C                                         /* ERP품목코드               */
+             , A.RVO_YN                                            /* 수주여부                  */
+             , A.RVO_TR_STOP_DT                                    /* 수주거래중지일자          */
+             , A.RVO_TR_STOP_RSNC                                  /* 수주거래중지사유코드      */
+             , A.RVO_MIN_QT                                        /* 판매(수주)최소수량        */
+             , A.ODR_YN                                            /* 발주여부                  */
+             , A.ODR_TR_STOP_DT                                    /* 발주거래중지일자          */
+             , A.ODR_TR_STOP_RSNC                                  /* 발주거래중지사유코드      */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.GDS_STR_BAS_DDS                                   /* 물품입고기준일수          */
+             , A.SL_YN                                             /* 판매여부                  */
+             , A.SL_TR_STOP_RSNC                                   /* 판매거래중지사유          */
+             , A.GDS_PROENV_DSC                                    /* 물품친환경구분코드        */
+             , A.DSTR_TER_AMN_YN                                   /* 유통기한관리여부          */
+             , A.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드      */
+             , A.DSTR_PRD_CN                                       /* 유통기한수                */
+             , A.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , A.PD_LINE_C                                         /* 주생산라인코드            */
+             , A.BAS_BOM_C                                         /* 기본BOM코드               */
+             , A.OEM_YN                                            /* OEM여부                   */
+             , A.STPL_AMN_YN                                       /* 재고관리여부              */
+             , A.XPO_GDS_YN                                        /* 수출물품여부              */
+             , A.IPO_GDS_YN                                        /* 수입물품여부              */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_GDS A
+         WHERE 1=1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.GDS_C   = #{GDS_C}
+<!--       AND A.GDS_C   = CASE WHEN LEN(#{GDS_C}) = 6 THEN #{GDS_C} 
+                                ELSE FORMAT(#{GDS_C}*1, LEFT(#{GDS_TP_DSC}, 1) + '00000') 
+                            END
+-->                            
+    </select>
+</mapper>

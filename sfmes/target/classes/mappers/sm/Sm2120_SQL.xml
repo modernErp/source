@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 품원장일별집계내역 기본조회 -->
+    <select id="select_Sm2120_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT  /*+ select_Sm2120_01 */
+		       A.GDS_C                                                                          /* 물품코드 */
+		     , A.GDS_NM                                                                         /* 물품명  */
+		     , A.GDS_STD_NM                                                                     /* 물품규격 */
+		     , A.GDS_TP_DSC                                                                     /* 물품유형코드 */
+		     , A.UNT_C                                                                          /* 관리단위 */
+		     , B.RLTR_DT                                                                        /* 입출고일자 */
+		     , ISNULL(C.BAS_STPL_QT,0)                                     AS BAS_STPL_QT       /* 이월재고 */
+		     , B.IN_QT                                                     AS DB_QT             /* 입고량    */
+		     , B.OUT_QT                                                    AS CR_QT             /* 출고량   */
+		     , (ISNULL(C.BAS_STPL_QT,0) + B.IN_QT - B.OUT_QT)              AS STPL_QT           /* 기말재고 */
+		  FROM TB_CO_M_GDS  A
+		       LEFT OUTER JOIN 
+  		        (
+		          SELECT /*  일자별 물품별 입출고 금액 합산 계산 */
+		                 B.CORP_C
+		               , B.BZPL_C
+		               , B.GDS_C
+		               , A.RLTR_DT
+                       , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT ELSE 0 END)) AS IN_QT
+		               , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT ELSE 0 END)) AS OUT_QT
+		            FROM TB_SM_M_GDS_RL_STDV A
+		               , TB_SM_D_GDS_RL_STDV B
+		           WHERE 1=1
+		             AND A.CORP_C    = B.CORP_C
+		             AND A.BZPL_C    = B.BZPL_C
+		             AND A.STDV_DT   = B.STDV_DT
+		             AND A.STDV_SQNO = B.STDV_SQNO
+		             AND A.STDV_DSC  = B.STDV_DSC
+		             AND A.CORP_C    = #{CORP_C}
+		             AND A.BZPL_C    = #{BZPL_C}
+		             AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}  
+		             AND A.SLP_NML_YN = 'Y'
+		             AND A.DEL_YN     = 'N'
+		             AND B.DEL_YN     = 'N'
+		           GROUP BY
+		                 B.CORP_C
+		               , B.BZPL_C
+		               , B.GDS_C
+		               , A.RLTR_DT
+		        )  B
+		           ON A.CORP_C = B.CORP_C
+		          AND A.BZPL_C = B.BZPL_C
+		          AND A.GDS_C  = B.GDS_C 
+		       LEFT OUTER JOIN 
+                 (		                     
+		          SELECT /*  이월재고 물품별 입출고 금액 합산 계산 */
+		                B.CORP_C
+		              , B.BZPL_C
+		              , B.GDS_C
+		              , CONVERT(FLOAT, SUM(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT ELSE B.STDV_QT * -1  END))           AS BAS_STPL_QT
+		           FROM TB_SM_M_GDS_RL_STDV A
+		              , TB_SM_D_GDS_RL_STDV B
+		          WHERE 1=1
+		            AND A.CORP_C    = B.CORP_C
+		            AND A.BZPL_C    = B.BZPL_C
+		            AND A.STDV_DT   = B.STDV_DT
+		            AND A.STDV_SQNO = B.STDV_SQNO
+		            AND A.STDV_DSC  = B.STDV_DSC
+		            AND A.CORP_C    = #{CORP_C}
+		            AND A.BZPL_C    = #{BZPL_C}
+				    <![CDATA[
+        			AND A.RLTR_DT < #{ST_DT}
+           			]]>
+		            AND A.SLP_NML_YN = 'Y'
+		            AND A.DEL_YN     = 'N'
+		            AND B.DEL_YN     = 'N'
+		          GROUP BY
+		                  B.CORP_C
+		                , B.BZPL_C
+		                , B.GDS_C
+		         )  C
+  		           ON A.CORP_C = C.CORP_C
+		          AND A.BZPL_C = C.BZPL_C
+		          AND A.GDS_C  = C.GDS_C 
+		   WHERE 1=1      
+		     AND A.CORP_C = #{CORP_C}
+		     AND A.BZPL_C = #{BZPL_C}
+		     AND A.USE_YN = 'Y'
+		   <if test = "GDS_C != null and GDS_C != ''"> 
+		     AND A.GDS_C = #{GDS_C}                         
+		   </if>    
+		   <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''"> 
+		     AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+		   </if>
+    </select>    
+    
+     <!-- 월집계를 사용하는 쿼리로 월집계 배치를 사용하지 않아서 아래 쿼리를 사용하지 않음 20220104 rchkorea    
+      차후 월집계 테이블 정합성이 갇춰지면 다시 사용함.   
+    
+		SELECT  /*+ select_Sm2120_01 */
+		       A.GDS_C                                                                          /* 물품코드 */
+		     , A.GDS_NM                                                                         /* 물품명  */
+		     , A.GDS_STD_NM                                                                     /* 물품규격 */
+		     , A.GDS_TP_DSC                                                                     /* 물품유형코드 */
+		     , A.UNT_C                                                                          /* 관리단위 */
+		     , A.RLTR_DT                                                                        /* 입출고일자 */
+		     , ISNULL(A.BAS_STPL_QT, 0) + A.SUM_TOT - (A.IN_QT - A.OUT_QT) AS BAS_STPL_QT       /* 기초재고 */
+		     , A.IN_QT                                                     AS DB_QT             /* 입고량    */
+		     , A.OUT_QT                                                    AS CR_QT             /* 출고량   */
+		     , (A.BAS_STPL_QT + A.SUM_TOT)                                 AS STPL_QT           /* 기말재고 */
+		  FROM (
+		        SELECT A.GDS_C
+		             , C.GDS_NM                                                                         /* 물품명  */
+		             , C.GDS_STD_NM                                                                     /* 물품규격 */
+		             , C.GDS_TP_DSC  
+		             , C.UNT_C
+		             , A.RLTR_DT
+		             , ISNULL((SELECT X.BAS_STPL_QT
+		                  FROM TB_SM_M_GDS_RL_MON_TOT X
+		                 WHERE X.CORP_C = A.CORP_C
+		                   AND X.BZPL_C = A.BZPL_C
+		                   AND X.GDS_C  = A.GDS_C
+		                   AND X.TOT_MN =  SUBSTRING(#{ST_DT},1,6)),0) AS BAS_STPL_QT      /* 기초재고(월기준)  */
+		             , A.IN_QT
+		             , A.OUT_QT
+		             , SUM(A.IN_QT - A.OUT_QT) OVER (PARTITION BY A.GDS_C ORDER BY A.GDS_C, A.RLTR_DT) SUM_TOT  /* 누적재고 */
+		          FROM (
+		                SELECT /*  일자별 물품별 입출고 금액 합산 계산 */
+		                       B.CORP_C
+		                     , B.BZPL_C
+		                     , B.GDS_C
+		                     , A.RLTR_DT
+		                     , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT
+		                                ELSE 0 END)) AS IN_QT
+		                     , SUM(DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT
+		                                ELSE 0 END)) AS OUT_QT
+		                  FROM TB_SM_M_GDS_RL_STDV A
+		                     , TB_SM_D_GDS_RL_STDV B
+		                 WHERE 1=1
+		                   AND A.CORP_C    = B.CORP_C
+		                   AND A.BZPL_C    = B.BZPL_C
+		                   AND A.STDV_DT   = B.STDV_DT
+		                   AND A.STDV_SQNO = B.STDV_SQNO
+		                   AND A.STDV_DSC  = B.STDV_DSC
+		                   AND A.CORP_C    = #{CORP_C}
+		                   AND A.BZPL_C    = #{BZPL_C}
+		                   AND A.RLTR_DT BETWEEN CONCAT(SUBSTRING(#{ST_DT},1,6),'01') AND #{ED_DT}       /* 시작일자를 입력조건의 01일부터 처리 */
+		                   AND A.SLP_NML_YN = 'Y'
+		                   AND A.DEL_YN     = 'N'
+		                   AND B.DEL_YN     = 'N'
+		                 GROUP BY
+		                       B.CORP_C
+		                     , B.BZPL_C
+		                     , B.GDS_C
+		                     , A.RLTR_DT
+		               ) A
+		               LEFT OUTER JOIN TB_CO_M_GDS C
+		               ON A.CORP_C  = C.CORP_C
+		               AND A.BZPL_C = C.BZPL_C
+		               AND A.GDS_C  = C.GDS_C 
+		       ) A
+		 WHERE A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}                                          /* 실제 입력조건으로 필터 */
+		  <if test = "GDS_C != null and GDS_C != ''"> 
+		      AND A.GDS_C = #{GDS_C}                         
+		  </if>    
+		  <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''"> 
+		      AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+		  </if>    
+	 -->
+</mapper>

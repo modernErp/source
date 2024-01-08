@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_L_TRPL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_L_TRPL */ TB_CO_L_TRPL
+        (
+              CORP_C              /* 회사코드             */
+            , HST_SQNO            /* 이력일련번호         */
+            , TRPL_C              /* 거래처코드           */
+            , TRPL_NM             /* 거래처명             */
+            , TRPL_ABR_NM         /* 거래처약어명         */
+            , TRPL_DSC            /* 거래처구분코드       */
+            , TRPL_L_CLFC         /* 거래처대분류코드     */
+            , TRPL_M_CLFC         /* 거래처중분류코드     */
+            , TRPL_S_CLFC         /* 거래처소분류코드     */
+            , BY_CTR_YN           /* 매입계약여부         */
+            , SL_CTR_YN           /* 매출계약여부         */
+            , BZMN_NO             /* 사업자번호           */
+            , COP_NO              /* 법인번호             */
+            , REPM_NM             /* 대표자명             */
+            , BZC_NM              /* 업종명               */
+            , BZTP_NM             /* 업태명               */
+            , MBCO_DSC            /* 본지사구분코드       */
+            , UP_TRPL_C           /* 상위거래처코드       */
+            , TXBIL_DSC           /* 세금계산서발행구분코 */
+            , TXBZ_RPT_FORM_C     /* 세무신고형태코드     */
+            , ELTTX_RMS_EMAIL     /* 전자세금계산서수신이 */
+            , TRFW_TYPE_C         /* 거래명세서타입코드   */
+            , TRPL_APL_YN         /* 거래개시여부         */
+            , TRPL_APL_DT         /* 거래개시일자         */
+            , INDI_INF_AGR_YN     /* 개인정보제공동의여부 */
+            , SMS_RMS_AGR_YN      /* SMS수신동의여부      */
+            , ADJPL_C             /* 정산처코드           */
+            , CLSD_YN             /* 폐업여부             */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , (SELECT ISNULL(MAX(HST_SQNO),0)+1
+                  FROM TB_CO_L_TRPL
+                 WHERE 1=1
+                   AND CORP_C = #{CORP_C})      
+            , #{TRPL_C}
+            , #{TRPL_NM}
+            , #{TRPL_ABR_NM}
+            , #{TRPL_DSC}
+            , #{TRPL_L_CLFC}
+            , #{TRPL_M_CLFC}
+            , #{TRPL_S_CLFC}
+            , #{BY_CTR_YN}
+            , #{SL_CTR_YN}
+            , #{BZMN_NO}
+            , #{COP_NO}
+            , #{REPM_NM}
+            , #{BZC_NM}
+            , #{BZTP_NM}
+            , #{MBCO_DSC}
+            , #{UP_TRPL_C}
+            , #{TXBIL_DSC}
+            , #{TXBZ_RPT_FORM_C}
+            , #{ELTTX_RMS_EMAIL}
+            , #{TRFW_TYPE_C}
+            , #{TRPL_APL_YN}
+            , #{TRPL_APL_DT}
+            , #{INDI_INF_AGR_YN}
+            , #{SMS_RMS_AGR_YN}
+            , #{ADJPL_C}
+            , #{CLSD_YN}
+            , #{USE_YN}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_L_TRPL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_L_TRPL */ TB_CO_L_TRPL
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , HST_SQNO            = #{HST_SQNO}              /* 이력일련번호         */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , TRPL_NM             = #{TRPL_NM}               /* 거래처명             */
+             , TRPL_ABR_NM         = #{TRPL_ABR_NM}           /* 거래처약어명         */
+             , TRPL_DSC            = #{TRPL_DSC}              /* 거래처구분코드       */
+             , TRPL_L_CLFC         = #{TRPL_L_CLFC}           /* 거래처대분류코드     */
+             , TRPL_M_CLFC         = #{TRPL_M_CLFC}           /* 거래처중분류코드     */
+             , TRPL_S_CLFC         = #{TRPL_S_CLFC}           /* 거래처소분류코드     */
+             , BY_CTR_YN           = #{BY_CTR_YN}             /* 매입계약여부         */
+             , SL_CTR_YN           = #{SL_CTR_YN}             /* 매출계약여부         */
+             , BZMN_NO             = #{BZMN_NO}               /* 사업자번호           */
+             , COP_NO              = #{COP_NO}                /* 법인번호             */
+             , REPM_NM             = #{REPM_NM}               /* 대표자명             */
+             , BZC_NM              = #{BZC_NM}                /* 업종명               */
+             , BZTP_NM             = #{BZTP_NM}               /* 업태명               */
+             , MBCO_DSC            = #{MBCO_DSC}              /* 본지사구분코드       */
+             , UP_TRPL_C           = #{UP_TRPL_C}             /* 상위거래처코드       */
+             , TXBIL_DSC           = #{TXBIL_DSC}             /* 세금계산서발행구분코 */
+             , TXBZ_RPT_FORM_C     = #{TXBZ_RPT_FORM_C}       /* 세무신고형태코드     */
+             , ELTTX_RMS_EMAIL     = #{ELTTX_RMS_EMAIL}       /* 전자세금계산서수신이 */
+             , TRFW_TYPE_C         = #{TRFW_TYPE_C}           /* 거래명세서타입코드   */
+             , TRPL_APL_YN         = #{TRPL_APL_YN}           /* 거래개시여부         */
+             , TRPL_APL_DT         = #{TRPL_APL_DT}           /* 거래개시일자         */
+             , INDI_INF_AGR_YN     = #{INDI_INF_AGR_YN}       /* 개인정보제공동의여부 */
+             , SMS_RMS_AGR_YN      = #{SMS_RMS_AGR_YN}        /* SMS수신동의여부      */
+             , ADJPL_C             = #{ADJPL_C}               /* 정산처코드           */
+             , CLSD_YN             = #{CLSD_YN}               /* 폐업여부             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_L_TRPL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_L_TRPL */ FROM TB_CO_L_TRPL
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </delete>
+
+    <select id="select_TB_CO_L_TRPL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_L_TRPL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.HST_SQNO                                          /* 이력일련번호              */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.TRPL_NM                                           /* 거래처명                  */
+             , A.TRPL_ABR_NM                                       /* 거래처약어명              */
+             , A.TRPL_DSC                                          /* 거래처구분코드            */
+             , A.TRPL_L_CLFC                                       /* 거래처대분류코드          */
+             , A.TRPL_M_CLFC                                       /* 거래처중분류코드          */
+             , A.TRPL_S_CLFC                                       /* 거래처소분류코드          */
+             , A.BY_CTR_YN                                         /* 매입계약여부              */
+             , A.SL_CTR_YN                                         /* 매출계약여부              */
+             , A.BZMN_NO                                           /* 사업자번호                */
+             , A.COP_NO                                            /* 법인번호                  */
+             , A.REPM_NM                                           /* 대표자명                  */
+             , A.BZC_NM                                            /* 업종명                    */
+             , A.BZTP_NM                                           /* 업태명                    */
+             , A.MBCO_DSC                                          /* 본지사구분코드            */
+             , A.UP_TRPL_C                                         /* 상위거래처코드            */
+             , A.TXBIL_DSC                                         /* 세금계산서발행구분코드    */
+             , A.TXBZ_RPT_FORM_C                                   /* 세무신고형태코드          */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이메일  */
+             , A.TRFW_TYPE_C                                       /* 거래명세서타입코드        */
+             , A.TRPL_APL_YN                                       /* 거래개시여부              */
+             , A.TRPL_APL_DT                                       /* 거래개시일자              */
+             , A.INDI_INF_AGR_YN                                   /* 개인정보제공동의여부      */
+             , A.SMS_RMS_AGR_YN                                    /* SMS수신동의여부           */
+             , A.ADJPL_C                                           /* 정산처코드                */
+             , A.CLSD_YN                                           /* 폐업여부                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_L_TRPL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.HST_SQNO          = #{HST_SQNO}
+    </select>
+</mapper>

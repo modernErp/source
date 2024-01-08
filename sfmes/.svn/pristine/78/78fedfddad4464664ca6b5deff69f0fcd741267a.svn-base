@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <select id="selectCo3030List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectCo3030List */
+               A.MSG_NO                                                   /* 메시지번호                */
+             , B.MSG_RMS_DSC                    AS MSG_RMS_DSC            /* 메시지수신구분                */
+             , B.MSG_UZ                         AS MSG_UZ                 /* 메시지용도                */ 
+             , B.SMS_CNTN                       AS SMS_CNTN               /* SMS문구                 */
+             , A.RMS_BZPL_C                                               /* 수신사업장코드              */
+             , (SELECT BZPL_NM 
+                  FROM TB_CO_M_BZPL x
+                 WHERE 1 = 1
+                   AND A.CORP_C = X.CORP_C
+                   AND A.RMS_BZPL_C = X.BZPL_C) AS RMS_BZPL_NM             /* 수신사업장                  */            
+             , A.RMSMN_ID                                                  /* 수신자ID                 */
+             , A.RMSMN_ID                       AS RMSMN_NM                /* 수신자명                  */
+             , A.RG_RSN                                                    /* 등록사유                  */
+             , A.USE_YN                                                    /* 사용여부                  */
+             , A.FSRG_DTM                                                  /* 최초등록일시              */
+             , A.FSRG_ID                                                   /* 최초등록자ID              */
+             , A.FSRG_ID                         AS FSRG_NM                /* 최초등록자명              */
+             , A.LSCHG_DTM                                                 /* 최종변경일시              */
+             , A.LSCHG_ID                                                  /* 최종변경자ID              */
+             , A.LSCHG_ID                        AS LSCHG_NM               /* 최종변경자명             */
+         FROM TB_CO_M_MSG_RMS_USR A
+        INNER JOIN TB_CO_M_SMS_MSG B
+           ON A.CORP_C = B.CORP_C
+          AND A.MSG_NO = B.MSG_NO
+        WHERE 1 = 1
+          AND A.CORP_C      = #{CORP_C}
+          <if test = "MSG_RMS_DSC != null and MSG_RMS_DSC != ''">
+          AND B.MSG_RMS_DSC    = #{MSG_RMS_DSC}
+         </if>
+         <if test = "RMS_BZPL_C != null and RMS_BZPL_C != ''">
+          AND A.RMS_BZPL_C     = #{RMS_BZPL_C}
+         </if>
+         <if test = "RMSMN_ID != null and RMSMN_ID != ''">
+          AND A.RMSMN_ID      = #{RMSMN_ID}
+         </if>
+    </select>
+    
+    <select id="selectCo3030_01List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectCo3030_01List */
+               A.MSG_NO                                                   /* 메시지번호                */
+             , A.RMS_BZPL_C                                               /* 수신사업장코드              */
+             , (SELECT X.BZPL_NM 
+                  FROM TB_CO_M_BZPL X
+                 WHERE 1 = 1
+                   AND X.CORP_C = A.CORP_C
+                   AND X.BZPL_C = A.RMS_BZPL_C) AS RMS_BZPL_NM             /* 수신사업장                 */            
+             , A.RMSMN_ID                                                  /* 수신자ID                 */
+             , (SELECT C.USR_NM 
+                  FROM TB_SY_M_USR C
+                 WHERE 1 = 1
+                   AND C.CORP_C = A.CORP_C
+                   AND C.USR_ID = A.RMSMN_ID)   AS RMSMN_NM               /* 수신자명                  */
+             , A.RG_RSN                                                    /* 등록사유                  */
+             , A.USE_YN                                                    /* 사용여부                  */
+          FROM TB_CO_M_MSG_RMS_USR A
+          WHERE 1 = 1
+            AND A.CORP_C      = #{CORP_C}
+            AND A.MSG_NO      = #{MSG_NO}
+    </select>
+</mapper>

@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <!-- 축산물이력번호관리기본 이력번호 Validation Check -->
+    <select id="co2030validCheck_01" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ selectSe1010_ValidCheck_01 */
+                CASE WHEN COUNT(SRA_HST_NO)  >  1  THEN '입고일이 같은 입고된 이력이 존재하는 축산물이력번호 입니다.'
+                     ELSE 'OK' END   AS RESULT_MSG
+          FROM TB_CO_M_SRS_HST_NO
+         WHERE 1 = 1
+           AND CORP_C      = #{CORP_C}
+           AND BZPL_C      = #{BZPL_C}
+           AND STR_DT      = #{STR_DT}
+           AND SRA_HST_NO  = #{SRA_HST_NO}
+           AND MFC_DSC     = #{MFC_DSC}
+        ]]>
+    </select>  
+
+    <!-- 묶음번호 출고전 Validation Check -->
+    <select id="co2030validCheck_02" parameterType="LinkedHashMap" resultType="String">
+        WITH SRS_BUDL_TMP AS (
+                                SELECT USE_YN
+                                     , (BUDL_TOT_WT - DLR_TOT_WT)  AS USE_WT
+                                     , COUNT(BUDL_NO) AS DET_HST_CNT
+                                  FROM TB_CO_M_SRA_HST_BNDNO
+                                 WHERE 1  =  1
+                                   AND CORP_C   = #{CORP_C}
+                                   AND BZPL_C   = #{BZPL_C}
+                                <if test="BUDL_NO != null and BUDL_NO != ''"> 
+                                   AND BUDL_NO  = #{BUDL_NO}
+                                </if>
+                                <if test="SRA_HST_NO != null and SRA_HST_NO != ''"> 
+                                   AND BUDL_NO  = ( SELECT BUDL_NO 
+                                                      FROM TB_CO_D_SRA_HST_BNDNO
+                                                     WHERE CORP_C     = #{CORP_C}
+                                                       AND BZPL_C     = #{BZPL_C}
+                                                       AND SRA_HST_NO = #{SRA_HST_NO}
+                                                       AND MFC_DSC    = #{MFC_DSC} )
+                                </if>
+                                   AND MFC_DSC  = #{MFC_DSC}
+                                   GROUP BY USE_YN, (BUDL_TOT_WT - DLR_TOT_WT) 
+                              )        
+        <![CDATA[
+        SELECT /*+ selectSe1010_ValidCheck_02 */
+               CASE WHEN USE_YN        != 'Y' THEN '사용할 수 없는 묶음번호 입니다.'
+                    WHEN USE_WT        <=  0  THEN '잔량이 0 이여서 출고할 중량이 없습니다.'
+                    WHEN DET_HST_CNT    =  0  THEN '묶음번호 정보에 이력번호가 존재하지 않습니다.' 
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM SRS_BUDL_TMP 
+        ]]>
+    </select>  
+
+    <!-- 01. 묶음번호 대상 내역 조회 -->
+    <select id="selectCo2030_List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		WITH STR_SRS_HST_NO AS  (
+								    SELECT CORP_C        /* 회사코드           */
+								         , BZPL_C        /* 사업장코드         */ 
+								         , STR_DT        /* 입고일자           */
+								         , SRA_HST_NO    /* 축산물이력번호     */
+								         , STR_SQNO      /* 입고일련번호       */
+								         , SRS_DSC       /* 축종구분           */
+								         , MFC_DSC       /* 가공구분          */
+								         , 1 AS IDVD_CN  /* 두수               */
+								      FROM TB_CO_M_SRS_HST_NO
+								     WHERE 1           = 1
+                                       AND CORP_C      = #{CORP_C}
+                                       AND BZPL_C      = #{BZPL_C}
+								       AND MFC_DSC     = #{MFC_DSC}
+								       AND DEL_YN      = 'N' 
+								    EXCEPT
+								    SELECT CORP_C        /* 회사코드           */
+								         , BZPL_C        /* 사업장코드         */
+								         , STR_DT        /* 입고일자           */
+								         , SRA_HST_NO    /* 축산물이력번호     */
+								         , STR_SQNO      /* 입고일련번호       */
+								         , SRS_DSC       /* 축종구분           */
+								         , #{MFC_DSC}    /* 가공구분          */
+								         , 1 AS IDVD_CN  /* 두수               */
+								      FROM TB_CO_D_SRA_HST_BNDNO
+                                     WHERE 1           = 1
+                                       AND CORP_C      = #{CORP_C}
+                                       AND BZPL_C      = #{BZPL_C}
+								<if test='BUDL_YN == "Y"'>       
+								    UNION ALL
+								    SELECT X.CORP_C
+								         , X.BZPL_C
+								         , X.CRT_DT
+								         , X.BUDL_NO
+								         , Y.STR_SQNO     AS STR_SQNO
+								         , MAX(Y.SRS_DSC) AS SRS_DSC
+								         , MAX(X.MFC_DSC) AS MFC_DSC
+								         , MAX(X.IDVD_CN)
+								      FROM TB_CO_M_SRA_HST_BNDNO X
+								         , TB_CO_D_SRA_HST_BNDNO Y
+								     WHERE 1             = 1
+								       AND X.CORP_C      = Y.CORP_C
+								       AND X.BZPL_C      = Y.BZPL_C
+								       AND X.CRT_DT      = Y.CRT_DT
+								       AND X.BUDL_NO     = Y.BUDL_NO
+								       AND X.RE_BUDL_YN  = 'N'
+								       AND (X.BUDL_TOT_WT - X.DLR_TOT_WT) > 0		       
+								       AND X.USE_YN      = 'Y'
+                                       AND X.CORP_C      = #{CORP_C}
+                                       AND X.BZPL_C      = #{BZPL_C}
+								       AND X.MFC_DSC     = #{MFC_DSC}  
+								    GROUP BY X.CORP_C
+								           , X.BZPL_C
+								           , X.CRT_DT
+								           , X.BUDL_NO  
+								           , Y.STR_SQNO
+								</if>
+		                        )
+		
+		SELECT CASE WHEN A.CORP_C     IS NULL THEN B.CORP_C     ELSE A.CORP_C     END AS CORP_C        /* 회사코드           */
+		     , CASE WHEN A.BZPL_C     IS NULL THEN B.BZPL_C     ELSE A.BZPL_C     END AS BZPL_C        /* 사업장코드         */
+		     , CASE WHEN A.STR_DT     IS NULL THEN B.STR_DT     ELSE A.STR_DT     END AS STR_DT        /* 입고일자           */
+		     , CASE WHEN A.STR_SQNO   IS NULL THEN B.STR_SQNO   ELSE A.STR_SQNO   END AS STR_SQNO      /* 입고일련번호        */
+		     , CASE WHEN A.SRA_HST_NO IS NULL THEN B.SRA_HST_NO ELSE A.SRA_HST_NO END AS SRA_HST_NO    /* 축산물이력번호     */
+		     , CASE WHEN A.SRS_DSC    IS NULL THEN B.SRS_DSC    ELSE A.SRS_DSC    END AS SRS_DSC       /* 축종구분           */
+		     , A.STR_WHSE_C    /* 입고창고             */
+		     , (SELECT WHSE_NM /* 입고창고명           */  
+                  FROM TB_CO_M_WHSE
+                 WHERE CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND WHSE_C = A.STR_WHSE_C) AS STR_WHSE_NM 
+		     , A.SRA_SEX_C     /* 성별코드             */ 
+		     , A.STD_PAT_C     /* 표준부위코드         */ 
+		     , A.STD_PAT_NM    /* 표준부위코드명       */
+		     , A.STR_WT        /* 입고중량             */ 
+		     , A.GRD_C         /* 등급코드             */ 
+		     , CASE WHEN B.IDVD_CN IS NULL THEN 1 ELSE B.IDVD_CN END AS IDVD_CN  /* 두수               */
+		  FROM TB_CO_M_SRS_HST_NO  A
+		     RIGHT OUTER JOIN
+		       STR_SRS_HST_NO      B		       
+		   ON  A.CORP_C      = B.CORP_C
+		   AND A.BZPL_C      = B.BZPL_C
+		   AND A.SRA_HST_NO  = B.SRA_HST_NO
+		   AND A.SRS_DSC     = B.SRS_DSC
+		   AND A.STR_SQNO    = B.STR_SQNO
+		   AND A.MFC_DSC     = B.MFC_DSC
+         WHERE 1         = 1
+           AND B.CORP_C  = #{CORP_C}
+           AND B.BZPL_C  = #{BZPL_C}
+        <if test='BUDL_YN == "Y"'>   
+           AND B.SRS_DSC  = '04'
+        </if>
+        <if test="GRD_C != null and GRD_C != ''">
+           AND A.GRD_C    = #{GRD_C}
+        </if>
+        <if test="HST_AMN_DSC != null and HST_AMN_DSC != ''">
+          <choose>
+            <when test="HST_AMN_DSC == 1">
+                AND B.SRS_DSC  IN ('01', '02', '03')
+            </when>
+            <when test="HST_AMN_DSC == 2">
+                AND B.SRS_DSC  = '04'
+            </when>
+            <when test="HST_AMN_DSC == 3">
+                AND A.MAKEPLC_NM   != ''
+                AND B.SRS_DSC      = '06'
+            </when>
+          </choose>
+        </if>        
+        <if test="comboSearchSTD_PAT_C != null and comboSearchSTD_PAT_C != ''">
+            AND SUBSTRING(A.STD_PAT_C, 5, 2) = #{comboSearchSTD_PAT_C}
+        </if>  
+    </select>  
+
+
+    <!-- 02. 묶음번호 기본 조회(전체) -->
+    <select id="selectCo2030_BUDL_NO_List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    
+    <!--
+    WITH BUDL_DET AS (
+                        SELECT DISTINCT
+				               X.CORP_C                            /* 회사코드                  */
+				             , X.BZPL_C                            /* 사업장코드                */
+				             , X.CRT_DT                            /* 생성일자                  */
+				             , X.BUDL_NO                           /* 묶음번호                  */
+				          FROM TB_CO_D_SRA_HST_BNDNO  X
+				               INNER JOIN TB_CO_M_SRS_HST_NO Y
+				               ON X.CORP_C  = Y.CORP_C AND X.BZPL_C = Y.BZPL_C AND X.SRA_HST_NO = Y.SRA_HST_NO
+				                  AND X.STR_DT = Y.STR_DT AND X.STR_SQNO = Y.STR_SQNO
+				         WHERE 1   = 1				         
+				           AND X.CORP_C            = #{CORP_C}
+				           AND X.BZPL_C            = #{BZPL_C}				           
+				      <if test="comboSearchSTD_PAT_C != null and comboSearchSTD_PAT_C != ''">
+				           AND SUBSTRING(Y.STD_PAT_C, 5, 2) = #{comboSearchSTD_PAT_C}
+				      </if>  
+    			      <if test="HST_AMN_DSC != null and HST_AMN_DSC != ''">
+				        <choose>
+				          <when test="HST_AMN_DSC == 1">
+				           AND Y.SRS_DSC          IN ('01', '02', '03')
+				          </when>
+				          <when test="HST_AMN_DSC == 2">
+				           AND Y.SRS_DSC           = '04'
+				          </when>
+				          <when test="HST_AMN_DSC == 3">
+                           AND Y.SRS_DSC           = '06'
+                           AND Y.MAKEPLC_NM       != ''
+				          </when>
+				        </choose>
+				      </if>        
+                           AND Y.MFC_DSC           = #{MFC_DSC}
+                           AND Y.DEL_YN            = 'N'
+                     )
+        SELECT 
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.CRT_DT                                            /* 생성일자                  */
+             , A.BUDL_NO                                           /* 묶음번호                  */
+             , A.BUDL_NO_GRD_DSC                                   /* 묶음번호등급구분코드      */
+             , A.BUDL_NO_GRD_OPNP_YN                               /* 묶음번호등급구분공개여부  */
+             , A.RE_BUDL_YN                                        /* 재묶음여부                */
+             , A.RPT_DSC                                           /* 신고구분코드              */
+             , A.BUDL_TOT_WT                                       /* 묶음총중량                */
+             , A.DLR_TOT_WT                                        /* 출고총중량                */
+             , A.BUDL_TOT_WT - A.DLR_TOT_WT       AS   USE_WT      /* 사용가능총중량           */
+             , A.USE_YN                                            /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_SRA_HST_BNDNO A
+               INNER JOIN BUDL_DET B
+               ON A.CORP_C            = B.CORP_C
+              AND A.BZPL_C            = B.BZPL_C
+              AND A.CRT_DT            = B.CRT_DT
+              AND A.BUDL_NO           = B.BUDL_NO
+         WHERE 1  = 1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.MFC_DSC           = #{MFC_DSC}
+      <if test="GRD_C != null and GRD_C != ''">
+           AND A.BUDL_NO_GRD_DSC   = #{GRD_C}
+      </if>
+           AND (A.BUDL_TOT_WT - A.DLR_TOT_WT) > 0
+           AND A.USE_YN            = 'Y'         
+      -->
+      
+      <!-- 2021.10.16 서광석 묶음번호 조회 DB프로시저로 변경(대표님 요구사항) -->
+    { call prc_T_ANIMAL_TRACE (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{STR_DT, mode=IN, jdbcType=VARCHAR},
+        #{HST_AMN_DSC, mode=IN, jdbcType=VARCHAR},
+        #{AVAIL_YN, mode=IN, jdbcType=VARCHAR},
+        #{TRACE_NO, mode=IN, jdbcType=VARCHAR}
+        )
+    }      
+                     
+    </select>
+
+
+    <!-- 03. 묶음번호 상세 조회 -->
+    <select id="selectCo2030_BUDL_NO_Detail_List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		 SELECT A.CORP_C                 /* 회사코드           */
+		      , A.BZPL_C                 /* 사업장코드         */
+		      , A.CRT_DT                 /* 생성일자           */
+		      , A.BUDL_NO                /* 묶음번호           */
+		      , A.SQNO                   /* 일련번호           */
+		      , A.SRS_DSC                /* 축종구분           */
+		      , A.SRA_HST_NO             /* 축산물이력번호     */
+		      , A.STR_DT                 /* 입고일자           */
+		      , A.STR_SQNO               /* 입고일련번호       */
+		      , B.STR_WHSE_C             /* 입고창고           */
+		      , (SELECT WHSE_NM  
+		           FROM TB_CO_M_WHSE
+		          WHERE CORP_C = B.CORP_C
+		            AND BZPL_C = B.BZPL_C
+		            AND WHSE_C = B.STR_WHSE_C) AS STR_WHSE_NM       /* 입고창고명       */ 
+		      , B.SRS_DSC                                           /* 축종구분         */
+		      , B.STD_PAT_C                                         /* 부위코드         */
+		      , B.STD_PAT_NM                                        /* 부위명           */
+		      , B.GRD_C                                             /* 등급코드         */  
+		      , B.STR_WT                                            /* 중량             */
+		      , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시     */
+		      , A.FSRG_ID                                           /* 최초등록자ID     */
+		      , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시     */
+		      , A.LSCHG_ID                                          /* 최종변경자ID     */
+		   FROM TB_CO_D_SRA_HST_BNDNO A 
+		        LEFT OUTER JOIN
+		        TB_CO_M_SRS_HST_NO    B  ON  A.CORP_C     = B.CORP_C
+		                                 AND A.BZPL_C     = B.BZPL_C
+		                                 AND A.STR_DT     = B.STR_DT
+		                                 AND A.STR_SQNO   = B.STR_SQNO
+		                                 AND A.SRA_HST_NO = B.SRA_HST_NO
+		        LEFT OUTER JOIN          
+		        TB_CO_M_SRA_HST_BNDNO C  ON  A.CORP_C     = C.CORP_C 
+		                                 AND A.BZPL_C     = C.BZPL_C 
+		                                 AND A.BUDL_NO    = C.BUDL_NO
+		  WHERE 1=1 
+		    AND A.CORP_C     = #{CORP_C}
+		    AND A.BZPL_C     = #{BZPL_C}
+		    AND A.CRT_DT     = #{CRT_DT}
+		    AND A.BUDL_NO    = #{BUDL_NO}
+		    AND C.MFC_DSC    = #{MFC_DSC}
+    </select>
+    
+    
+    <select id="select_LATC_CODE" resultType="LinkedHashMap">
+		SELECT SUBSTRING(LATC_SCLC, 5, 2) AS LATC_SCLC_CODE
+		     , LATC_SCLC_NM               AS LATC_SCLC_NM
+		     , CASE WHEN LATC_SCLC LIKE '4301%' THEN '1' 
+		            ELSE '2'
+		        END AS SRS_DSC_GBN
+		  FROM TB_CO_M_LATC_CLF_STD 
+		 WHERE LATC_SCLC LIKE '4301%'    /* 국내산한우 */ 
+		    OR LATC_SCLC LIKE '4304%'    /* 국내산돈육 */
+    </select>
+    
+    <!-- 04.묶음번호 채번 -->
+    <select id="select_AutoBudlNo" parameterType="LinkedHashMap" resultType="String">
+        SELECT #{lGbnCode} + #{lotDate} + #{bzplCode} + CONVERT(VARCHAR(20), ISNULL(FORMAT(MAX(RIGHT(BUDL_NO, 3))+1, '000'), '001'))
+          FROM TB_CO_D_SRA_HST_BNDNO
+         WHERE 1 =1
+           AND LEFT(BUDL_NO, 12) = #{lGbnCode} + #{lotDate} + #{bzplCode}         
+    </select>
+    
+    <!-- 묶음번호 상세 저장 전 Validation Check -->
+    <select id="selectCo2030_Budl_Detail_Insert_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C}      = '' THEN '회사코드는 필수입력 항목입니다.(묶음번호 상세 저장 중 오류)'
+                    WHEN #{BZPL_C}      = '' THEN '사업장코드는 필수입력 항목입니다.(묶음번호 상세 저장 중 오류)'
+                    WHEN #{CRT_DT}      = '' THEN '묶음날짜는 필수입력 항목입니다.(묶음번호 상세 저장 중 오류)'
+                    WHEN #{IMPORT_DSC} = '0' AND  
+                         #{CRT_DT}     != (SELECT CONVERT(VARCHAR, CONVERT(DATETIME, GETDATE()), 112)) THEN '묶음날짜는 해당연월일을 입력하세요.(묶음번호 상세 저장 중 오류)'
+                    WHEN 0              < (SELECT COUNT(1)
+						                     FROM TB_CO_M_SRA_HST_BNDNO
+						                    WHERE CORP_C    = #{CORP_C}
+						                      AND BZPL_C    = #{BZPL_C}
+						                      AND CRT_DT    = #{CRT_DT}
+						                      AND BUDL_NO   = #{BUDL_NO}
+						                      AND MFC_DSC   = #{MFC_DSC}) THEN '동일한 묶음번호가 존재합니다. 확인 후 다시 처리하세요(묶음번호 상세 저장 중 오류)'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+
+    <!-- 묶음번호 기본(마스터) 저장 전 Validation Check -->
+    <select id="selectCo2030_Budl_Master_Insert_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C}      = '' THEN '회사코드는 필수입력 항목입니다.(묶음번호 마스터 저장 중 오류)'
+                    WHEN #{BZPL_C}      = '' THEN '사업장코드는 필수입력 항목입니다.(묶음번호 마스터 저장 중 오류)'
+                    WHEN #{CRT_DT}      = '' THEN '묶음날짜는 필수입력 항목입니다.(묶음번호 마스터 저장 중 오류)'
+                    WHEN #{CRT_DT}     != (SELECT CONVERT(VARCHAR, CONVERT(DATETIME, GETDATE()), 112)) THEN '묶음날짜는 해당연월일을 입력하세요.(묶음번호 마스터 저장 중 오류)'
+                    WHEN 0              < (SELECT COUNT(1)
+                                             FROM TB_CO_M_SRA_HST_BNDNO
+                                            WHERE CORP_C    = #{CORP_C}
+                                              AND BZPL_C    = #{BZPL_C}
+                                              AND CRT_DT    = #{CRT_DT}
+                                              AND BUDL_NO   = #{BUDL_NO}
+                                              AND MFC_DSC   = #{MFC_DSC}) THEN '동일한 묶음번호가 존재합니다. 확인 후 다시 처리하세요.(묶음번호 마스터 저장 중 오류)'                          
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+    
+    <update id="update_co2030_01" parameterType="LinkedHashMap">
+        UPDATE TB_CO_M_SRA_HST_BNDNO
+           SET DLR_DT       = #{DLR_DT}                /* 출고일자                */
+             , DLR_YN       = #{DLR_YN}                /* 출고여부                */
+             , DLR_ID       = #{GUSRID}                /* 출고자ID         */
+             , LSCHG_DTM    = GETDATE()                /* 최종변경일시           */
+             , LSCHG_ID     = #{GUSRID}                /* 최종변경자ID      */
+         WHERE 1=1
+           AND CORP_C      = #{CORP_C}
+           AND BZPL_C      = #{BZPL_C}
+           AND MFC_DSC     = #{MFC_DSC}
+        <choose>
+           <when test="BUDL_NO != ''">
+           AND BUDL_NO     = #{BUDL_NO}
+           </when>
+           <when test="BUDL_NO == ''">
+           AND BUDL_NO     = ( SELECT BUDL_NO FROM TB_CO_D_SRA_HST_BNDNO
+                                WHERE CORP_C      = #{CORP_C}
+                                  AND BZPL_C      = #{BZPL_C}
+                                  AND  )
+           </when> 
+         </choose>
+           AND USE_YN      = 'Y' 
+    </update>    
+
+    <update id="update_co2030_02" parameterType="LinkedHashMap">
+        UPDATE TB_CO_M_SRA_HST_BNDNO
+           SET DLR_TOT_WT = DLR_TOT_WT + ${DLR_TOT_WT}   /* 출고총중량             */
+             , LSCHG_DTM  = GETDATE()                    /* 최종변경일시           */
+             , LSCHG_ID   = #{GUSRID}                    /* 최종변경자ID      */
+         WHERE 1=1
+           AND CORP_C      = #{CORP_C}
+           AND BZPL_C      = #{BZPL_C}
+           AND MFC_DSC     = #{MFC_DSC}
+        <choose>
+           <when test="BUDL_NO != ''">
+           AND BUDL_NO     = #{BUDL_NO}
+           </when>
+           <when test="BUDL_NO == ''">
+           AND BUDL_NO     = ( SELECT BUDL_NO FROM TB_CO_D_SRA_HST_BNDNO
+                                WHERE CORP_C      = #{CORP_C}
+                                  AND BZPL_C      = #{BZPL_C}
+                                  AND SRA_HST_NO  = #{SRA_HST_NO} )
+           </when> 
+         </choose>
+           AND USE_YN      = 'Y' 
+    </update> 
+    
+    <insert id="insertCo2030_BUDL_NO_Master" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insertCo2030_BUDL_NO_Master */ TB_CO_M_SRA_HST_BNDNO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , CRT_DT              /* 생성일자             */
+            , BUDL_NO             /* 묶음번호             */
+            , BUDL_NO_GRD_DSC     /* 묶음번호등급구분코드 */
+            , BUDL_NO_GRD_OPNP_YN /* 묶음번호등급구분공개 */
+            , RE_BUDL_YN          /* 재묶음여부           */
+            , RPT_DSC             /* 신고구분코드         */
+            , RPT_YN              /* 신고여부            */
+            , MFC_DSC             /* 가공구분코드         */
+            , IDVD_CN             /* 개체수               */
+            , BUDL_TOT_WT         /* 묶음총중량           */
+            , DLR_TOT_WT          /* 출고총중량           */
+            , USE_YN              /* 사용여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT 
+               CORP_C                                          /* 회사코드             */
+             , BZPL_C                                          /* 사업장코드           */
+             , CRT_DT                                          /* 생성일자             */
+             , BUDL_NO                                         /* 묶음번호             */
+             , MAX(BUDL_NO_GRD_DSC)     AS BUDL_NO_GRD_DSC     /* 묶음번호등급구분코드 */
+             , MAX(BUDL_NO_GRD_OPNP_YN) AS BUDL_NO_GRD_OPNP_YN /* 묶음번호등급구분공개 */
+             , MAX(RE_BUDL_YN)          AS RE_BUDL_YN          /* 재묶음여부           */
+             , ''                       AS RPT_DSC             /* 신고구분코드         */
+             , 'N'                      AS RPT_YN              /* 신고여부            */
+             , #{MFC_DSC}               AS MFC_DSC             /* 가공구분            */
+             , SUM(CNT)                 AS IDVD_CN             /* 개체수               */
+             , SUM(BUDL_TOT_WT)         AS BUDL_TOT_WT         /* 묶음총중량           */
+             , 0                        AS DLR_TOT_WT          /* 출고총중량           */
+             , 'Y'                      AS USE_YN              /* 사용여부             */        
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM ( 
+                SELECT 
+                       A.CORP_C                  /* 회사코드             */
+                     , A.BZPL_C                  /* 사업장코드           */
+                     , A.CRT_DT                  /* 생성일자             */
+                     , A.BUDL_NO                 /* 묶음번호             */
+                     , MAX(B.GRD_C)                                       AS BUDL_NO_GRD_DSC      /* 묶음번호등급구분코드 */
+                     , CASE WHEN MAX(B.GRD_C) IS NULL THEN 'N'
+                            ELSE 'Y' END                                  AS BUDL_NO_GRD_OPNP_YN  /* 묶음번호등급구분공개 */
+                     , CASE WHEN C.CORP_C IS NULL THEN COUNT(A.BUDL_NO)
+                            ELSE SUM(C.IDVD_CN) END                       AS CNT           /* 개체수               */
+                     , SUM(CASE WHEN C.BUDL_NO IS NULL THEN B.STR_WT       
+                                ELSE (C.BUDL_TOT_WT - C.DLR_TOT_WT) END)  AS BUDL_TOT_WT   /* 묶음총중량           */
+                     , CASE WHEN C.CORP_C IS NULL THEN 'N' ELSE 'Y' END   AS RE_BUDL_YN    /* 재묶음여부           */
+                  FROM TB_CO_D_SRA_HST_BNDNO A
+                       LEFT OUTER JOIN TB_CO_M_SRS_HST_NO B
+	                       ON  A.CORP_C            = B.CORP_C
+	                       AND A.BZPL_C            = B.BZPL_C
+	                       AND A.STR_DT            = B.STR_DT
+	                       AND A.STR_SQNO          = B.STR_SQNO
+	                       AND A.SRA_HST_NO        = B.SRA_HST_NO
+                       LEFT OUTER JOIN TB_CO_M_SRA_HST_BNDNO C
+	                       ON  A.CORP_C            = C.CORP_C
+	                       AND A.BZPL_C            = C.BZPL_C
+	                       AND A.STR_DT            = C.CRT_DT
+	                       AND A.SRA_HST_NO        = C.BUDL_NO
+	                       AND B.MFC_DSC           = C.MFC_DSC  
+                 WHERE 1=1 
+                   AND A.CORP_C            = #{CORP_C}
+                   AND A.BZPL_C            = #{BZPL_C}
+                   AND A.CRT_DT            = #{CRT_DT}
+                   AND A.BUDL_NO           = #{BUDL_NO}
+                   AND B.MFC_DSC           = #{MFC_DSC}     
+                GROUP BY A.CORP_C
+                       , A.BZPL_C
+                       , A.CRT_DT
+                       , A.BUDL_NO
+                       , C.CORP_C
+                       , CASE WHEN C.BUDL_NO IS NULL THEN B.STR_WT  
+                                ELSE (C.BUDL_TOT_WT - C.DLR_TOT_WT) END
+               )  X
+           GROUP BY CORP_C
+                  , BZPL_C
+                  , CRT_DT
+                  , BUDL_NO
+    </insert>    
+</mapper>

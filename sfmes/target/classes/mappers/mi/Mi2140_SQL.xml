@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+	<select id="selectMi2140_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectMi2140_01 */
+               A.CORP_C
+             , A.BZPL_C
+             , B.BZPL_NM
+        	 , C.GDS_TP_DSC
+        	 , A.GDS_C
+        	 , C.GDS_DTL_NM
+        	 , C.GDS_STD_NM
+        	 , C.UNT_C
+        	 , A.PD_QT
+        	 , A.PD_AM
+          FROM 
+               (SELECT 
+                       PDD.CORP_C       AS CORP_C
+                     , PDD.BZPL_C       AS BZPL_C
+                   	 , PDD.GDS_C        AS GDS_C
+                   	 , SUM(PDD.PD_QT)   AS PD_QT 
+                   	 , SUM(PDD.PD_AM)   AS PD_AM 
+                  FROM TB_PD_M_WK_RPT     PDM
+                     , TB_PD_D_WK_RPT_MFS PDD
+                 WHERE 1=1
+                   AND PDM.CORP_C      = PDD.CORP_C
+                   AND PDM.BZPL_C      = PDD.BZPL_C
+                   AND PDM.RPT_DT      = PDD.RPT_DT
+                   AND PDM.RPT_SQNO    = PDD.RPT_SQNO
+        		   AND PDM.MFC_DSC     = '1'
+                   AND PDM.DEL_YN      = 'N'
+                   AND PDD.DEL_YN      = 'N'
+                   AND PDM.CORP_C      = #{CORP_C}
+                   AND PDM.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        	    <if test="searchKeyword != '' and searchKeyword != null" >
+                   AND PDM.BZPL_C IN (${searchKeyword})
+        	    </if>
+        		<if test="GDS_C != '' and GDS_C != null" >
+                   AND PDD.GDS_C        = #{GDS_C}
+        		</if>
+                 GROUP BY PDD.CORP_C
+                        , PDD.BZPL_C 
+                   	    , PDD.GDS_C ) A
+             , TB_CO_M_BZPL           B
+        	 , TB_CO_M_GDS            C
+         WHERE 1=1
+           AND A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.CORP_C   = C.CORP_C
+           AND A.BZPL_C   = C.BZPL_C
+           AND A.GDS_C    = C.GDS_C
+    </select>    
+    
+</mapper>

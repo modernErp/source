@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+    
+    <!-- PDA 기본 물품 조회 -->
+    <select id="select_Pda_Sm9010_gds" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /*+ select_Pda_Sm9010_gds  */
+             GDS_C                              /* 물품코드 */
+           , GDS_NM                             /* 물품명 */
+           , HST_AMN_DSC                        /* 이력관리구분코드 */
+           , UNT_C                              /* 관리단위 */
+        FROM TB_CO_M_GDS
+       WHERE 1=1
+         AND CORP_C          = #{CORP_C}        
+         AND BZPL_C          = #{BZPL_C} 
+         AND GDS_C           = #{GDS_C}
+    </select>
+    
+    <!-- PDA 기본 거래처 조회 -->
+    <select id="select_Pda_Sm9010_trpl" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /*+ select_Pda_Sm9010_trpl  */
+             TRPL_C                            /* 거래처코드 */
+           , TRPL_NM                           /* 거래처명 */
+        FROM TB_CO_M_TRPL
+       WHERE 1=1
+         AND CORP_C          = #{CORP_C}      
+         AND TRPL_C          = #{TRPL_C} 
+    </select>
+    
+    <!-- PDA 오프라인 저장 -->
+    <select id="sfmes.sqlmap.sm.insertoffdata" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /* 데이터 입력 */
+             *
+        FROM TB_SM_D_GDS_OFF
+    </select>
+    
+    <!-- PDA 저장 -->
+    <select id="insertinfopda" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_WRITE_TB_SM_D_GDS_TR (
+         #{CORP_C, mode=IN, jdbcType=VARCHAR}
+       , #{BZPL_C, mode=IN, jdbcType=VARCHAR}
+       , #{TR_DT, mode=IN, jdbcType=VARCHAR}
+       , #{IO_DSC, mode=IN, jdbcType=VARCHAR}
+       , #{PDA_NO, mode=IN, jdbcType=VARCHAR}
+       , #{SCAN_C, mode=IN, jdbcType=VARCHAR}
+       , #{GDS_HST_NO, mode=IN, jdbcType=VARCHAR}
+       , #{GDS_C, mode=IN, jdbcType=VARCHAR}
+       , #{TR_QT, mode=IN, jdbcType=VARCHAR}
+       , #{TR_UNT_C, mode=IN, jdbcType=VARCHAR}
+       , #{TRPL_C, mode=IN, jdbcType=VARCHAR}
+       , #{STDV_REF_SCAN, mode=IN, jdbcType=VARCHAR}
+       , #{WHSE_C, mode=IN, jdbcType=VARCHAR}
+       , #{EXP_DT, mode=IN, jdbcType=VARCHAR}
+       , #{USR_ID, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>   
+    
+    <!-- PDA 지시(예정)번호 조회 -->
+    <select id="selectEmesbarcode" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_PARSE_EMES_SITE_BARCODE (
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{STDV_REF_SCAN, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- PDA 사업장 기본입고 창고 조회 -->
+    <select id="select_Pda_Sm9010_whse" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /*+ select_Pda_Sm9010_whse  */
+             STR_BSC_WHSE_C                     /* 사업장기본창고 */
+        FROM TB_CO_M_BZPL_ENV   
+       WHERE 1=1
+         AND CORP_C          = #{CORP_C}      
+         AND BZPL_C          = #{BZPL_C} 
+    </select>
+    
+    <!-- PDA 사업장 창고 조회 -->
+    <select id="select_Pda_Sm9010_whse_list" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /*+ select_Pda_Sm9010_whse_list  */
+             WHSE_C                            /* 창고코드 */
+        FROM TB_CO_M_WHSE   
+       WHERE 1=1
+         AND CORP_C          = #{CORP_C}      
+         AND BZPL_C          = #{BZPL_C} 
+    </select>
+    
+    <!-- PDA 사업장 창고 이름 조회 -->
+    <select id="select_Pda_Sm9010_whse_nm" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+      SELECT /*+ select_Pda_Sm9010_whse_nm  */
+             WHSE_NM                            /* 창고코드 */
+        FROM TB_CO_M_WHSE   
+       WHERE 1=1
+         AND CORP_C          = #{CORP_C}      
+         AND BZPL_C          = #{BZPL_C}
+         AND WHSE_C          = #{cWHSE_C} 
+    </select>
+    
+     <!-- PDA 입고등록 물품바코드 조회 -->
+    <select id="selectTmfbarcode" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_PARSE_BARCODE (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{SCAN_C, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+     <!-- PDA 제품출고 물품바코드 조회 -->
+    <select id="selectgetprddata" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_GET_PRD_BOX_DATA (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{BOX_CODE, mode=IN, jdbcType=VARCHAR},
+        #{PRD_DT, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- PDA 투입지시 물품바코드 조회 -->
+    <select id="selectgetboxdata" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_GET_BOX_DATA (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{SCAN_C, mode=IN, jdbcType=VARCHAR},
+        #{TR_DT, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- PDA 입고반품 물품바코드 조회 -->
+    <select id="selectgetpucboxdata" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_GET_PUC_BOX_DATA (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{BOX_CODE, mode=IN, jdbcType=VARCHAR},
+        #{TR_DT, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+     <!-- PDA 박스이동등록 박스 조회 -->
+    <select id="selectgetmoveboxdata" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_GET_MOVE_BOX_DATA (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{BOX_CODE, mode=IN, jdbcType=VARCHAR},
+        #{WHSE_C, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- PDA 박스 이동 저장 -->
+    <select id="insertmovebox" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_WRITE_TB_SM_D_GDS_TR_MOVE (
+         #{CORP_C, mode=IN, jdbcType=VARCHAR}
+       , #{BZPL_C, mode=IN, jdbcType=VARCHAR}
+       , #{TR_DT, mode=IN, jdbcType=VARCHAR}
+       , #{IO_DSC, mode=IN, jdbcType=VARCHAR}
+       , #{PDA_NO, mode=IN, jdbcType=VARCHAR}
+       , #{SCAN_C, mode=IN, jdbcType=VARCHAR}
+       , #{GDS_HST_NO, mode=IN, jdbcType=VARCHAR}
+       , #{GDS_C, mode=IN, jdbcType=VARCHAR}
+       , #{STDV_QT, mode=IN, jdbcType=VARCHAR}
+       , #{UNT_C, mode=IN, jdbcType=VARCHAR}
+       , #{WHSE_C_FM, mode=IN, jdbcType=VARCHAR}
+       , #{WHSE_C_TO, mode=IN, jdbcType=VARCHAR}
+       , #{RGD_DSC, mode=IN, jdbcType=VARCHAR}
+       , #{USR_ID, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+     <!-- PDA 박스이동등록 박스 조회 -->
+    <select id="selectgetboxdataO5" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_GET_BOX_DATA_O5 (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{STDV_REF_SCAN, mode=IN, jdbcType=VARCHAR},
+        #{BOX_CODE, mode=IN, jdbcType=VARCHAR},
+        #{TR_DT, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- PDA 박스이동등록 박스 조회 -->
+    <select id="selectcollectboxdata" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call prc_TMF_COLLECT_BOX_DATA (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{COLLECT_ID, mode=IN, jdbcType=VARCHAR},
+        #{BOX_CODE, mode=IN, jdbcType=VARCHAR},
+        #{USER_ID, mode=IN, jdbcType=VARCHAR},
+        #{SAVE_YN, mode=IN, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+</mapper>

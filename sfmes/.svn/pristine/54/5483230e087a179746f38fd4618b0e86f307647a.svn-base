@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Notice</title>
+</head>
+
+<body style="margin=10%">
+<center>
+
+<table width=450 border=0> 
+<tr height=250>
+<td background="../image/frame/sysdefault.png" style="background-repeat:no-repeat" style="background-position:center"></td>
+</tr>
+
+<tr height=40 align=center>
+	<td><font face="맑은 고딕" size="3"><b>인터넷 브라우저를 IE10 이상으로 업데이트 하세요.</b></font></td>
+</tr>
+
+<tr height=100 align=center>
+<td><font face="맑은 고딕" size="2">
+	현재 브라우저 버전에서는 HTML5의 정상적인 이용이 불가합니다. 
+	<br>브라우저를 IE10 이상으로 업데이트 하시기 바랍니다.
+	<br><br>		
+	<A HREF="http://windows.microsoft.com/ko-kr/internet-explorer/download-ie" target="_blank"> IE10 다운받기</A>,&nbsp;&nbsp;
+ 	<A HREF="https://www.google.com/intl/ko/chrome/browser/" target="_blank"> 크롬 다운받기</A>
+ 	</font></td>
+</tr>
+
+<tr height=50 align=center>
+	<td><font face="맑은 고딕" size="2" color ="#FEA10D"><b>인터넷 이용환경 개선을 위한 웹브라우저 업데이트 공지</b></font></td>
+</tr>
+
+</table>
+
+</center>
+</body>
+</html>

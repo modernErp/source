@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_GDS_CLF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_GDS_CLF */ TB_CO_M_GDS_CLF
+        (
+              CORP_C              /* 회사코드               */
+            , GDS_CLF_DSC         /* 물품분류구분코드       */
+            , GDS_LCLC            /* 물품대분류코드         */
+            , GDS_MCLC            /* 물품중분류코드         */
+            , GDS_SCLC            /* 물품소분류코드         */
+            , GDS_LCLC_NM         /* 물품대분류명           */
+            , GDS_MCLC_NM         /* 물품중분류명           */
+            , GDS_SCLC_NM         /* 물품소분류명           */
+            , GDS_CLF_LVL         /* 물품분류레벨           */
+            , GDS_CLF_C           /* 물품분류코드(대+중+소) */
+            , ERP_GDS_C           /* ERP물품코드            */
+            , USE_YN              /* 사용여부               */
+            , ETC_DSC1            /* 기타구분1              */
+            , FSRG_DTM            /* 최초등록일시           */
+            , FSRG_ID             /* 최초등록자ID           */
+            , LSCHG_DTM           /* 최종변경일시           */
+            , LSCHG_ID            /* 최종변경자ID           */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{GDS_CLF_DSC}
+            , #{GDS_LCLC}
+            , #{GDS_MCLC}
+            , #{GDS_SCLC}
+            , #{GDS_LCLC_NM}
+            , #{GDS_MCLC_NM}
+            , #{GDS_SCLC_NM}
+            , #{GDS_CLF_LVL}
+            , #{GDS_CLF_C}
+            , #{ERP_GDS_C}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_GDS_CLF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_GDS_CLF */ TB_CO_M_GDS_CLF
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드               */
+             , GDS_CLF_DSC         = #{GDS_CLF_DSC}           /* 물품분류구분코드       */
+             , GDS_LCLC            = #{GDS_LCLC}              /* 물품대분류코드         */
+             , GDS_MCLC            = #{GDS_MCLC}              /* 물품중분류코드         */
+             , GDS_SCLC            = #{GDS_SCLC}              /* 물품소분류코드         */
+             , GDS_LCLC_NM         = #{GDS_LCLC_NM}           /* 물품대분류명           */
+             , GDS_MCLC_NM         = #{GDS_MCLC_NM}           /* 물품중분류명           */
+             , GDS_SCLC_NM         = #{GDS_SCLC_NM}           /* 물품소분류명           */
+             , GDS_CLF_LVL         = #{GDS_CLF_LVL}           /* 물품분류레벨           */
+             , GDS_CLF_C           = #{GDS_CLF_C}             /* 물품분류코드(대+중+소) */
+             , ERP_GDS_C           = #{ERP_GDS_C}             /* ERP물품코드            */
+             , USE_YN              = #{USE_YN}                /* 사용여부               */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1              */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시           */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID           */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_CLF_DSC         = #{GDS_CLF_DSC}
+           AND GDS_LCLC            = #{GDS_LCLC}
+           AND GDS_MCLC            = #{GDS_MCLC}
+           AND GDS_SCLC            = #{GDS_SCLC}
+    </update>
+
+    <delete id="delete_TB_CO_M_GDS_CLF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_GDS_CLF */ 
+          FROM TB_CO_M_GDS_CLF
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_CLF_DSC         = #{GDS_CLF_DSC}
+           AND GDS_LCLC            = #{GDS_LCLC}
+           AND GDS_MCLC            = #{GDS_MCLC}
+           AND GDS_SCLC            = #{GDS_SCLC}
+    </delete>
+
+    <select id="select_TB_CO_M_GDS_CLF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_GDS_CLF */
+               A.CORP_C                                            /* 회사코드               */
+             , A.GDS_CLF_DSC                                       /* 물품분류구분코드       */
+             , A.GDS_LCLC                                          /* 물품대분류코드         */
+             , A.GDS_MCLC                                          /* 물품중분류코드         */
+             , A.GDS_SCLC                                          /* 물품소분류코드         */
+             , A.GDS_LCLC_NM                                       /* 물품대분류명           */
+             , A.GDS_MCLC_NM                                       /* 물품중분류명           */
+             , A.GDS_SCLC_NM                                       /* 물품소분류명           */
+             , A.GDS_CLF_LVL                                       /* 물품분류레벨           */
+             , A.GDS_CLF_C                                         /* 물품분류코드(대+중+소) */
+             , A.ERP_GDS_C                                         /* ERP물품코드            */ 
+             , A.USE_YN                                            /* 사용여부               */
+             , A.ETC_DSC1                                          /* 기타구분1              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시           */
+             , A.FSRG_ID                                           /* 최초등록자ID           */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시           */
+             , A.LSCHG_ID                                          /* 최종변경자ID           */
+          FROM TB_CO_M_GDS_CLF A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_CLF_DSC       = #{GDS_CLF_DSC}
+           AND A.GDS_LCLC          = #{GDS_LCLC}
+           AND A.GDS_MCLC          = #{GDS_MCLC}
+           AND A.GDS_SCLC          = #{GDS_SCLC}
+    </select>
+</mapper>

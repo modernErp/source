@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_BY_D_ODR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_BY_D_ODR */ TB_BY_D_ODR
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , ODR_DT              /* 발주일자             */
+            , ODR_SQNO            /* 발주일련번호         */
+            , ODR_DSQNO           /* 발주상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , ODR_BAS_QT          /* 발주기준수량         */
+            , ODR_INP_QT          /* 발주입력수량         */
+            , ODR_QT              /* 발주수량             */
+            , ODR_BOX_QT          /* 발주박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , ODR_UPR             /* 발주단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , ODR_AM              /* 발주금액             */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , ODR_WT              /* 발주중량             */
+            , TXT_DSC             /* 과세구분코드         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{ODR_DT}
+            , #{ODR_SQNO}
+            , (
+               SELECT ISNULL(MAX(ODR_DSQNO),0)+1
+                 FROM TB_BY_D_ODR
+                WHERE 1 = 1
+                  AND CORP_C   = #{CORP_C}
+                  AND BZPL_C   = #{BZPL_C}
+                  AND ODR_DT   = #{ODR_DT}
+                  AND ODR_SQNO = #{ODR_SQNO}
+              )
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{ODR_BAS_QT})
+            , DBO.SF_GET_FLOAT(#{ODR_INP_QT})
+            , DBO.SF_GET_FLOAT(#{ODR_QT})
+            , DBO.SF_GET_FLOAT(#{ODR_BOX_QT})
+            , #{TR_UNT_C}
+            , DBO.SF_GET_FLOAT(#{ODR_UPR})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{ODR_AM})
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_FLOAT(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , DBO.SF_GET_FLOAT(#{ODR_WT})
+            , #{TXT_DSC}
+            , #{RMK_CNTN}
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_BY_D_ODR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_BY_D_ODR */ TB_BY_D_ODR
+           SET 
+               CORP_C              = #{CORP_C}                       /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                       /* 사업장코드           */
+             , ODR_DT              = #{ODR_DT}                       /* 발주일자             */
+             , ODR_SQNO            = #{ODR_SQNO}                     /* 발주일련번호         */
+             , ODR_DSQNO           = #{ODR_DSQNO}                    /* 발주상세일련번호     */
+             , GDS_C               = #{GDS_C}                        /* 물품코드             */
+             , ODR_BAS_QT          = DBO.SF_GET_FLOAT(#{ODR_BAS_QT}) /* 발주기준수량         */
+             , ODR_INP_QT          = DBO.SF_GET_FLOAT(#{ODR_INP_QT}) /* 발주입력수량         */
+             , ODR_QT              = DBO.SF_GET_FLOAT(#{ODR_QT})     /* 발주수량             */
+             , ODR_BOX_QT          = DBO.SF_GET_FLOAT(#{ODR_BOX_QT}) /* 발주박스수량         */
+             , TR_UNT_C            = #{TR_UNT_C}                     /* 거래단위코드         */
+             , ODR_UPR             = DBO.SF_GET_FLOAT(#{ODR_UPR})    /* 발주단가             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})   /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})      /* 부가세               */
+             , ODR_AM              = DBO.SF_GET_NUMERIC(#{ODR_AM})   /* 발주금액             */
+             , QT_WT_DSC           = #{QT_WT_DSC}                    /* 수(중)량형구분코드   */
+             , WHT_QT              = DBO.SF_GET_FLOAT(#{WHT_QT})     /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                    /* 단량단위코드         */
+             , ODR_WT              = DBO.SF_GET_FLOAT(#{ODR_WT})     /* 발주중량             */
+             , TXT_DSC             = #{TXT_DSC}                      /* 과세구분코드         */
+             , RMK_CNTN            = #{RMK_CNTN}                     /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                       /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                     /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                     /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                     /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                       /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                       /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ODR_DSQNO           = #{ODR_DSQNO}
+           AND ODR_DT              = #{ODR_DT}
+           AND ODR_SQNO            = #{ODR_SQNO}
+    </update>
+
+    <delete id="delete_TB_BY_D_ODR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_BY_D_ODR */ FROM TB_BY_D_ODR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ODR_DSQNO           = #{ODR_DSQNO}
+           AND ODR_DT              = #{ODR_DT}
+           AND ODR_SQNO            = #{ODR_SQNO}
+    </delete>
+
+    <select id="select_TB_BY_D_ODR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_BY_D_ODR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ODR_DT                                            /* 발주일자                  */
+             , A.ODR_SQNO                                          /* 발주일련번호              */
+             , A.ODR_DSQNO                                         /* 발주상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.ODR_INP_QT                                        /* 발주입력수량              */
+             , A.ODR_QT                                            /* 발주수량                  */
+             , A.ODR_BOX_QT                                        /* 발주박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.ODR_UPR                                           /* 발주단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.ODR_AM                                            /* 발주금액                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.ODR_WT                                            /* 발주중량                  */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_BY_D_ODR A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.ODR_DSQNO         = #{ODR_DSQNO}
+           AND A.ODR_DT            = #{ODR_DT}
+           AND A.ODR_SQNO          = #{ODR_SQNO}
+    </select>
+</mapper>

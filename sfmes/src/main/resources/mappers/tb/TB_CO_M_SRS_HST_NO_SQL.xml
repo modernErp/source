@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_SRS_HST_NO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_SRS_HST_NO */ TB_CO_M_SRS_HST_NO
+        (
+              CORP_C                    /* 회사코드             */
+            , BZPL_C                    /* 사업장코드           */
+            , STR_DT                    /* 입고일자             */
+            , STR_SQNO                  /* 입고일련번호       */
+            , SRA_HST_NO                /* 축산물이력번호       */
+            , SRS_DSC                   /* 축종구분             */
+            , STR_WHSE_C                /* 입고창고             */
+            , STR_ID                    /* 입고등록자ID         */
+            , IF_DTM                    /* I/F일시              */
+            , MFC_DSC                   /* 가공구분코드         */
+            , SRA_SEX_C                 /* 성별코드             */
+            , STD_PAT_C                 /* 표준부위코드         */
+            , STD_PAT_NM                /* 부위명               */
+            , STR_WT                    /* 입고중량             */
+            , GRD_C                     /* 등급코드             */
+            , GRD_NM                    /* 등급명               */
+            , INSFAT                    /* 근내지방도         */
+		    , FAM_ADR                   /* 농장(사육장)주소 */
+		    , FAM_NM                    /* 농장(사육장)명  */
+		    , FAM_REG_TP                /* 등록구분         */
+		    , REG_DT                    /* 등록일자          */
+		    , FAM_NO                    /* 농장번호          */
+		    , BUTCHER_ADR               /* 도축장주소       */
+		    , BUTCHER_NM                /* 도축장명         */
+		    , BUTCHER_DT                /* 도축일자        */
+		    , INSP_PASSYN               /* 합격여부        */
+		    , PCSPL_ADR                 /* 포장처리업소 주소 */
+		    , PCSPL_NM                  /* 포장처리업소 명 */
+		    , INJECT_DAYCNT             /* 구제역 백신접종경과일 */
+		    , INJECT_DT                 /* 구제역 백신접종일   */
+		    , INJECT_ODR                /* 구제역 백신접종 차수 */
+		    , INSP_DESC                 /* 질병유무        */
+		    , INSPECT_DT                /* 브루셀라 접종일 */
+		    , INSPECT_YN                /* 브루셀라 접종유무 */
+            , IMPORT_DSC                /* 수입구분코드       */
+            , BL_NO                     /* 선하증권번호              */
+            , KPROD_NM                  /* 품목명                    */
+            , MAKEPLC_NM                /* 원산지 국가명             */
+            , BUTCHFROM_DT              /* 수출국도축시작일자        */
+            , BUTCHTO_DT                /* 수출국도축종료일자        */
+            , BUTCH_NM                  /* 수출국도축장명            */
+            , PRCSS_BEGIN_DT            /* 수출국가공시작일자        */
+            , PRCSS_END_DT              /* 수출국가공종료일자        */
+            , PRCSS_NM                  /* 수출국가공장명            */
+            , SENDER_NM                 /* 수출업체명                */
+            , RECEIVER_NM               /* 수입업체명                */
+            , LIMIT_TO_DT               /* 유통기한일자              */
+            , RTRVL_TRGET_AT            /* 회수대상여부              */
+            , DISTB_SLE_PRHIBT_AT       /* 유통판매금지여부          */
+            , DISTB_SLE_PRHIBT_DT       /* 유통판매금지일자          */
+            , REFRIG_CNVRS_AT           /* 냉동전환여부              */
+            , REFRIG_DISTB_PD_BEGIN_DT  /* 냉동전환유통기한시작일자  */
+            , REFRIG_DISTB_PD_END_DT    /* 냉동전환유통기한종료일자  */
+            , REGN_C                    /* 수입품목부위코드  */            
+            , REGN_NM                   /* 수입품목부위명    */
+            , DLR_YN                    /* 출고여부             */
+            , DLR_DT                    /* 출고일자             */
+            , DLR_WT                    /* 출고중량            */
+            , DLR_ID                    /* 출고등록자ID         */
+            , DEL_YN                    /* 삭제여부             */
+            , FSRG_DTM                  /* 최초등록일시         */
+            , FSRG_ID                   /* 최초등록자ID         */
+            , LSCHG_DTM                 /* 최종변경일시         */
+            , LSCHG_ID                  /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{STR_DT}
+            , #{STR_SQNO}
+            , #{SRA_HST_NO}
+            , #{SRS_DSC}
+            , #{STR_WHSE_C}
+            , #{GUSRID}
+            , GETDATE()
+            , #{MFC_DSC}
+            , #{SRA_SEX_C}
+            , #{STD_PAT_C}
+            , CASE WHEN #{STD_PAT_C} = '' THEN '' 
+                   ELSE (SELECT LATC_SCLC_NM
+                           FROM TB_CO_M_LATC_CLF_STD
+                          WHERE LATC_SCLC = #{STD_PAT_C})
+              END
+            , DBO.SF_GET_FLOAT(#{STR_WT})
+            , #{GRD_C}
+            , #{GRD_NM}
+            , #{INSFAT}
+            , #{FAM_ADR}
+            , #{FAM_NM}
+            , #{FAM_REG_TP}
+            , #{REG_DT}
+            , #{FAM_NO}
+            , #{BUTCHER_ADR}
+            , #{BUTCHER_NM}
+            , #{BUTCHER_DT}
+            , #{INSP_PASSYN}
+            , #{PCSPL_ADR}
+            , #{PCSPL_NM}
+            , #{INJECT_DAYCNT}
+            , #{INJECT_DT}
+            , #{INJECT_ODR}
+            , #{INSP_DESC}
+            , #{INSPECT_DT}
+            , #{INSPECT_YN}
+            , #{IMPORT_DSC}
+            , #{BL_NO}
+            , #{KPROD_NM}
+            , #{MAKEPLC_NM}
+            , #{BUTCHFROM_DT}
+            , #{BUTCHTO_DT}
+            , #{BUTCH_NM}
+            , #{PRCSS_BEGIN_DT}
+            , #{PRCSS_END_DT}
+            , #{PRCSS_NM}
+            , #{SENDER_NM}
+            , #{RECEIVER_NM}
+            , #{LIMIT_TO_DT}
+            , #{RTRVL_TRGET_AT}
+            , #{DISTB_SLE_PRHIBT_AT}
+            , #{DISTB_SLE_PRHIBT_DT}
+            , #{REFRIG_CNVRS_AT}
+            , #{REFRIG_DISTB_PD_BEGIN_DT}
+            , #{REFRIG_DISTB_PD_END_DT}
+            , #{REGN_C} 
+            , #{REGN_NM}
+            , #{DLR_YN}
+            , #{DLR_DT}
+            , 0
+            , #{DLR_ID}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_SRS_HST_NO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_SRS_HST_NO */ TB_CO_M_SRS_HST_NO
+           SET 
+               CORP_C                    = #{CORP_C}                    /* 회사코드             */
+             , BZPL_C                    = #{BZPL_C}                    /* 사업장코드           */
+             , STR_DT                    = #{STR_DT}                    /* 입고일자             */
+             , STR_SQNO                  = #{STR_SQNO}                  /* 입고일련번호         */
+             , SRA_HST_NO                = #{SRA_HST_NO}                /* 축산물이력번호       */
+             , SRS_DSC                   = #{SRS_DSC}                   /* 축종구분             */
+             , STR_WHSE_C                = #{STR_WHSE_C}                /* 입고창고             */
+             , STR_ID                    = #{STR_ID}                    /* 입고등록자ID         */
+             , IF_DTM                    = #{IF_DTM}                    /* I/F일시              */
+             , MFC_DSC                   = #{MFC_DSC}                   /* 가공구분코드         */
+             , SRA_SEX_C                 = #{SRA_SEX_C}                 /* 성별코드             */
+             , STD_PAT_C                 = #{STD_PAT_C}                 /* 표준부위코드         */
+             , STD_PAT_NM                = #{STD_PAT_NM}                /* 부위명               */
+             , STR_WT                    = #{STR_WT}                    /* 입고중량             */
+             , GRD_C                     = #{GRD_C}                     /* 등급코드             */
+             , GRD_NM                    = #{GRD_NM}                    /* 등급명               */
+             , INSFAT                    = #{INSFAT}                    /* 근내지방도         */
+             , FAM_ADR                   = #{FAM_ADR}                   /* 농장(사육장)주소 */
+             , FAM_NM                    = #{FAM_NM}                    /* 농장(사육장)명  */
+             , FAM_REG_TP                = #{FAM_REG_TP}                /* 등록구분         */
+             , REG_DT                    = #{REG_DT}                    /* 등록일자          */
+             , FAM_NO                    = #{FAM_NO}                    /* 농장번호          */
+             , BUTCHER_ADR               = #{BUTCHER_ADR}               /* 도축장주소       */
+             , BUTCHER_NM                = #{BUTCHER_NM}                /* 도축장명         */
+             , BUTCHER_DT                = #{BUTCHER_DT}                /* 도축일자        */
+             , INSP_PASSYN               = #{INSP_PASSYN}               /* 합격여부        */
+             , PCSPL_ADR                 = #{PCSPL_ADR}                 /* 포장처리업소 주소 */
+             , PCSPL_NM                  = #{PCSPL_NM}                  /* 포장처리업소 명 */
+             , INJECT_DAYCNT             = #{INJECT_DAYCNT}             /* 구제역 백신접종경과일 */
+             , INJECT_DT                 = #{INJECT_DT}                 /* 구제역 백신접종일   */
+             , INJECT_ODR                = #{INJECT_ODR}                /* 구제역 백신접종 차수 */
+             , INSP_DESC                 = #{INSP_DESC}                 /* 질병유무        */
+             , INSPECT_DT                = #{INSPECT_DT}                /* 브루셀라 접종일 */
+             , INSPECT_YN                = #{INSPECT_YN}                /* 브루셀라 접종유무 */             
+             , IMPORT_DSC                = {IMPORT_DSC}                 /* 수입구분코드       */
+             , BL_NO                     = #{BL_NO}                     /* 선하증권번호              */   
+             , KPROD_NM                  = #{KPROD_NM}                  /* 품목명                    */   
+             , MAKEPLC_NM                = #{MAKEPLC_NM}                /* 원산지 국가명             */   
+             , BUTCHFROM_DT              = #{BUTCHFROM_DT}              /* 수출국도축시작일자        */   
+             , BUTCHTO_DT                = #{BUTCHTO_DT}                /* 수출국도축종료일자        */   
+             , BUTCH_NM                  = #{BUTCH_NM}                  /* 수출국도축장명            */   
+             , PRCSS_BEGIN_DT            = #{PRCSS_BEGIN_DT}            /* 수출국가공시작일자        */   
+             , PRCSS_END_DT              = #{PRCSS_END_DT}              /* 수출국가공종료일자        */   
+             , PRCSS_NM                  = #{PRCSS_NM}                  /* 수출국가공장명            */   
+             , SENDER_NM                 = #{SENDER_NM}                 /* 수출업체명                */   
+             , RECEIVER_NM               = #{RECEIVER_NM}               /* 수입업체명                */   
+             , LIMIT_TO_DT               = #{LIMIT_TO_DT}               /* 유통기한일자              */   
+             , RTRVL_TRGET_AT            = #{RTRVL_TRGET_AT}            /* 회수대상여부              */   
+             , DISTB_SLE_PRHIBT_AT       = #{DISTB_SLE_PRHIBT_AT}       /* 유통판매금지여부          */   
+             , DISTB_SLE_PRHIBT_DT       = #{DISTB_SLE_PRHIBT_DT}       /* 유통판매금지일자          */   
+             , REFRIG_CNVRS_AT           = #{REFRIG_CNVRS_AT}           /* 냉동전환여부              */   
+             , REFRIG_DISTB_PD_BEGIN_DT  = #{REFRIG_DISTB_PD_BEGIN_DT}  /* 냉동전환유통기한시작일자  */   
+             , REFRIG_DISTB_PD_END_DT    = #{REFRIG_DISTB_PD_END_DT}    /* 냉동전환유통기한종료일자  */   
+             , REGN_C                    = #{REGN_C}                    /* 수입품목부위코드  */            
+             , REGN_NM                   = #{REGN_NM}                   /* 수입품목부위명    */                      
+             , DLR_YN                    = #{DLR_YN}                    /* 출고여부             */
+             , DLR_DT                    = #{DLR_DT}                    /* 출고일자             */
+             , DLR_ID                    = #{DLR_ID}                    /* 출고등록자ID         */
+             , DLR_WT                    = #{DLR_WT}                    /* 출고중량            */
+             , DEL_YN                    = #{DEL_YN}                    /* 삭제여부             */
+             , LSCHG_DTM                 = GETDATE()                    /* 최종변경일시         */
+             , LSCHG_ID                  = #{GUSRID}                    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{STR_DT}
+           AND STR_SQNO            = #{STR_SQNO}
+           AND SRA_HST_NO          = #{SRA_HST_NO}
+    </update>
+
+    <delete id="delete_TB_CO_M_SRS_HST_NO" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_SRS_HST_NO */ FROM TB_CO_M_SRS_HST_NO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND STR_DT              = #{STR_DT}
+           AND STR_SQNO            = #{STR_SQNO}
+           AND SRA_HST_NO          = #{SRA_HST_NO}
+    </delete>
+
+    <select id="select_TB_CO_M_SRS_HST_NO" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_SRS_HST_NO */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.STR_DT                                            /* 입고일자                  */
+             , A.STR_SQNO                                          /* 입고일련번호             */
+             , A.SRA_HST_NO                                        /* 축산물이력번호            */
+             , A.SRS_DSC                                           /* 축종구분                  */
+             , A.STR_WHSE_C                                        /* 입고창고                  */
+             , A.STR_ID                                            /* 입고등록자ID              */
+             , A.IF_DTM                                            /* I/F일시                   */
+             , A.MFC_DSC                                           /* 가공구분코드             */
+             , A.SRA_SEX_C                                         /* 성별코드                  */
+             , A.STD_PAT_C                                         /* 표준부위코드              */
+             , A.STD_PAT_NM                                        /* 부위명                    */
+             , A.STR_WT                                            /* 입고중량                  */
+             , A.GRD_C                                             /* 등급코드                  */
+             , A.GRD_NM                                            /* 등급명                    */
+             , A.INSFAT                                            /* 근내지방도              */
+             , A.INSFAT                                            /* 근내지방도         */
+             , A.FAM_ADR                                           /* 농장(사육장)주소 */
+             , A.FAM_NM                                            /* 농장(사육장)명  */
+             , A.FAM_REG_TP                                        /* 등록구분         */
+             , A.REG_DT                                            /* 등록일자          */
+             , A.FAM_NO                                            /* 농장번호          */
+             , A.BUTCHER_ADR                                       /* 도축장주소       */
+             , A.BUTCHER_NM                                        /* 도축장명         */
+             , A.BUTCHER_DT                                        /* 도축일자        */
+             , A.INSP_PASSYN                                       /* 합격여부        */
+             , A.PCSPL_ADR                                         /* 포장처리업소 주소 */
+             , A.PCSPL_NM                                          /* 포장처리업소 명 */
+             , A.INJECT_DAYCNT                                     /* 구제역 백신접종경과일 */
+             , A.INJECT_DT                                         /* 구제역 백신접종일   */
+             , A.INJECT_ODR                                        /* 구제역 백신접종 차수 */
+             , A.INSP_DESC                                         /* 질병유무        */
+             , A.INSPECT_DT                                        /* 브루셀라 접종일 */
+             , A.INSPECT_YN                                        /* 브루셀라 접종유무 */
+             , A.IMPORT_DSC                                        /* 수입구분코드            */
+             , A.BL_NO                                             /* 선하증권번호              */
+             , A.KPROD_NM                                          /* 품목명                    */
+             , A.MAKEPLC_NM                                        /* 원산지 국가명             */
+             , A.BUTCHFROM_DT                                      /* 수출국도축시작일자        */
+             , A.BUTCHTO_DT                                        /* 수출국도축종료일자        */
+             , A.BUTCH_NM                                          /* 수출국도축장명            */
+             , A.PRCSS_BEGIN_DT                                    /* 수출국가공시작일자        */
+             , A.PRCSS_END_DT                                      /* 수출국가공종료일자        */
+             , A.PRCSS_NM                                          /* 수출국가공장명            */
+             , A.SENDER_NM                                         /* 수출업체명                */
+             , A.RECEIVER_NM                                       /* 수입업체명                */
+             , A.LIMIT_TO_DT                                       /* 유통기한일자              */
+             , A.RTRVL_TRGET_AT                                    /* 회수대상여부              */
+             , A.DISTB_SLE_PRHIBT_AT                               /* 유통판매금지여부          */
+             , A.DISTB_SLE_PRHIBT_DT                               /* 유통판매금지일자          */
+             , A.REFRIG_CNVRS_AT                                   /* 냉동전환여부              */
+             , A.REFRIG_DISTB_PD_BEGIN_DT                          /* 냉동전환유통기한시작일자  */
+             , A.REFRIG_DISTB_PD_END_DT                            /* 냉동전환유통기한종료일자  */
+             , A.REGN_C                                            /* 수입품목부위코드  */            
+             , A.REGN_NM                                           /* 수입품목부위명    */
+             , A.DLR_YN                                            /* 출고여부                  */
+             , A.DLR_DT                                            /* 출고일자                  */
+             , A.DLR_ID                                            /* 출고등록자ID              */
+             , A.DLR_WT                                            /* 출고중량            */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_SRS_HST_NO A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SRA_HST_NO        = #{SRA_HST_NO}
+           AND A.STR_DT            = #{STR_DT}
+           AND A.STR_SQNO          = #{STR_SQNO}
+    </select>
+</mapper>

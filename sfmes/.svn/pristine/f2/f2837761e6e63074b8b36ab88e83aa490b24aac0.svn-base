@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_D_RVO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_D_RVO */ TB_SE_D_RVO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , RVO_DT              /* 수주일자             */
+            , RVO_SQNO            /* 수주일련번호         */
+            , RVO_DSQNO           /* 수주상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , RVO_QT              /* 수주수량             */
+            , RVO_BOX_QT          /* 수주박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , RVO_UPR             /* 수주단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , RVO_AM              /* 수주금액             */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , RVO_WT              /* 수주중량             */
+            , TXT_DSC             /* 과세구분코드         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{RVO_DT}
+            , #{RVO_SQNO}
+            , (SELECT ISNULL(MAX(RVO_DSQNO),0)+1
+                 FROM TB_SE_D_RVO
+                WHERE 1 = 1
+                  AND CORP_C   = #{CORP_C} 
+                  AND BZPL_C   = #{BZPL_C}
+                  AND RVO_DT   = #{RVO_DT}
+                  AND RVO_SQNO = #{RVO_SQNO}
+              ) 
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{RVO_QT})
+            , DBO.SF_GET_FLOAT(#{RVO_BOX_QT})
+            , #{TR_UNT_C}
+            , DBO.SF_GET_FLOAT(#{RVO_UPR})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{RVO_AM})
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_NUMERIC(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , DBO.SF_GET_FLOAT(#{RVO_WT})
+            , #{TXT_DSC}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_D_RVO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_D_RVO */ TB_SE_D_RVO
+           SET 
+               CORP_C              = #{CORP_C}                               /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                               /* 사업장코드           */
+             , RVO_DT              = #{RVO_DT}                               /* 수주일자             */
+             , RVO_SQNO            = #{RVO_SQNO}                             /* 수주일련번호         */
+             , RVO_DSQNO           = #{RVO_DSQNO}                            /* 수주상세일련번호     */
+             , GDS_C               = #{GDS_C}                                /* 물품코드             */
+             , RVO_QT              = DBO.SF_GET_FLOAT(#{RVO_QT})             /* 수주수량             */
+             , RVO_BOX_QT          = DBO.SF_GET_FLOAT(#{RVO_BOX_QT})         /* 수주박스수량         */
+             , TR_UNT_C            = #{TR_UNT_C}                             /* 거래단위코드         */
+             , RVO_UPR             = DBO.SF_GET_FLOAT(#{RVO_UPR})            /* 수주단가             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})           /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})              /* 부가세               */
+             , RVO_AM              = DBO.SF_GET_NUMERIC(#{RVO_AM})           /* 수주금액             */
+             , QT_WT_DSC           = #{QT_WT_DSC}                            /* 수(중)량형구분코드   */
+             , WHT_QT              = DBO.SF_GET_NUMERIC(#{WHT_QT})           /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                            /* 단량단위코드         */
+             , RVO_WT              = DBO.SF_GET_FLOAT(#{RVO_WT})             /* 수주중량             */
+             , TXT_DSC             = #{TXT_DSC}                              /* 과세구분코드         */
+             , RMK_CNTN            = #{RMK_CNTN}                             /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                               /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}                             /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}                             /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}                             /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                               /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                               /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND RVO_DT              = #{RVO_DT}
+           AND RVO_SQNO            = #{RVO_SQNO}
+           AND RVO_DSQNO           = #{RVO_DSQNO}           
+    </update>
+
+    <delete id="delete_TB_SE_D_RVO" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_D_RVO */ FROM TB_SE_D_RVO
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND RVO_DT              = #{RVO_DT}
+           AND RVO_SQNO            = #{RVO_SQNO}
+           AND RVO_DSQNO           = #{RVO_DSQNO}           
+    </delete>
+
+    <select id="select_TB_SE_D_RVO" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_D_RVO */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RVO_DT                                            /* 수주일자                  */
+             , A.RVO_SQNO                                          /* 수주일련번호              */
+             , A.RVO_DSQNO                                         /* 수주상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.RVO_QT                                            /* 수주수량                  */
+             , A.RVO_BOX_QT                                        /* 수주박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.RVO_UPR                                           /* 수주단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.RVO_AM                                            /* 수주금액                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.RVO_WT                                            /* 수주중량                  */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_D_RVO A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.RVO_DT            = #{RVO_DT}
+           AND A.RVO_SQNO          = #{RVO_SQNO}
+           AND A.RVO_DSQNO         = #{RVO_DSQNO}           
+    </select>
+</mapper>

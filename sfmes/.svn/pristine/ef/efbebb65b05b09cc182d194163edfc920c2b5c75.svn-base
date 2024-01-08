@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_GE_M_AS_RC" parameterType="LinkedHashMap">
+          INSERT INTO /*+ insert_TB_GE_M_AS_RC */ TB_GE_M_AS_RC
+        (
+              CORP_C              /* 회사코드         */
+            , BZPL_C              /* 사업장코드       */
+            , AS_DT               /* A/S접수일자         */
+            , AS_SQNO             /* A/S접수일련번호     */
+            , AS_PRC_STS_C        /* A/S처리상태코드         */
+            , AS_DSC              /* A/S구분코드       */
+            , PGM_ID              /* 화면번호     */
+            , AS_TIT              /* AS제목         */
+            , AS_CNTN             /* A/S접수내용         */
+            , AS_PCR_CNTN         /* A/S처리내용        */
+            , RMK_CNTN            /* 비고내용     */
+            , RQR_DT              /* 요청일        */
+            , USE_DSC               /* 사용자구분        */
+            , RQR_NM                /* 요청인이름        */
+            , PZ_NM               /*   직챙명         */
+            , AS_CMP_DT            /* A/S완료일자        */
+            , AS_CHRR_ID          /* A/S담당자아이디    */
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호    */
+            , DEL_YN              /* 삭제 여부            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID     */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID     */
+        )
+        VALUES
+        (
+              #{CORP_C}        
+            , #{BZPL_C}        
+            , #{AS_DT}         
+            , #{AS_SQNO}       
+            , #{AS_PRC_STS_C}      
+            , #{AS_DSC}   
+            , #{PGM_ID}
+            , #{AS_TIT}        
+            , #{AS_CNTN}                
+            , #{AS_PCR_CNTN}           
+            , #{RMK_CNTN}      
+            , #{RQR_DT}     
+            , #{USE_DSC}
+            , #{RQR_NM}
+            , #{PZ_NM}
+            , #{AS_CMP_DT}     
+            , #{AS_CHRR_ID}      
+            , #{APD_FILE_AMN_NO} 
+            , 'N'              
+            , GETDATE()       
+            , #{GUSRID}       
+            , GETDATE()       
+            , #{GUSRID}      
+        )
+    </insert>
+
+    <update id="update_TB_GE_M_AS_RC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_GE_M_AS_RC */ TB_GE_M_AS_RC
+           SET
+              AS_PRC_STS_C      = #{AS_PRC_STS_C}       /* A/S처리상태코드         */   
+            , AS_DSC            = #{AS_DSC}             /* A/S구분코드       */   
+            , PGM_ID            = #{PGM_ID}             /* 화면번호     */   
+            , AS_TIT            = #{AS_TIT}             /* AS제목         */   
+            , AS_CNTN           = #{AS_CNTN}            /* A/S접수내용         */   
+            , AS_PCR_CNTN       = #{AS_PCR_CNTN}        /* A/S처리내용         */   
+            , RMK_CNTN          = #{RMK_CNTN}           /* 비고내용     */   
+            , RQR_DT            = #{RQR_DT}             /* 요청일        */  
+            , RQR_NM            = #{RQR_NM}             /* 요청인이름   */
+            , PZ_NM             = #{PZ_NM}               /*  직책명     */
+            , USE_DSC           = #{USE_DSC}             /*  사용자구분          */
+            , AS_CMP_DT          = #{AS_CMP_DT}           /* A/S완료일자        */   
+            , AS_CHRR_ID        = #{AS_CHRR_ID}         /* A/S담당자아이디     */   
+            , APD_FILE_AMN_NO   = #{ADD_FILE_AMN_NO}    /* 첨부파일관리번호   */   
+            , LSCHG_DTM         = GETDATE()             /* 최종변경일시     */   
+            , LSCHG_ID          = #{GUSRID}             /* 최종변경자ID     */
+        WHERE 1 = 1
+          AND CORP_C  = #{CORP_C}
+          AND BZPL_C  = #{BZPL_C}
+          AND AS_DT   = #{AS_DT}
+          AND AS_SQNO = #{AS_SQNO}   
+    </update>
+
+    <update id="delete_TB_GE_M_AS_RC" parameterType="LinkedHashMap">
+       UPDATE /*+ delete_TB_GE_M_AS_RC */ TB_GE_M_AS_RC
+          SET 
+            DEL_YN             = #{DEL_YN} 
+         WHERE 1 = 1
+           AND CORP_C   = #{CORP_C}
+           AND BZPL_C   = #{BZPL_C}
+           AND AS_DT    = #{AS_DT}
+           AND AS_SQNO  = #{AS_SQNO}           
+    </update>
+
+   
+</mapper>

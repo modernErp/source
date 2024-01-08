@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_MSG_RMS_USR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_MSG_RMS_USR */ TB_CO_M_MSG_RMS_USR
+        (
+              CORP_C              /* 회사코드             */
+            , MSG_NO              /* 메시지번호           */
+            , RMS_BZPL_C          /* 수신사업장코드       */
+            , RMSMN_ID            /* 수신자ID             */
+            , RG_RSN              /* 등록사유             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{MSG_NO}
+            , #{RMS_BZPL_C}
+            , #{RMSMN_ID}
+            , #{RG_RSN}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_MSG_RMS_USR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_MSG_RMS_USR */ TB_CO_M_MSG_RMS_USR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , MSG_NO              = #{MSG_NO}                /* 메시지번호           */
+             , RMS_BZPL_C          = #{RMS_BZPL_C}            /* 수신사업장코드       */
+             , RMSMN_ID            = #{RMSMN_ID}              /* 수신자ID             */
+             , RG_RSN              = #{RG_RSN}                /* 등록사유             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MSG_NO              = #{MSG_NO}
+           AND RMS_BZPL_C          = #{RMS_BZPL_C}
+           AND RMSMN_ID            = #{RMSMN_ID}
+    </update>
+
+    <delete id="delete_TB_CO_M_MSG_RMS_USR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_MSG_RMS_USR */ FROM TB_CO_M_MSG_RMS_USR
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MSG_NO              = #{MSG_NO}
+           AND RMS_BZPL_C          = #{RMS_BZPL_C}
+           AND RMSMN_ID            = #{RMSMN_ID}
+    </delete>
+
+    <select id="select_TB_CO_M_MSG_RMS_USR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_MSG_RMS_USR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.MSG_NO                                            /* 메시지번호                */
+             , A.RMS_BZPL_C                                        /* 수신사업장코드            */
+             , A.RMSMN_ID                                          /* 수신자ID                  */
+             , A.RG_RSN                                            /* 등록사유                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_MSG_RMS_USR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.MSG_NO            = #{MSG_NO}
+           AND A.RMS_BZPL_C        = #{RMS_BZPL_C}
+           AND A.RMSMN_ID          = #{RMSMN_ID}
+    </select>
+</mapper>

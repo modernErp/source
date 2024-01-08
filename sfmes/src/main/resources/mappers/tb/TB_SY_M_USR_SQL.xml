@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_M_USR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_M_USR */ TB_SY_M_USR
+        (
+              CORP_C              /* 회사코드             */
+            , USR_ID              /* 사용자아이디         */
+            , USR_NM              /* 사용자명             */
+            , PW                  /* 암호화된비밀번호     */
+            , EMP_NO              /* 사원번호             */
+            , BZPL_C              /* 사업장코드           */
+            , DEPT_C              /* 부서코드             */
+            , USE_DSC             /* 사용자구분           */
+            , LS_CONN_DTM         /* 최종접속일시         */
+            , LS_CONN_IP          /* 최종IP               */
+            , CONN_YN             /* 접속여부             */
+            , PW_CHG_DTM          /* 비밀번호변경일시     */
+            , LGIN_PROV_NT        /* 로그인시도횟수       */
+            , LOCK_YN             /* 잠김여부             */
+            , ACC_ST_DT           /* 계정시작일자         */
+            , ACC_ED_DT           /* 계정종료일자         */
+            , EMAIL_ADR           /* 이메일주소           */
+            , ANC_RMS_METH        /* 알림수신방법         */
+            , SIGN_IMG            /* 사인이미지           */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USR_ID}
+            , #{USR_NM}
+            , #{PW}
+            , #{EMP_NO}
+            , #{BZPL_C}
+            , #{DEPT_C}
+            , #{USE_DSC}
+            , NULL
+            , NULL
+            , #{CONN_YN}
+            , NULL
+            , '0'
+            , #{LOCK_YN}
+            , CONVERT(VARCHAR(8),GETDATE(),112)
+            , CONVERT(VARCHAR(8),#{ACC_ED_DT},112)
+            , #{EMAIL_ADR}
+            , #{ANC_RMS_METH}
+            , #{SIGN_IMG}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_M_USR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_USR */ TB_SY_M_USR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , USR_ID              = #{USR_ID}                /* 사용자아이디         */
+             , USR_NM              = #{USR_NM}                /* 사용자명             */
+             , PW                  = #{PW}                    /* 암호화된비밀번호     */
+             , EMP_NO              = #{EMP_NO}                /* 사원번호             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DEPT_C              = #{DEPT_C}                /* 부서코드             */
+             , USE_DSC             = #{USE_DSC}               /* 사용자구분           */
+             , LS_CONN_DTM         = CASE WHEN LS_CONN_DTM IS NULL THEN NULL 
+                                          ELSE #{LS_CONN_DTM}
+                                      END                     /* 최종접속일시         */
+             , LS_CONN_IP          = #{LS_CONN_IP}            /* 최종IP               */
+             , CONN_YN             = #{CONN_YN}               /* 접속여부             */
+             , PW_CHG_DTM          = CASE WHEN PW = #{PW} THEN NULL 
+                                          ELSE GETDATE()
+                                      END                     /* 비밀번호변경일시     */
+             , LGIN_PROV_NT        = #{LGIN_PROV_NT}          /* 로그인시도횟수       */
+             , LOCK_YN             = #{LOCK_YN}               /* 잠김여부             */
+             , ACC_ST_DT           = #{ACC_ST_DT}             /* 계정시작일자         */
+             , ACC_ED_DT           = CASE WHEN #{USE_YN} = 'N' THEN CONVERT(VARCHAR(8),GETDATE(),112) 
+                                          ELSE #{ACC_ED_DT} 
+                                      END                     /* 계정종료일자         */
+             , EMAIL_ADR           = #{EMAIL_ADR}             /* 이메일주소           */
+             , ANC_RMS_METH        = #{ANC_RMS_METH}          /* 알림수신방법         */
+             , SIGN_IMG            = #{SIGN_IMG}              /* 사인이미지           */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+    </update>
+
+    <delete id="delete_TB_SY_M_USR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_M_USR */ FROM TB_SY_M_USR
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+    </delete>
+
+    <select id="select_TB_SY_M_USR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_M_USR */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.USR_NM                                            /* 사용자명             */
+             , A.PW                                                /* 암호화된비밀번호     */
+             , A.EMP_NO                                            /* 사원번호             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.DEPT_C                                            /* 부서코드             */
+             , A.USE_DSC                                           /* 사용자구분           */
+             , CONVERT(CHAR(23), A.LS_CONN_DTM, 20) AS LS_CONN_DTM /* 최종접속일시         */
+             , A.LS_CONN_IP                                        /* 최종IP               */
+             , A.CONN_YN                                           /* 접속여부             */
+             , CONVERT(CHAR(23), A.PW_CHG_DTM, 20) AS PW_CHG_DTM   /* 비밀번호변경일시     */
+             , A.LGIN_PROV_NT                                      /* 로그인시도횟수       */
+             , A.LOCK_YN                                           /* 잠김여부             */
+             , A.ACC_ST_DT                                         /* 계정시작일자         */
+             , A.ACC_ED_DT                                         /* 계정종료일자         */
+             , A.EMAIL_ADR                                         /* 이메일주소           */
+             , A.ANC_RMS_METH                                      /* 알림수신방법         */
+             , A.SIGN_IMG                                          /* 사인이미지           */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_M_USR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.USR_ID            = #{USR_ID}
+    </select>
+</mapper>

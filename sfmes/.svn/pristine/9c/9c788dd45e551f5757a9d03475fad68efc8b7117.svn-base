@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.et">
+
+    <!-- 매입기본내역조회 -->
+    <select id="selectEt9989_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt9989_01 */
+              *
+              FROM TB_CO_M_GDS
+              WHERE 1=1
+                AND CORP_C = #{CORP_C}        
+    </select>
+    
+     <select id="selectEt9989_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT  /*+ selectEt9989_02 */
+             *
+             FROM TB_CO_M_GDS
+             WHERE 1=1
+               AND CORP_C = #{CORP_C}   
+    </select>
+    
+    
+
+    <!-- 전표-물품별매입내역 -->    
+    <select id="selectEt9989_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt9989_03 */
+               A.CORP_C                                                 /* 회사코드                 */
+             , A.BZPL_C                                                 /* 사업장코드               */
+             , A.BY_DT                                                  /* 매입일자                 */
+             , A.BY_SQNO                                                /* 매입일련번호             */
+             , A.RLTR_DT                                                /* 실거래일자               */ 
+             , A.ACG_DT                                                 /* 회계일자                 */ 
+             , A.PY_PLA_DT                                              /* 지급예정일자             */  
+             , A.TR_BSN_DSC                                             /* 거래업무구분코드         */ 
+             , A.TRPL_C                                                 /* 거래처코드               */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                  AND CORP_C = A.CORP_C 
+                  AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                             /* 거래처명                 */
+             , A.ADJPL_C                                                /* 정산처코드               */   
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1=1
+                   AND CORP_C  = A.CORP_C
+                   AND TRPL_C  = A.ADJPL_C
+               ) AS ADJPL_NM                                            /* 정산처명                 */
+             , B.BY_DSQNO                                               /* 매입상세일련번호         */ 
+             , B.GDS_C                                                  /* 물품코드                 */ 
+             , C.GDS_DTL_NM                                             /* 물품명                   */ 
+             , C.GDS_STD_NM                                             /* 물품규격                 */ 
+             , C.UNT_C                                                  /* 관리단위                 */ 
+             , B.TR_BY_QT  * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1 
+                              END) AS TR_BY_QT                          /* 거래수(중)량              */
+             , B.BY_QT     * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1 
+                              END) AS BY_QT                             /* 수(중)량                 */     
+             , B.TR_UNT_C                                               /* 단위(거래단위)           */ 
+             , B.BY_BOX_QT * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1 
+                              END) AS BY_BOX_QT                         /* 박스수량                 */     
+             , B.BY_UPR                                                 /* 매입단가                 */ 
+             , B.SPY_AM    * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1
+                              END) AS SPY_AM                            /* 공급금액                 */
+             , B.VAT       * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1
+                              END) AS VAT                               /* 부가세                   */
+             , B.BY_AM     * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1
+                              END) AS BY_AM                             /* 매입금액                 */
+             , B.BY_CST_DSC                                             /* 매입비용구분코드         */ 
+             , B.BY_CST_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1
+                              END) AS BY_CST_AM                         /* 매입비용금액             */
+             , B.DUM_QT    * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                              ELSE                                  1 
+                              END) AS DUM_QT                            /* 덤수량                   */
+             , B.WHSE_C                                                 /* 창고코드                 */ 
+             , (SELECT WHSE_NM
+                  FROM TB_CO_M_WHSE
+                 WHERE 1 = 1
+                   AND CORP_C = B.CORP_C
+                   AND BZPL_C = B.BZPL_C
+                   AND WHSE_C = B.WHSE_C
+               ) WHSE_NM                                                /* 창고명                   */ 
+             , B.DSTR_TERDT                                             /* 유통기한일자             */     
+             , B.HST_AMN_DSC                                            /* 이력관리구분             */ 
+             , B.GDS_HST_NO                                             /* 이력번호(LOT번호)        */ 
+             , A.RMK_CNTN                                               /* 비고내용                 */
+             , B.DEL_YN                                                 /* 삭제여부                 */ 
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM         /* 최초등록일시             */
+             , A.FSRG_ID                                                /* 최초등록자ID             */
+             , A.FSRG_ID AS FSRG_NM                                     /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM        /* 최종변경일시             */
+             , A.LSCHG_ID                                               /* 최종변경자ID             */
+             , A.LSCHG_ID AS LSCHG_NM                                   /* 최종변경자명             */
+          FROM TB_BY_M_BUY            A 
+          LEFT OUTER JOIN TB_BY_D_BUY B
+            ON A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.BY_DT             = B.BY_DT
+           AND A.BY_SQNO           = B.BY_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON B.CORP_C            = C.CORP_C
+           AND B.BZPL_C            = C.BZPL_C
+           AND B.GDS_C             = C.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND B.DEL_YN            = 'N'
+         <choose>
+          <when test="DT_GBN == 1">
+           AND A.BY_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 3">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>   
+          <when test="DT_GBN == 4">
+           AND A.PY_PLA_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>          
+         </choose>
+       <if test="SLP_NML_YN != null and SLP_NML_YN != ''">
+           AND A.SLP_NML_YN        = #{SLP_NML_YN}
+       </if>
+       <if test="BY_REF_DSC != null and BY_REF_DSC != ''">
+           AND A.BY_REF_DSC        = #{BY_REF_DSC}
+       </if>          
+       <if test="TR_BSN_DSC != null and TR_BSN_DSC != ''">
+           AND A.TR_BSN_DSC        = #{TR_BSN_DSC}
+       </if>       
+       <if test="TRPL_C != null and TRPL_C != ''">            
+         <choose>
+          <when test="CD_GBN == 1">
+           AND A.TRPL_C            = #{TRPL_C}
+          </when>   
+          <when test="CD_GBN == 2">
+           AND A.ADJPL_C           = #{ADJPL_C}
+          </when>  
+         </choose>         
+       </if>   
+       <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C             = #{GDS_C}
+       </if>            
+    </select>
+    
+   
+
+</mapper>

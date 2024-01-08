@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+    <!-- 재고실사확정내역 -->
+    <select id="select_Sm5045_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+           SELECT /*+ select_Sm5045_01 */
+                C.CORP_C                                            /* 회사코드  */
+            ,   C.BZPL_C                                            /* 사업장코드 */
+            ,   B.SSVY_RSV_DT                                       /* 실사준비일자 */
+            ,   B.SSVY_RSV_SQNO                                     /* 실사준비일련번호 */
+            ,   B.TR_BSN_DSC                                        /* 거래업무구분코드 */
+            ,   B.TR_SQNO                                           /* 거래일련번호 */
+            ,   C.GDS_C                                             /* 물품코드 */
+            ,   D.GDS_DTL_NM                                        /* 물품명 */
+            ,   D.GDS_STD_NM                                        /* 물품규격 */
+            ,   D.TXT_DSC                                           /* 과세구분코드 */
+            ,   D.UNT_C                                             /* 관리단위 */
+            ,   C.WHSE_C                                            /* 창고코드 */
+            ,   E.WHSE_NM                                           /* 창고명 */
+            ,   A.SSVY_STS_DSC                                      /* 재고실사진행상태 */
+            ,   A.DFN_YN                                            /* 확정여부 */
+            ,   B.SLP_NML_YN                                        /* 전표정상여부 */
+            ,   C.STPL_QT                                           /* 재고수량 */
+            ,   C.SSVY_QT                                           /* 실사수량 */
+            ,   F.SSVY_CHRR_ID                                      /* 실조사자ID */
+            ,   F.SSVY_CHRR_ID              AS SSVY_CHRR_NM         /* 실사담당자 */  
+            ,   C.AJ_QT                                             /* 조정수량 */
+            ,   C.DIF_QT                                            /* 차이수량 */
+            ,   C.RMK_CNTN                                          /* 비고 */
+            ,   C.GDS_ADT_YN                                        /* 물품추가여부 */
+            ,   CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시          */
+            ,   B.FSRG_ID                                           /* 최초등록자ID    */
+            ,   B.FSRG_ID                          AS   FSRG_NM     /* 최초등록자이름     */
+            ,   CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시        */
+            ,   B.LSCHG_ID                                          /* 최종변경자ID    */
+            ,   B.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자이름     */
+            FROM TB_SM_M_SSVY_RSV A
+            INNER JOIN TB_SM_M_SSVY_DFN B
+            ON  A.CORP_C        = B.CORP_C
+            AND A.BZPL_C        = B.BZPL_C
+            AND A.SSVY_RSV_DT   = B.SSVY_RSV_DT
+            AND A.SSVY_RSV_SQNO = B.SSVY_RSV_SQNO
+            INNER JOIN TB_SM_D_SSVY_DFN_WHSE C
+            ON  B.CORP_C        = C.CORP_C
+            AND B.BZPL_C        = C.BZPL_C
+            AND B.SSVY_DFN_DT   = C.SSVY_DFN_DT
+            AND B.SSVY_DFN_SQNO = C.SSVY_DFN_SQNO
+            LEFT OUTER JOIN     TB_CO_M_GDS D
+            ON C.CORP_C         = D.CORP_C
+            AND C.BZPL_C        = D.BZPL_C
+            AND C.GDS_C         = D.GDS_C
+            LEFT OUTER JOIN     TB_CO_M_WHSE E
+            ON C.CORP_C         = E.CORP_C
+            AND C.BZPL_C        = E.BZPL_C
+            AND C.WHSE_C        = E.WHSE_C
+            INNER JOIN TB_SM_D_SSVY_RZT F
+            ON  F.CORP_C        = B.CORP_C
+            AND F.BZPL_C        = B.BZPL_C
+            AND F.SSVY_RSV_DT   = B.SSVY_RSV_DT
+            AND F.SSVY_RSV_SQNO = B.SSVY_RSV_SQNO
+            AND F.GDS_C         = C.GDS_C
+            AND F.WHSE_C        = C.WHSE_C
+            WHERE 1=1
+            AND A.CORP_C        = #{CORP_C}
+            AND A.BZPL_C        = #{BZPL_C}
+            AND A.SSVY_RSV_DT   BETWEEN #{ST_DT} AND #{ED_DT}
+            AND A.SSVY_STS_DSC  = '4'
+            AND F.DEL_YN        = 'N'
+            
+            <if test = "SLP_NML_YN != null and SLP_NML_YN != ''">
+               AND B.SLP_NML_YN        = #{SLP_NML_YN}
+            </if>
+            
+            <if test = "WHSE_C != null and WHSE_C != ''"> 
+               AND C.WHSE_C         = #{WHSE_C}
+            </if>
+             
+            <if test = "GDS_C != null and GDS_C != ''"> 
+               AND C.GDS_C         = #{GDS_C}
+            </if>
+            
+    </select>    
+    
+    <!-- 재고실사확정내역-(실사일련번호1개기준)조회 -->
+    <select id="select_Sm5045_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+           SELECT /*+ select_Sm5045_02 */
+                C.CORP_C                                            /* 회사코드  */
+            ,   C.BZPL_C                                            /* 사업장코드 */
+            ,   B.SSVY_RSV_DT                                       /* 실사준비일자 */
+            ,   B.SSVY_RSV_SQNO                                     /* 실사준비일련번호 */
+            ,   B.TR_BSN_DSC                                        /* 거래업무구분코드 */
+            ,   B.TR_SQNO                                           /* 거래일련번호 */
+            ,   C.GDS_C                                             /* 물품코드 */
+            ,   D.GDS_DTL_NM                                        /* 물품명 */
+            ,   D.GDS_STD_NM                                        /* 물품규격 */
+            ,   D.TXT_DSC                                           /* 과세구분코드 */
+            ,   D.UNT_C                                             /* 관리단위 */
+            ,   C.WHSE_C                                            /* 창고코드 */
+            ,   E.WHSE_NM                                           /* 창고명 */
+            ,   A.SSVY_STS_DSC                                      /* 재고실사진행상태 */
+            ,   A.DFN_YN                                            /* 확정여부 */
+            ,   B.SLP_NML_YN                                        /* 전표정상여부 */
+            ,   C.STPL_QT                                           /* 재고수량 */
+            ,   C.SSVY_QT                                           /* 실사수량 */
+            ,   F.SSVY_CHRR_ID                                      /* 실조사자ID */
+            ,   F.SSVY_CHRR_ID              AS SSVY_CHRR_NM         /* 실조사자 */
+            ,   C.AJ_QT                                             /* 조정수량 */
+            ,   C.DIF_QT                                            /* 차이수량 */
+            ,   C.RMK_CNTN                                          /* 비고 */
+            ,   C.GDS_ADT_YN                                        /* 물품추가여부 */
+            ,   CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시          */
+            ,   B.FSRG_ID                                           /* 최초등록자ID    */
+            ,   B.FSRG_ID                          AS   FSRG_NM     /* 최초등록자이름     */
+            ,   CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시        */
+            ,   B.LSCHG_ID                                          /* 최종변경자ID    */
+            ,   B.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자이름     */
+            FROM TB_SM_M_SSVY_RSV A
+            INNER JOIN TB_SM_M_SSVY_DFN B
+            ON  A.CORP_C        = B.CORP_C
+            AND A.BZPL_C        = B.BZPL_C
+            AND A.SSVY_RSV_DT   = B.SSVY_RSV_DT
+            AND A.SSVY_RSV_SQNO = B.SSVY_RSV_SQNO
+            INNER JOIN TB_SM_D_SSVY_DFN_WHSE C
+            ON  B.CORP_C        = C.CORP_C
+            AND B.BZPL_C        = C.BZPL_C
+            AND B.SSVY_DFN_DT   = C.SSVY_DFN_DT
+            AND B.SSVY_DFN_SQNO = C.SSVY_DFN_SQNO
+            LEFT OUTER JOIN     TB_CO_M_GDS D
+            ON C.CORP_C         = D.CORP_C
+            AND C.BZPL_C        = D.BZPL_C
+            AND C.GDS_C         = D.GDS_C
+            LEFT OUTER JOIN     TB_CO_M_WHSE E
+            ON C.CORP_C         = E.CORP_C
+            AND C.BZPL_C        = E.BZPL_C
+            AND C.WHSE_C        = E.WHSE_C
+            INNER JOIN TB_SM_D_SSVY_RZT F
+            ON  F.CORP_C        = B.CORP_C
+            AND F.BZPL_C        = B.BZPL_C
+            AND F.SSVY_RSV_DT   = B.SSVY_RSV_DT
+            AND F.SSVY_RSV_SQNO = B.SSVY_RSV_SQNO
+            AND F.GDS_C         = C.GDS_C
+            AND F.WHSE_C        = C.WHSE_C
+            WHERE 1=1
+            /*AND A.DEL_YN        = 'N'*/
+            AND A.SSVY_STS_DSC  = '4'
+            AND A.CORP_C        = #{CORP_C}
+            AND A.BZPL_C        = #{BZPL_C}
+            AND A.SSVY_RSV_DT   = #{SSVY_RSV_DT}
+            AND A.SSVY_RSV_SQNO = #{SSVY_RSV_SQNO}
+            AND F.DEL_YN        = 'N'
+            
+    </select>    
+    
+    <!-- 전표삭제상태로 변경 -->
+    <update id="update_Sm5045_TB_SM_M_SSVY_RSV_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_Sm5045_TB_SM_M_SSVY_RSV_01 */ TB_SM_M_SSVY_RSV
+           SET DEL_YN     = 'Y'
+             , LSCHG_DTM  = GETDATE()
+             , LSCHG_ID   = #{GUSRID} 
+         WHERE 1=1
+           AND CORP_C         = #{CORP_C}
+           AND BZPL_C         = #{BZPL_C}
+           AND SSVY_RSV_DT    = #{SSVY_RSV_DT}
+           AND SSVY_RSV_SQNO  = #{SSVY_RSV_SQNO}
+           AND DEL_YN         = 'N'
+    </update>
+    
+    <!-- 실사삭제상태로 변경 -->
+    <update id="update_Sm5045_TB_SM_M_SSVY_DFN_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_Sm5045_TB_SM_M_SSVY_DFN_01 */ TB_SM_M_SSVY_DFN
+           SET SLP_NML_YN = 'N'
+             , LSCHG_DTM  = GETDATE()
+             , LSCHG_ID   = #{GUSRID}
+         WHERE 1=1
+           AND CORP_C         = #{CORP_C}
+           AND BZPL_C         = #{BZPL_C}
+           AND SSVY_RSV_DT    = #{SSVY_RSV_DT}
+           AND SSVY_RSV_SQNO  = #{SSVY_RSV_SQNO}
+           AND SLP_NML_YN     = 'Y'
+    </update>
+    
+</mapper>

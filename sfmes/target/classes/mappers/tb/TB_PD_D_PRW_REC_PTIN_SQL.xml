@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_PRW_REC_PTIN" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_PRW_REC_PTIN */ TB_PD_D_PRW_REC_PTIN
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRW_C               /* 공정코드             */
+            , SQNO                /* 일련번호             */
+            , GDS_C               /* 물품코드             */
+            , PTIN_GDS_UNT_C      /* 투입물품단위코드     */
+            , PTIN_QT             /* 투입수량             */
+            , PTIN_WT             /* 투입중량             */
+            , LSTR                /* 손실율               */
+            , NED_WT              /* 소요량               */
+            , PD_YLD_OBJ_YN       /* 생산수율대상여부     */
+            , RMK_CNTN            /* 비고내용(비고)       */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분3            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PRW_C}
+            , (SELECT ISNULL(MAX(SQNO),0)+1
+                  FROM TB_PD_D_PRW_REC_PTIN
+                 WHERE 1=1
+                   AND BZPL_C = #{BZPL_C}
+                   AND CORP_C = #{CORP_C}
+                   AND PRW_C  = #{PRW_C}  )
+            , #{GDS_C}
+            , #{PTIN_GDS_UNT_C}
+            , DBO.SF_GET_FLOAT(#{PTIN_QT})
+            , DBO.SF_GET_FLOAT(#{PTIN_WT})
+            , DBO.SF_GET_FLOAT(#{LSTR})
+            , DBO.SF_GET_FLOAT(#{NED_WT})
+            , #{PD_YLD_OBJ_YN}
+            , #{RMK_CNTN}
+            , 'Y'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_PRW_REC_PTIN" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_PRW_REC_PTIN */ TB_PD_D_PRW_REC_PTIN
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PRW_C               = #{PRW_C}                 /* 공정코드             */
+             , SQNO                = #{SQNO}                  /* 일련번호             */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , PTIN_GDS_UNT_C      = #{PTIN_GDS_UNT_C}        /* 투입물품단위코드     */
+             , PTIN_QT             = #{PTIN_QT}               /* 투입수량             */
+             , PTIN_WT             = #{PTIN_WT}               /* 투입중량             */
+             , LSTR                = #{LSTR}                  /* 손실율               */
+             , NED_WT              = #{NED_WT}                /* 소요량               */
+             , PD_YLD_OBJ_YN       = #{PD_YLD_OBJ_YN}         /* 생산수율대상여부     */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용(비고)       */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분3            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PRW_C               = #{PRW_C}
+           AND SQNO                = #{SQNO}
+    </update>
+
+    <delete id="delete_TB_PD_D_PRW_REC_PTIN" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_PRW_REC_PTIN */ FROM TB_PD_D_PRW_REC_PTIN
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PRW_C               = #{PRW_C}
+           AND SQNO                = #{SQNO}
+    </delete>
+
+    <select id="select_TB_PD_D_PRW_REC_PTIN" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_PRW_REC_PTIN */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PRW_C                                             /* 공정코드                  */
+             , A.SQNO                                              /* 일련번호                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+             , A.PTIN_QT                                           /* 투입수량                  */
+             , A.PTIN_WT                                           /* 투입중량                  */
+             , A.LSTR                                              /* 손실율                    */
+             , A.NED_WT                                            /* 소요량                    */
+             , A.PD_YLD_OBJ_YN                                     /* 생산수율대상여부          */
+             , A.RMK_CNTN                                          /* 비고내용(비고)            */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분3                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_PRW_REC_PTIN A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.PRW_C             = #{PRW_C}
+           AND A.SQNO              = #{SQNO}
+    </select>
+</mapper>

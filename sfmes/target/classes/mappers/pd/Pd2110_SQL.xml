@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 작업보고현황 조회 -->
+    <select id="selectPd2110_Rpt_Mfs" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd2110_Rpt_Mfs */
+               A.CORP_C                                                              /* 회사코드                  */
+             , A.BZPL_C                                                              /* 사업장코드                */
+             , A.RPT_DT                                                              /* 일지일자                  */
+             , A.RPT_SQNO                                                            /* 일지일련번호              */
+             , A.PRW_C                                             /* BOM(공정)코드(육가공)     */
+             , A.BPRW_PRW_C                                        /* 전공정BOM코드(육가공)     */
+             , A.MFC_WK_STS_C                                                        /* 가공작업상태코드          */
+             , A.MFC_DSC                                                             /* 가공구분코드              */
+             , A.PD_METH_C                                                           /* 생산방법코드              */
+             , A.DNTT_DT                                                             /* 지시일자                  */
+             , A.DNTT_SQNO                                                           /* 지시일련번호              */
+             , A.DNTT_DNO                                                            /* 지시상세번호              */
+             , A.PD_LINE_C                                                           /* 생산라인코드              */
+             , A.PD_DT                                                               /* 생산일자                  */
+             , A.RPT_CNTN                                                            /* 작업보고내용              */
+             , A.RMK_CNTN                                                            /* 비고내용                  */
+             , A.PCS_CAL_DT                                                          /* 원가계산일자              */
+             , A.ACG_DT                                                              /* 회계일자                  */
+             , B.GDS_C                                                               /* 물품코드                  */
+             , B.MFS_DNTT_QT                                                         /* 제품지시량                */
+             , B.PD_QT                                                               /* 생산수량                  */
+             , C.GDS_DTL_NM                                                          /* 물품명상세(물품명 + 규격) */
+             , C.GDS_STD_NM                                                          /* 물품규격                  */
+             , C.UNT_C                                                               /* 물품단위코드              */
+             , C.GDS_TP_DSC                                                          /* 물품유형구분코드          */
+             , A.TR_BSN_DSC                                                          /* 거래업무구분코드          */
+             , A.TR_SQNO                                                             /* 거래일련번호              */
+             , A.DEL_YN                                                              /* 삭제여부                  */
+             , A.ETC_DSC1                                                            /* 기타구분1                 */
+             , A.ETC_DSC2                                                            /* 기타구분2                 */
+             , A.ETC_DSC3                                                            /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM                      /* 최초등록일시              */
+             , A.FSRG_ID                                                             /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                                  /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM                     /* 최종변경일시              */
+             , A.LSCHG_ID                                                            /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                                                /* 최종변경자ID              */
+          FROM TB_PD_M_WK_RPT A
+               INNER JOIN TB_PD_D_WK_RPT_MFS B
+               ON    A.CORP_C          = B.CORP_C
+                 AND A.BZPL_C          = B.BZPL_C
+                 AND A.RPT_DT          = B.RPT_DT
+                 AND A.RPT_SQNO        = B.RPT_SQNO
+               INNER JOIN TB_CO_M_GDS        C
+               ON    B.CORP_C          = C.CORP_C
+                 AND B.BZPL_C          = C.BZPL_C
+                 AND B.GDS_C           = C.GDS_C
+         WHERE 1 = 1
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+        <if test='DATE_CHK == "1"'>
+           AND A.RPT_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+        </if>
+        <if test='DATE_CHK == "2"'>   
+           AND A.ACG_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+        </if>
+        <if test="GDS_C != ''">
+           AND B.GDS_C           = #{GDS_C}
+        </if>
+        <if test="MFC_WK_STS_C != ''">
+           AND A.MFC_WK_STS_C    = #{MFC_WK_STS_C}
+        </if>
+        <if test="MFC_DSC != ''">
+           AND A.MFC_DSC         = #{MFC_DSC}
+        </if>
+        <if test="DEL_YN != ''">
+           AND A.DEL_YN         = #{DEL_YN}
+        </if>
+         ORDER BY A.RPT_DT
+                , A.RPT_SQNO
+                , B.GDS_C
+    </select>
+
+</mapper>

@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_GDS_UPR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_GDS_UPR */ TB_SE_M_GDS_UPR
+        (
+              CORP_C                                            /* 회사코드             */
+            , BZPL_C                                            /* 사업장코드           */
+            , GDS_C                                             /* 물품코드             */
+            , APL_BAS_DT                                        /* 적용기준일자         */
+            , WHSL_SL_UPR                                       /* 도매매출단가         */
+            , RTL_SL_UPR                                        /* 소매매출단가         */
+            , ARCY_SPY_UPR                                      /* 대리점공급단가       */
+            , RMK_CNTN                                          /* 비고내용             */
+            , DEL_YN                                            /* 삭제여부             */
+            , FSRG_DTM                                          /* 최초등록일시         */
+            , FSRG_ID                                           /* 최초등록자ID         */
+            , LSCHG_DTM                                         /* 최종변경일시         */
+            , LSCHG_ID                                          /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{GDS_C}
+            , #{APL_BAS_DT}
+            , DBO.SF_GET_FLOAT(#{WHSL_SL_UPR})
+            , DBO.SF_GET_FLOAT(#{RTL_SL_UPR})
+            , DBO.SF_GET_FLOAT(#{ARCY_SPY_UPR})
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_GDS_UPR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_GDS_UPR */ TB_SE_M_GDS_UPR
+           SET 
+               CORP_C              = #{CORP_C}                                      /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                      /* 사업장코드           */
+             , GDS_C               = #{GDS_C}                                       /* 물품코드             */
+             , APL_BAS_DT          = #{APL_BAS_DT}                                  /* 적용기준일자         */
+             , WHSL_SL_UPR         = DBO.SF_GET_FLOAT(#{WHSL_SL_UPR})               /* 도매매출단가         */
+             , RTL_SL_UPR          = DBO.SF_GET_FLOAT(#{RTL_SL_UPR})                /* 소매매출단가         */
+             , ARCY_SPY_UPR        = DBO.SF_GET_FLOAT(#{ARCY_SPY_UPR})              /* 도매점공급단가       */
+             , RMK_CNTN            = #{RMK_CNTN}                                    /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                                      /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                      /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND GDS_C               = #{GDS_C}
+           AND APL_BAS_DT          = #{APL_BAS_DT}
+    </update>
+
+    <delete id="delete_TB_SE_M_GDS_UPR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_GDS_UPR */ FROM TB_SE_M_GDS_UPR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </delete>
+
+    <select id="select_TB_SE_M_GDS_UPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_GDS_UPR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.GDS_DTL_NM                                        /* 물품명                    */ 
+             , A.GDS_STD_NM                                        /* 물품규격명                */ 
+             , A.UNT_C                                             /* 관리단위                  */ 
+             , ISNULL(B.APL_BAS_DT, REPLACE(CONVERT(CHAR(23), GETDATE(), 23), '-', '')) AS APL_BAS_DT /* 적용기준일자              */
+             , B.WHSL_SL_UPR                                       /* 도매매출단가              */
+             , B.RTL_SL_UPR                                        /* 소매매출단가              */
+             , B.ARCY_SPY_UPR                                      /* 도매점공급단가            */
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , B.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , B.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , B.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_GDS                A
+          LEFT OUTER JOIN TB_SE_M_GDS_UPR B
+            ON A.CORP_C     = B.CORP_C
+           AND A.BZPL_C     = B.BZPL_C
+           AND A.GDS_C      = B.GDS_C
+           AND B.DEL_YN     = 'N'
+         WHERE 1=1 
+           AND A.CORP_C     = #{CORP_C}         
+           AND A.BZPL_C     = #{BZPL_C}
+           AND A.USE_YN     = 'Y'
+           AND A.GDS_TP_DSC IN ('10','80')
+     <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''">
+           AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+     </if>
+     <if test = "searchKeyword != null and searchKeyword != ''">
+       <choose>
+         <when test = "searchCondition == ''">
+           AND (A.GDS_C LIKE '%${searchKeyword}%' OR A.GDS_DTL_NM LIKE '%${searchKeyword}%')
+         </when>
+         <when test = "searchCondition == 1">
+           AND A.GDS_C LIKE '%${searchKeyword}%'
+         </when>
+         <when test = "searchCondition == 2">
+           AND A.GDS_DTL_NM LIKE '%${searchKeyword}%'
+         </when>
+       </choose>
+     </if>        
+    </select>
+    
+</mapper>

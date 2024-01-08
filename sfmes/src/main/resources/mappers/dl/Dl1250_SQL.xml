@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.dl">
+
+    <!-- 마감등록조회_테스트 테이블-->
+    <select id="selectDl1250List_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1250List_01 */
+              A.CORP_C                                  /* 회사코드     */
+            , A.BZPL_C                                  /* 사업장코드     */
+            , A.BAS_DT                                  /* 기준일자     */
+            , A.BAS_YY                                  /* 기준년도     */
+            , A.BAS_MM                                  /* 기준월     */
+            , A.BAS_DD                                  /* 기준일     */ 
+            , A.ALL_DDL_YN                              /* 전체마감여부     */
+            , A.FSRG_DTM                                /* 최초등록일시     */
+            , A.FSRG_ID                                 /* 최초등록자ID     */
+            , A.LSCHG_DTM                               /* 최종변경일시     */
+            , A.LSCHG_ID                                /* 최종변경자ID     */
+          FROM TB_SY_B_DDL_test01 A
+        WHERE 1 = 1
+          AND A.CORP_C = #{CORP_C}
+          AND A.BZPL_C = #{BZPL_C}
+          AND A.BAS_DT BETWEEN #{ST_DT} AND #{ED_DT}    
+          AND A.USE_YN = 'Y'
+    </select>
+    
+    <!-- 마감등록 사용여부 변경_테스트테이블 -->
+    <update id="updateDl1250List_01" parameterType="LinkedHashMap">
+        UPDATE /*+ updateDl1250List_01*/
+               TB_SY_B_DDL_test01
+            SET
+               USE_YN       = 'N'                       /* 사용여부     */
+             , LSCHG_DTM    = GETDATE()                 /* 최종변경일시     */
+             , LSCHG_ID     = #{GUSRID}                 /* 최종변경자ID     */
+            WHERE 1 = 1
+              AND CORP_C    = #{CORP_C}
+              AND BZPL_C    = #{BZPL_C}
+              AND BAS_DT    = #{BAS_DT}
+    </update>
+</mapper>

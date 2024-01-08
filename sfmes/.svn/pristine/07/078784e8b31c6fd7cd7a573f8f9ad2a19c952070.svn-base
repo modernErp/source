@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 배부차액계산전 정합성 체크  -->
+    <select id="pd3060_ValidChk" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ pd3060_ValidChk */
+	          CASE WHEN '2' <> (SELECT ISNULL(A.PCS_CLC_STSC,'0')
+	                              FROM TB_CP_M_PCS  A
+	                             WHERE 1=1 
+                                   AND A.CORP_C            = #{CORP_C}
+                                   AND A.BZPL_C            = #{BZPL_C}
+                                   AND A.PCS_CLC_DT        = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}  ) THEN  '원가계산확정 상태만 배부차액계산 가능합니다.'  
+					WHEN 'Y' = (SELECT ISNULL(A.DEL_YN,'')
+	                              FROM TB_CP_M_PCS  A
+	                             WHERE 1=1 
+                                   AND A.CORP_C            = #{CORP_C}
+                                   AND A.BZPL_C            = #{BZPL_C}
+                                   AND A.PCS_CLC_DT        = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}  ) THEN  '원가계산 삭제된내역은 배부차액계산 할 수 없습니다.'	
+					WHEN 0  <> (SELECT MAX(A.TOT_LBR_CST_AM) - SUM(B.LBR_CST_AM)
+	                              FROM TB_CP_M_PCS    A
+				                     , TB_CP_D_PCS    B
+		                         WHERE A.CORP_C       = B.CORP_C
+		                           AND A.BZPL_C       = B.BZPL_C
+		                           AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		                           AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+                                   AND A.CORP_C       = #{CORP_C}
+                                   AND A.BZPL_C       = #{BZPL_C}
+                                   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}  
+		                        GROUP BY  A.CORP_C
+		                                , A.BZPL_C
+		    		                    , A.PCS_CLC_DT
+			    	                    , A.PCS_CLC_SQNO    ) THEN  '총노무비금액과 품목별 노무비 합계가 다릅니다.'	
+					WHEN 0  <> (SELECT MAX(A.TOT_MFT_XPN_AM) - SUM(B.MFT_XPN_AM)
+	                              FROM TB_CP_M_PCS    A
+				                     , TB_CP_D_PCS    B
+		                         WHERE A.CORP_C       = B.CORP_C
+		                           AND A.BZPL_C       = B.BZPL_C
+		                           AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		                           AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+                                   AND A.CORP_C       = #{CORP_C}
+                                   AND A.BZPL_C       = #{BZPL_C}
+                                   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}  
+		                        GROUP BY  A.CORP_C
+		                                , A.BZPL_C
+		    		                    , A.PCS_CLC_DT
+			    	                    , A.PCS_CLC_SQNO    ) THEN  '총제조경비금액과 품목별 제조경비 합계가 다릅니다.'	
+			    	ELSE 'OK' 
+	          END AS RESULT_MSG
+        ]]>
+    </select>
+
+    <!-- 배부차액 매출 보정 내역 조회 -->
+    <select id="select_Pd3060_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd3060_01 */ 
+			   A.CORP_C 
+			 , A.BZPL_C
+			 , A.PCS_CLC_DT
+			 , A.PCS_CLC_SQNO
+			 , B.GDS_C
+			 , B.TRPL_C
+			 , B.ARG_AM        /* 매출보정금액 */
+			 , A.PCS_CLC_ST_DT  /* 원가계산기간시작일 */
+			 , A.PCS_CLC_ED_DT  /* 원가계산기간종료일 */ 
+		  FROM TB_CP_M_PCS      A
+		     , TB_CP_M_DBSN_SL  B
+		 WHERE A.CORP_C        = B.CORP_C
+		   AND A.BZPL_C        = B.BZPL_C
+		   AND A.PCS_CLC_DT    = B.PCS_CLC_DT
+		   AND A.PCS_CLC_SQNO  = B.PCS_CLC_SQNO 
+		   AND A.CORP_C        = #{CORP_C}
+		   AND A.BZPL_C        = #{BZPL_C}
+		   AND A.PCS_CLC_DT    = #{PCS_CLC_DT}
+		   AND A.PCS_CLC_SQNO  = #{PCS_CLC_SQNO}
+    </select>
+
+    <!-- 배부차액 재고 보정 내역 조회 -->
+    <select id="select_Pd3060_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd3060_02 */ 
+			   A.CORP_C 
+			 , A.BZPL_C
+			 , A.PCS_CLC_DT
+			 , A.PCS_CLC_SQNO
+			 , B.GDS_C
+			 , SUBSTRING(A.PCS_CLC_ED_DT,1,6) AS ACG_MN    /* 월집계년월 */
+			 , A.PCS_CLC_ED_DT                AS ACG_DT    /* 회계일자  */ 
+			 , A.PCS_CLC_ED_DT                AS RLTR_DT   /* 실거래일자 */ 
+			 , B.DSBN_ARG_SM_AM    /* 재고보정금액        */
+			 , A.PCS_CLC_ST_DT     /* 원가계산기간시작일 */
+			 , A.PCS_CLC_ED_DT     /* 원가계산기간종료일 */ 
+		  FROM TB_CP_M_PCS      A
+		     , TB_CP_D_PCS      B
+		 WHERE A.CORP_C        = B.CORP_C
+		   AND A.BZPL_C        = B.BZPL_C
+		   AND A.PCS_CLC_DT    = B.PCS_CLC_DT
+		   AND A.PCS_CLC_SQNO  = B.PCS_CLC_SQNO 
+		   AND A.CORP_C        = #{CORP_C}
+		   AND A.BZPL_C        = #{BZPL_C}
+		   AND A.PCS_CLC_DT    = #{PCS_CLC_DT}
+		   AND A.PCS_CLC_SQNO  = #{PCS_CLC_SQNO}
+		   AND B.DSBN_ARG_SM_AM != 0
+    </select>
+
+    <!-- 배부차액 대상 매출 보정 내역 생성 -->
+    <insert id="insert_Pd3060_01" parameterType="LinkedHashMap">
+        INSERT /*+ insert_Pd3060_01 */ INTO TB_CP_M_DBSN_SL
+			SELECT B.CORP_C 
+			     , B.BZPL_C
+				 , C.PCS_CLC_DT
+				 , C.PCS_CLC_SQNO
+				 , B.GDS_C
+				 , A.TRPL_C
+				 , SUM(B.SL_QT  * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1  ELSE 1 END))   AS SL_QT       /* 매출수량  */
+				 , SUM(B.SPY_AM * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1  ELSE 1 END))   AS SL_AM       /* 매출공급가 */
+				 , SUM(B.SL_PCS * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1  ELSE 1 END))   AS SL_PCS_AM   /* 매출원가  */
+				 , 0               AS ARG_RTO     /* 정리비율  */
+				 , 0               AS ARG_AM      /* 정리금액  */
+				 , ''              AS ETC_DSC     
+                 , GETDATE()                /* 최초등록일시         */
+                 , #{GUSRID}                /* 최초등록자ID    */
+                 , GETDATE()                /* 최종변경일시         */
+                 , #{GUSRID}                /* 최종변경자ID    */
+			  FROM TB_SE_M_SL   A
+			     , TB_SE_D_SL   B
+				 , TB_CP_D_PCS  C
+			 WHERE A.CORP_C  = B.CORP_C
+			   AND A.BZPL_C  = B.BZPL_C
+			   AND A.SL_DT   = B.SL_DT
+			   AND A.SL_SQNO = B.SL_SQNO
+			   AND B.CORP_C  = C.CORP_C
+			   AND B.BZPL_C  = C.BZPL_C
+			   AND B.GDS_C   = C.GDS_C
+			   AND A.CORP_C         = #{CORP_C}
+			   AND A.BZPL_C         = #{BZPL_C}
+			   AND A.ACG_DT BETWEEN #{PCS_CLC_ST_DT} AND #{PCS_CLC_ED_DT}
+			   AND C.PCS_CLC_DT     = #{PCS_CLC_DT}
+			   AND C.PCS_CLC_SQNO   = #{PCS_CLC_SQNO}
+			GROUP BY B.CORP_C 
+			      , B.BZPL_C
+				  , C.PCS_CLC_DT
+				  , C.PCS_CLC_SQNO
+				  , B.GDS_C
+				  , A.TRPL_C
+    </insert>
+
+    <!-- 배부차액 대상 매출 보정 내역 매출기본 저장  -->
+    <insert id="insert_Pd3060_02" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_Pd3060_02 */ TB_SE_M_SL
+        (
+              CORP_C              /* 회사코드               */
+            , BZPL_C              /* 사업장코드             */
+            , SL_DT               /* 매출일자               */
+            , SL_SQNO             /* 매출일련번호           */
+            , SLP_NML_YN          /* 전표정상여부           */
+            , RLTR_DT             /* 실거래일자             */
+            , ACG_DT              /* 회계일자               */
+            , WDR_PLA_DT          /* 회수예정일자           */
+            , SL_REF_DSC          /* 매출참조구분코드       */
+            , ADJPL_C             /* 정산처코드             */
+            , TRPL_C              /* 거래처코드             */
+            , SL_UPR_VAT_INCD_YN  /* 매출단가부가세포함여부 */
+            , SL_AM               /* 매출금액               */
+            , SPY_AM              /* 공급금액               */
+            , VAT                 /* 부가세                 */
+            , CSH_AM              /* 현금금액               */
+            , CRE_AM              /* 외상금액               */
+            , TFR_AM              /* 대체금액               */
+            , FTR_AM              /* 이체금액               */
+            , CCD_AM              /* 카드금액               */
+            , PRV_AM              /* 선수금액               */
+            , DC_AM               /* 할인금액               */
+            , PARC_AM             /* 택배금액               */
+            , TRPCS               /* 운송비                 */
+            , SL_FORM_C           /* 매출형태코드           */
+            , CRD_CDCO_C          /* 신용카드사코드         */
+            , TXBIL_SND_YN        /* 세금계산서발행여부     */
+            , RGD_RSN_DSC         /* 반품사유구분코드       */
+            , OGN_SL_DT           /* 원매출일자             */
+            , OGN_SL_SQNO         /* 원매출일련번호         */
+            , DLR_DT              /* 출고일자               */
+            , DLR_SQNO            /* 출고일련번호           */
+            , RMK_CNTN            /* 비고내용               */
+            , TR_BSN_DSC          /* 거래업무구분코드       */
+            , TR_SQNO             /* 거래일련번호           */
+            , FSRG_DTM            /* 최초등록일시           */
+            , FSRG_ID             /* 최초등록자ID           */
+            , LSCHG_DTM           /* 최종변경일시           */
+            , LSCHG_ID            /* 최종변경자ID           */
+            , OEM_YN              /* OEM여부 */  
+            , LT_COST             /* 물류비용 */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{SL_DT}
+            , #{SL_SQNO}
+            , 'Y'
+            , CONVERT(varchar(8), GETDATE(), 112)  /* 실거래일자 */
+            , #{ACG_DT}                            /* 회계일자 원가계산기잔 종료일 */ 
+            , ''
+            , ''
+            , #{TRPL_C}
+            , dbo.SF_GET_ADJPL_C(#{CORP_C}, #{TRPL_C})   /* 정산처코드 */
+            , ''
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , 0
+            , ''
+            , ''
+            , ''
+            , ''
+            , ''
+            , 0
+            , ''
+            , 0
+            , '배부차액 정리 등록'
+            , #{TR_BSN_DSC}
+            , DBO.SF_GET_NUMERIC(#{TR_SQNO})
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+            , 'N'
+            , 0
+        )
+    </insert>
+
+    <insert id="insert_Pd3060_03" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_Pd3060_03 */ TB_SE_D_SL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , SL_DT               /* 매출일자             */
+            , SL_SQNO             /* 매출일련번호         */
+            , SL_DSQNO            /* 매출상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , SL_QT               /* 매출수량             */
+            , SL_BOX_QT           /* 매출박스수량         */
+            , TR_UNT_C            /* 거래단위코드         */
+            , SL_UPR              /* 매출단가             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , SL_AM               /* 매출금액             */
+            , WHSE_C              /* 창고코드             */
+            , DSTR_TERDT          /* 유통기한일자         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , TOTE_CODE           /* 박스코드(TOTE)   */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , SL_WT               /* 매출중량             */
+            , TXT_DSC             /* 과세구분코드         */
+            , SL_PCS              /* 매출원가             */
+            , SL_PCS_AM           /* 매출원가금액         */
+            , DUM_YN              /* 덤여부               */
+            , EVEN_SQNO           /* 행사일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID     */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID     */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{SL_DT}
+            , #{SL_SQNO}
+            , (
+               SELECT ISNULL(MAX(SL_DSQNO),0)+1 
+                 FROM TB_SE_D_SL
+                WHERE 1 = 1
+                  AND CORP_C  = #{CORP_C}
+                  AND BZPL_C  = #{BZPL_C}
+                  AND SL_DT   = #{SL_DT}
+                  AND SL_SQNO = #{SL_SQNO}
+              )
+            , #{GDS_C}
+            , 0
+            , 0
+            , ''
+            , 0
+            , 0
+            , 0
+            , 0
+            , ''
+            , ''
+            , ''
+            , ''
+            , ''
+            , ''
+            , 0
+            , ''
+            , 0
+            , ''
+            , 0
+            , DBO.SF_GET_NUMERIC(#{SL_PCS_AM})
+            , ''
+            , 0
+            , '배부차액 정리 등록'
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <!-- 배부차액 원가계산상태 변경 -->
+    <update id="update_pd3060_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3060_01 */ TB_CP_M_PCS
+           SET PCS_CLC_STSC        = #{NEW_PCS_CLC_STSC}      /* 원가계산상태 1.원가계산, 2.원가계산확정, 3.배부차액계산, 4.배부차액정리       */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+    
+    <!-- 원가상세 매출 보정 내역 품목합계 수정 -->
+    <update id="update_pd3060_02" parameterType="LinkedHashMap">
+		MERGE /*+ update_pd3060_02 */ INTO TB_CP_D_PCS A    /* 원가계산상세 */
+		USING (
+				SELECT CORP_C 
+				     , BZPL_C
+					 , PCS_CLC_DT
+					 , PCS_CLC_SQNO
+					 , GDS_C
+				     , SUM(SL_QT)      AS SL_QT
+                     , SUM(SL_AM)      AS SL_AM
+					 , SUM(SL_PCS_AM)  AS SL_PCS_AM
+				  FROM TB_CP_M_DBSN_SL                 /* 원가_배부매출상세 */
+				 WHERE CORP_C         = #{CORP_C}
+				   AND BZPL_C         = #{BZPL_C}
+				   AND PCS_CLC_DT     = #{PCS_CLC_DT}
+				   AND PCS_CLC_SQNO   = #{PCS_CLC_SQNO}
+				GROUP BY CORP_C 
+				       , BZPL_C
+					   , PCS_CLC_DT
+					   , PCS_CLC_SQNO
+					   , GDS_C
+			  ) B
+		  ON (    A.CORP_C        = B.CORP_C      
+			  AND A.BZPL_C        = B.BZPL_C      
+			  AND A.PCS_CLC_DT    = B.PCS_CLC_DT  
+		      AND A.PCS_CLC_SQNO  = B.PCS_CLC_SQNO 
+			  AND A.GDS_C         = B.GDS_C       
+			 )
+		WHEN MATCHED THEN
+		UPDATE
+		SET A.DSBN_OBJ_SL_QT    = B.SL_QT                 /* 배부차액대상매출수량 */
+		  , A.DSBN_OBJ_SL_PCS   = B.SL_PCS_AM             /* 배부차액대상매출원가 */ 		
+		  , A.DSBN_ARG_SL_PCS   = ROUND(A.DSBN_DAM * (B.SL_QT / A.PD_QT),0)     /* 배부차액정리매출원가 = 배부차액금액 * 생산수량 대비 매출수량 비율(배부차액대상매출수량 / 생산수량)  */ 		
+	    ;	  
+    </update>
+
+    <!-- 원가상세 재고보정내역 수정 -->
+    <update id="update_pd3060_03" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3060_03 */ TB_CP_D_PCS
+           SET DSBN_OBJ_SM_QT    = PD_QT - DSBN_OBJ_SL_QT       /* 배부차액대상재고수량 = 생산수량 - 배부차액대상매출수량  */  
+		     , DSBN_OBJ_SM_AM    = PD_AM - DSBN_OBJ_SL_PCS      /* 배부차액대상재고금액 = 생산금액 - 배부차액대상매출원가  */ 
+		     , DSBN_ARG_SM_AM    = DSBN_DAM - DSBN_ARG_SL_PCS   /* 배부차액정리재고금액 = 배부차액금액 - 배부차액정리매출원가  */ 
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+
+    <!-- 배부차액계산 단계에서 취소한경우 수정 -->
+    <update id="update_pd3060_04" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3060_04 */ TB_CP_D_PCS
+           SET DSBN_OBJ_SL_QT    = 0
+		     , DSBN_OBJ_SL_PCS   = 0 		
+		     , DSBN_ARG_SL_PCS   = 0  
+             , DSBN_OBJ_SM_QT    = 0
+		     , DSBN_OBJ_SM_AM    = 0 
+		     , DSBN_ARG_SM_AM    = 0 
+             , LSCHG_DTM         = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID          = #{GUSRID}                /* 최종변경자ID    */
+         WHERE 1=1 
+           AND CORP_C            = #{CORP_C}
+           AND BZPL_C            = #{BZPL_C}
+           AND PCS_CLC_DT        = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO      = #{PCS_CLC_SQNO}
+    </update>
+
+    <!-- 배부차액 매출내역 정리비율, 정리금액 수정 -->
+    <update id="update_pd3060_05" parameterType="LinkedHashMap">
+        MERGE  /*+ update_pd3060_05 */ INTO TB_CP_M_DBSN_SL   A
+        USING (
+			  SELECT CORP_C
+			       , BZPL_C
+			   	   , PCS_CLC_DT
+				   , PCS_CLC_SQNO
+				   , GDS_C
+				   , TRPL_C
+				   , ARG_RTO
+				   , ROUND(DSBN_ARG_SL_PCS * ARG_RTO,0)   AS ARG_AM    /* 거래처 품목별 정리금액 */
+			   FROM (
+					SELECT A.CORP_C
+					     , A.BZPL_C
+					   	 , A.PCS_CLC_DT
+						 , A.PCS_CLC_SQNO
+						 , A.GDS_C
+						 , B.TRPL_C
+						 , ROUND(B.SL_QT / A.DSBN_OBJ_SL_QT, 6)   AS ARG_RTO    /* 거래처 품목별 매출수량 비율  */ 
+						 , A.DSBN_ARG_SL_PCS    /* 품목별 매출정리원가 */  
+					  FROM TB_CP_D_PCS      A
+					     , TB_CP_M_DBSN_SL  B
+				 	 WHERE A.CORP_C       = B.CORP_C
+					   AND A.BZPL_C       = B.BZPL_C
+					   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+					   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+					   AND A.GDS_C        = B.GDS_C
+					   AND A.CORP_C       = #{CORP_C}
+					   AND A.BZPL_C       = #{BZPL_C}
+					   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+					   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+			        )  A
+			   )  B      
+			 ON (  A.CORP_C       = B.CORP_C
+			   AND A.BZPL_C       = B.BZPL_C
+			   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+			   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+			   AND A.GDS_C        = B.GDS_C  
+			   AND A.TRPL_C       = B.TRPL_C   )
+			WHEN MATCHED THEN
+			UPDATE
+			SET A.ARG_RTO  = B.ARG_RTO
+			  , A.ARG_AM   = B.ARG_AM
+			;  
+    </update>
+
+    <!-- 배부차액 대상 매출 보정 내역 삭제 -->
+    <delete id="delete_pd3060_01" parameterType="LinkedHashMap">
+        DELETE /*+ delete_pd3060_01 */ FROM TB_CP_M_DBSN_SL
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </delete>
+
+    <!-- 배부차액보정 매출기본 내역 삭제 -->
+    <delete id="delete_pd3060_02" parameterType="LinkedHashMap">
+        DELETE /*+ delete_pd3060_02 */ 
+          FROM TB_SE_M_SL
+         WHERE 1=1 
+           AND CORP_C         = #{CORP_C}
+           AND BZPL_C         = #{BZPL_C}
+           AND ACG_DT         = #{ACG_DT}
+           AND TR_BSN_DSC     = #{TR_BSN_DSC}
+    </delete>
+
+    <!-- 배부차액보정 매출상세 내역 삭제 -->
+    <delete id="delete_pd3060_03" parameterType="LinkedHashMap">
+        DELETE A /*+ delete_pd3060_03 */
+          FROM TB_SE_D_SL  A
+             , TB_SE_M_SL  B
+         WHERE 1=1 
+		   AND A.CORP_C  = B.CORP_C
+		   AND A.BZPL_C  = B.BZPL_C
+		   AND A.SL_DT   = B.SL_DT
+		   AND A.SL_SQNO = B.SL_SQNO
+           AND B.CORP_C  = #{CORP_C}
+           AND B.BZPL_C  = #{BZPL_C}
+           AND B.ACG_DT  = #{ACG_DT}
+           AND B.TR_BSN_DSC = #{TR_BSN_DSC}                                      
+    </delete>
+
+    <!-- 배부차액보정 재고입출고기본 내역 삭제 -->
+    <delete id="delete_pd3060_04" parameterType="LinkedHashMap">
+        DELETE /*+ delete_pd3060_04 */ 
+          FROM TB_SM_M_GDS_RL_STDV    /* 재고실입출고기본 */
+         WHERE 1=1 
+           AND CORP_C         = #{CORP_C}
+           AND BZPL_C         = #{BZPL_C}
+           AND ACG_DT         = #{ACG_DT}
+           AND TR_BSN_DSC     = #{TR_BSN_DSC}
+    </delete>
+
+    <!-- 배부차액보정 재고입출고상세 내역 삭제 -->
+    <delete id="delete_pd3060_05" parameterType="LinkedHashMap">
+        DELETE A /*+ delete_pd3060_05 */
+          FROM TB_SM_D_GDS_RL_STDV  A   /* 재고실입출고상세 */
+             , TB_SM_M_GDS_RL_STDV  B   /* 재고실입출고기본*/
+         WHERE 1=1 
+		   AND A.CORP_C    = B.CORP_C
+		   AND A.BZPL_C    = B.BZPL_C
+		   AND A.STDV_DT   = B.STDV_DT
+		   AND A.STDV_SQNO = B.STDV_SQNO
+		   AND A.STDV_DSC  = B.STDV_DSC
+           AND B.CORP_C    = #{CORP_C}
+           AND B.BZPL_C    = #{BZPL_C}
+           AND B.ACG_DT    = #{ACG_DT}
+           AND B.TR_BSN_DSC = #{TR_BSN_DSC}                                      
+    </delete>
+
+</mapper>

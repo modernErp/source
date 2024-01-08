@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_M_INTF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_M_INTF */ TB_SY_M_INTF
+        (
+              CORP_C              /* 회사코드             */
+            , INTF_ID             /* 인터페이스ID         */
+            , INTF_NM             /* 인터페이스명         */
+            , INTF_BSN_DSC        /* 연계업무구분코드     */
+            , DOFE_DSC            /* 대내외구분코드       */
+            , INTF_FQ_DSC         /* 연계주기구분코드     */
+            , INTF_TP_DSC         /* 연계유형구분코드(온  */
+            , INTF_METH_DSC       /* 연계방식구분코드(ERP */
+            , SYS_SVC_ID          /* 시스템서비스ID       */
+            , FILE_PATH           /* 파일경로             */
+            , FILE_NM             /* 파일명               */
+            , PATN_SYS_NM         /* 상대시스템명         */
+            , PATN_DEPT_NM        /* 상대부서명           */
+            , PATN_CHRR_NM        /* 상대담당자명         */
+            , PATN_SVC_ID         /* 상대서비스ID         */
+            , PATN_INTF_ID        /* 상대인터페이스ID     */
+            , INTF_STOP_YN        /* 연계중지여부         */
+            , BAT_DSC             /* 배치구분             */
+            , BAT_CNT             /* 배치횟수             */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{INTF_ID}
+            , #{INTF_NM}
+            , #{INTF_BSN_DSC}
+            , #{DOFE_DSC}
+            , #{INTF_FQ_DSC}
+            , #{INTF_TP_DSC}
+            , #{INTF_METH_DSC}
+            , #{SYS_SVC_ID}
+            , #{FILE_PATH}
+            , #{FILE_NM}
+            , #{PATN_SYS_NM}
+            , #{PATN_DEPT_NM}
+            , #{PATN_CHRR_NM}
+            , #{PATN_SVC_ID}
+            , #{PATN_INTF_ID}
+            , #{INTF_STOP_YN}
+            , #{BAT_DSC}
+            , #{BAT_CNT}
+            , #{RMK_CNTN}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_M_INTF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_INTF */ TB_SY_M_INTF
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , INTF_ID             = #{INTF_ID}               /* 인터페이스ID         */
+             , INTF_NM             = #{INTF_NM}               /* 인터페이스명         */
+             , INTF_BSN_DSC        = #{INTF_BSN_DSC}          /* 연계업무구분코드     */
+             , DOFE_DSC            = #{DOFE_DSC}              /* 대내외구분코드       */
+             , INTF_FQ_DSC         = #{INTF_FQ_DSC}           /* 연계주기구분코드     */
+             , INTF_TP_DSC         = #{INTF_TP_DSC}           /* 연계유형구분코드(온  */
+             , INTF_METH_DSC       = #{INTF_METH_DSC}         /* 연계방식구분코드(ERP */
+             , SYS_SVC_ID          = #{SYS_SVC_ID}            /* 시스템서비스ID       */
+             , FILE_PATH           = #{FILE_PATH}             /* 파일경로             */
+             , FILE_NM             = #{FILE_NM}               /* 파일명               */
+             , PATN_SYS_NM         = #{PATN_SYS_NM}           /* 상대시스템명         */
+             , PATN_DEPT_NM        = #{PATN_DEPT_NM}          /* 상대부서명           */
+             , PATN_CHRR_NM        = #{PATN_CHRR_NM}          /* 상대담당자명         */
+             , PATN_SVC_ID         = #{PATN_SVC_ID}           /* 상대서비스ID         */
+             , PATN_INTF_ID        = #{PATN_INTF_ID}          /* 상대인터페이스ID     */
+             , INTF_STOP_YN        = #{INTF_STOP_YN}          /* 연계중지여부         */
+             , BAT_DSC             = #{BAT_DSC}               /* 배치구분             */
+             , BAT_CNT             = #{BAT_CNT}               /* 배치횟수             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_ID             = #{INTF_ID}
+    </update>
+
+    <delete id="delete_TB_SY_M_INTF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_M_INTF */ FROM TB_SY_M_INTF
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_ID             = #{INTF_ID}
+    </delete>
+
+    <select id="select_TB_SY_M_INTF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_M_INTF */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+             , A.INTF_NM                                           /* 인터페이스명         */
+             , A.INTF_BSN_DSC                                      /* 연계업무구분코드     */
+             , A.DOFE_DSC                                          /* 대내외구분코드       */
+             , A.INTF_FQ_DSC                                       /* 연계주기구분코드     */
+             , A.INTF_TP_DSC                                       /* 연계유형구분코드(온  */
+             , A.INTF_METH_DSC                                     /* 연계방식구분코드(ERP */
+             , A.SYS_SVC_ID                                        /* 시스템서비스ID       */
+             , A.FILE_PATH                                         /* 파일경로             */
+             , A.FILE_NM                                           /* 파일명               */
+             , A.PATN_SYS_NM                                       /* 상대시스템명         */
+             , A.PATN_DEPT_NM                                      /* 상대부서명           */
+             , A.PATN_CHRR_NM                                      /* 상대담당자명         */
+             , A.PATN_SVC_ID                                       /* 상대서비스ID         */
+             , A.PATN_INTF_ID                                      /* 상대인터페이스ID     */
+             , A.INTF_STOP_YN                                      /* 연계중지여부         */
+             , A.BAT_DSC                                           /* 배치구분             */
+             , A.BAT_CNT                                           /* 배치횟수             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_M_INTF A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.INTF_ID           = #{INTF_ID}
+    </select>
+</mapper>

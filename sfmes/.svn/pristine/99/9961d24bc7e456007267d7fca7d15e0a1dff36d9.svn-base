@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+
+  <insert id="insert_TB_SY_L_COMNC" parameterType="LinkedHashMap">                  
+        INSERT INTO TB_SY_L_COMNC /*+ TB_SY_L_COMNC */
+        (
+               CORP_C                    /* 회사코드      */
+             , HST_SQNO                  /* 이력일련번호  */
+             , COMN_GRP_C                /* 공통그룹코드  */   
+             , COMN_C                    /* 공통코드      */   
+             , COMN_CNM                  /* 공통코드명    */   
+             , AMN_HCNT1                 /* 관리항목내용1 */   
+             , AMN_HCNT2                 /* 관리항목내용2 */   
+             , AMN_HCNT3                 /* 관리항목내용3 */   
+             , AMN_HCNT4                 /* 관리항목내용4 */   
+             , AMN_HCNT5                 /* 관리항목내용5 */   
+             , SORT_SEQ                  /* 정렬순서      */   
+             , USE_YN                    /* 사용여부      */   
+             , RMK_CNTN                  /* 비고          */   
+             , FSRG_DTM                  /* 최초등록일시  */   
+             , FSRG_ID                   /* 최초등록자ID  */   
+             , LSCHG_DTM                 /* 최종변경일시  */   
+             , LSCHG_ID                  /* 최종변경자ID  */   
+        )
+        SELECT 
+               CORP_C                                                 /* 회사코드      */   
+             , (SELECT ISNULL(MAX(HST_SQNO),0) 
+                  FROM TB_SY_L_COMNC
+                 WHERE 1 = 1
+                   AND CORP_C = #{CORP_C})
+                    + ROW_NUMBER() OVER (ORDER BY COMN_C) AS HST_SQNO /* 이력일련번호  */  
+             , COMN_GRP_C                                             /* 공통그룹코드  */   
+             , COMN_C                                                 /* 공통코드      */   
+             , COMN_CNM                                               /* 공통코드명    */   
+             , AMN_HCNT1                                              /* 관리항목내용1 */  
+             , AMN_HCNT2                                              /* 관리항목내용2 */  
+             , AMN_HCNT3                                              /* 관리항목내용3 */  
+             , AMN_HCNT4                                              /* 관리항목내용4 */  
+             , AMN_HCNT5                                              /* 관리항목내용5 */  
+             , SORT_SEQ                                               /* 정렬순서      */   
+             , USE_YN                                                 /* 사용여부      */   
+             , RMK_CNTN                                               /* 비고          */    
+             , FSRG_DTM                                               /* 최초등록일시  */  
+             , FSRG_ID                                                /* 최초등록자ID  */  
+             , LSCHG_DTM                                              /* 최종변경일시  */  
+             , LSCHG_ID                                               /* 최종변경자ID  */  
+          FROM TB_SY_D_COMNC
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND COMN_GRP_C = #{COMN_GRP_C}
+    </insert>
+
+</mapper>

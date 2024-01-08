@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_D_USR_BZPLC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_D_USR_BZPLC */ TB_SY_D_USR_BZPLC
+        (
+              CORP_C              /* 회사코드             */
+            , USR_ID              /* 사용자아이디         */
+            , BZPL_C              /* 사업장코드           */
+            , BAS_BZPL_YN         /* 기본사업장여부       */
+            , USE_YN              /* 사용여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USR_ID}
+            , #{BZPL_C}
+            , #{BAS_BZPL_YN}
+            , #{USE_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_D_USR_BZPLC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_D_USR_BZPLC */ TB_SY_D_USR_BZPLC
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , USR_ID              = #{USR_ID}                /* 사용자아이디         */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , BAS_BZPL_YN         = #{BAS_BZPL_YN}           /* 기본사업장여부       */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+    </update>
+
+    <delete id="delete_TB_SY_D_USR_BZPLC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_D_USR_BZPLC */ FROM TB_SY_D_USR_BZPLC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND USR_ID              = #{USR_ID}
+    </delete>
+
+    <select id="select_TB_SY_D_USR_BZPLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_D_USR_BZPLC */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.BAS_BZPL_YN                                       /* 기본사업장여부       */
+             , A.USE_YN                                            /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_D_USR_BZPLC A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.USR_ID            = #{USR_ID}
+    </select>
+</mapper>

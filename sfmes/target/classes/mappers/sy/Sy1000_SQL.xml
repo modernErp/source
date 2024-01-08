@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+    <select id="selectSy1005" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy1005 */
+               A.CORP_C                                                                              /* 회사코드             */
+             , A.CORP_NM                                                                             /* 회사명               */
+             , A.CORP_ABR_NM                                                                         /* 회사약어명           */
+             , A.CORP_ENM                                                                            /* 회사영문명           */
+             , A.BZMN_NM                                                                             /* 사업자명             */
+             , A.BZMN_NO                                                                             /* 사업자번호           */
+             , A.COP_NO                                                                              /* 법인번호             */
+             , A.REPM_NM                                                                             /* 대표자명             */
+             , A.BZC_NM                                                                              /* 업종명               */
+             , A.BZTP_NM                                                                             /* 업태명               */
+             , A.ZIP                                                                                 /* 우편번호             */
+             , A.ADR1                                                                                /* 주소1                */
+             , A.ADR2                                                                                /* 주소2                */
+             , A.TEL_NO                                                                              /* 전화번호             */
+             , A.FAX_NO                                                                              /* 팩스번호             */
+             , A.HOMEPG_URL                                                                          /* 홈페이지주소         */
+             , A.REP_EMAIL                                                                           /* 대표eMail            */
+             , A.CONN_INF                                                                            /* 접속정보             */
+             , A.CTR_CNTN                                                                            /* 계약내용             */
+             , A.SYS_ST_DT                                                                           /* 시스템개설일자       */
+             , A.MNG_CORP_C                                                                          /* 주관회사코드         */
+             , A.MTNRW_ST_DT                                                                         /* 유지보수시작일자     */
+             , A.MTNRW_ED_DT                                                                         /* 유지보수종료일자     */
+             , A.MTNRW_APL_DSC                                                                       /* 유지보수적용구분코드 */
+             , A.MTNRW_AM                                                                            /* 유지보수금액         */
+             , A.AMN_CHR_DEPT_NM                                                                     /* 관리부서명           */
+             , A.CHRR_NM                                                                             /* 담당자명             */
+             , A.CHRR_TEL                                                                            /* 담당자전화번호       */
+             , A.CHRR_EMAIL                                                                          /* 담당자 이메일        */           
+             , A.RMK_CNTN                                                                            /* 비고내용             */
+             , A.ETC_DSC1                                                                            /* 기타구분1            */
+             , A.ETC_DSC2                                                                            /* 기타구분2            */
+             , A.ETC_DSC3                                                                            /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM                                      /* 최초등록일시         */
+             , A.FSRG_ID                                                                             /* 최초등록자ID         */           
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM                                     /* 최종변경일시         */
+             , A.LSCHG_ID                                                                            /* 최종변경자ID         */       
+          FROM TB_CO_M_CORP A
+         WHERE 1=1 
+         <if test = "SEARCH_NM != null and SEARCH_NM != ''">
+            <choose>
+                 <when test = "SEARCH_GBN == ''">
+		              AND (A.CORP_C  LIKE '%'+#{SEARCH_NM}+'%'
+		              OR  A.CORP_NM  LIKE '%'+#{SEARCH_NM}+'%') 
+                </when>
+                <when test="SEARCH_GBN == 1">
+                    AND A.CORP_C    LIKE '%'+#{SEARCH_NM}+'%'
+                </when>
+                <when test="SEARCH_GBN == 2">
+                    AND A.CORP_NM   LIKE '%'+#{SEARCH_NM}+'%'
+                </when>
+            </choose>
+         </if>
+    </select>
+    
+    <!-- 회사신규등록시 사업장환경기본등록 -->
+    <insert id="insert_bzpl_env" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_bzpl_env */ TB_CO_M_BZPL_ENV
+		(
+		       CORP_C
+		     , BZPL_C
+		     , USE_YN
+		     , SYS_OPEN_DT
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		)
+		SELECT
+		       CORP_C
+		     , BZPL_C
+		     , USE_YN
+		     , CONVERT(VARCHAR(8), GETDATE(), 112) AS SYS_OPEN_DT       
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  FROM TB_CO_M_BZPL
+		 WHERE 1 = 1
+		   AND CORP_C = #{S_CORP_C}
+		   AND BZPL_C = #{BZPL_C}
+    </insert>
+    
+    <!-- 사업장기본정보조회 -->
+    <select id="select_bzpl" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ select_bzpl */
+		       CORP_C
+		     , BZPL_C
+		     , BZPL_NM
+		     , BZPL_ABR_NM
+		     , USE_YN
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  FROM TB_CO_M_BZPL
+		 WHERE 1 = 1
+		   AND CORP_C = #{S_CORP_C}
+    </select> 
+
+    <!-- 사업장기본정보수정 -->
+    <update id="update_bzpl" parameterType="LinkedHashMap">
+        UPDATE /*+ update_bzpl */ TB_CO_M_BZPL
+		   SET 
+		       CORP_C        = #{S_CORP_C}
+		     , BZPL_C        = #{BZPL_C}
+		     , BZPL_NM       = #{BZPL_NM} 
+		     , BZPL_ABR_NM   = #{BZPL_ABR_NM}
+		     , LSCHG_DTM     = GETDATE()
+		     , LSCHG_ID      = #{GUSRID}
+		 WHERE 1 = 1
+		   AND CORP_C        = #{S_CORP_C}
+		   AND BZPL_C        = #{BZPL_C}
+   </update>
+   
+    <insert id="insert_l_bzpl" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_l_bzpl */ TB_CO_L_BZPL
+        (
+               CORP_C                    /* 회사코드      */
+             , HST_SQNO                  /* 이력일련번호  */
+             , BZPL_C                    /* 사업장코드    */
+             , BZPL_NM                   /* 사업장명      */
+             , BZPL_ABR_NM               /* 사업장약어명  */
+             , USE_YN                    /* 사용여부      */   
+             , FSRG_DTM                  /* 최초등록일시  */   
+             , FSRG_ID                   /* 최초등록자ID  */   
+             , LSCHG_DTM                 /* 최종변경일시  */   
+             , LSCHG_ID                  /* 최종변경자ID  */   
+        )
+        SELECT 
+               CORP_C                                                 /* 회사코드      */   
+             , (SELECT ISNULL (MAX(HST_SQNO),0 ) + 1 
+                  FROM TB_CO_L_BZPL) AS HST_SQNO                      /* 이력일련번호  */  
+             , BZPL_C                                                 /* 사업장코드    */
+             , BZPL_NM                                                /* 사업장명      */
+             , BZPL_ABR_NM                                            /* 사업장약어명  */
+             , USE_YN                                                 /* 사용여부      */   
+             , FSRG_DTM                                               /* 최초등록일시  */  
+             , FSRG_ID                                                /* 최초등록자ID  */  
+             , LSCHG_DTM                                              /* 최종변경일시  */  
+             , LSCHG_ID                                               /* 최종변경자ID  */  
+          FROM TB_CO_M_BZPL
+         WHERE 1 = 1
+           AND CORP_C     = #{S_CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+    </insert>
+    
+	<!-- 회사코드 중복체크쿼리 -->
+	<select id="selectSy1000" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ selectSy1000 */
+               COUNT(*) AS CORP_CNT
+          FROM TB_CO_M_CORP 
+         WHERE 1 = 1
+           AND CORP_C  = #{S_CORP_C}
+    </select> 
+    
+    <!-- 사업장코드 중복체크쿼리 -->
+    <select id="select2Sy1000" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select2Sy1000 */
+               COUNT(*) AS BZPL_CNT
+        FROM TB_CO_M_BZPL
+       WHERE 1 = 1
+         AND CORP_C    = #{S_CORP_C}
+         AND BZPL_C    = #{BZPL_C}
+    </select>
+    
+    <!-- 회사 환경 초기 설정 프로시저 -->
+    <select id="selectSy1000_init" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_CORP_BULD (
+        #{P_CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- 회사 환경 삭제 프로시저 -->
+    <select id="selectSy1000_del" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_CORP_BULD_DEL (
+        #{P_CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+</mapper>

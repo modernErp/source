@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_M_DPL_SRC_MNG" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_M_DPL_SRC_MNG */ TB_SY_M_DPL_SRC_MNG
+        (
+               A.REQ_DT                                        /* 요청일자       */
+             , A.REQ_SQNO                                      /* 일련번호       */
+             , A.CHG_NM                                        /* 요청자         */
+             , A.FILE_NM                                       /* 파일명         */
+             , A.FILE_EXE                                      /* 확장자         */
+             , A.FILE_PATH                                     /* 경로           */
+             , A.DPL_DATE                                      /* 반영일자       */
+             , A.DPL_NM                                        /* 반영자         */
+             , A.TEST_YN                                       /* 개발테스트여부 */
+             , A.DPL_YN                                        /* 반영여부       */
+             , A.CHG_INFO                                      /* 변경내용       */
+             , A.RMK_CNTN                                      /* 비고내용       */
+             , A.DEL_YN                                        /* 삭제여부       */
+             , A.FSRG_DTM                                      /* 최초등록일시   */
+             , A.FSRG_ID                                       /* 최초등록자ID   */
+             , A.LSCHG_DTM                                     /* 최종변경일시   */
+             , A.LSCHG_ID                                      /* 최종변경자ID   */
+        )
+        VALUES
+        (
+              #{REQ_DT}
+            , (SELECT ISNULL(MAX(REQ_SQNO), 0)+1
+                 FROM TB_SY_M_DPL_SRC_MNG
+                WHERE 1=1
+                  AND REQ_DT = #{REQ_DT}
+                )
+            , #{CHG_NM}
+            , #{FILE_NM}
+            , #{FILE_EXE}
+            , #{FILE_PATH}
+            , #{DPL_DATE}
+            , #{DPL_NM}
+            , #{TEST_YN} 
+            , #{DPL_YN}
+            , #{CHG_INFO}
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_M_DPL_SRC_MNG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_DPL_SRC_MNG */ TB_SY_M_DPL_SRC_MNG
+           SET 
+               CHG_NM               = #{CHG_NM}                  /* 요청자            */
+             , FILE_NM              = #{FILE_NM}                 /* 파일명            */
+             , FILE_EXE             = #{FILE_EXE}                /* 확장자            */
+             , FILE_PATH            = #{FILE_PATH}               /* 경로              */
+             , DPL_DATE             = #{DPL_DATE}                /* 반영일자          */
+             , DPL_NM               = #{DPL_NM}                  /* 반영자            */
+             , TEST_YN              = #{TEST_YN}                 /* 개발테스트여부    */
+             , DPL_YN               = #{DPL_YN}                  /* 반영여부          */
+             , CHG_INFO             = #{CHG_INFO}                /* 변경내용          */
+             , RMK_CNTN             = #{RMK_CNTN}                /* 비고내용          */
+             , LSCHG_DTM            = GETDATE()                  /* 최종변경일시      */
+             , LSCHG_ID             = #{GUSRID}                  /* 최종변경자ID      */
+         WHERE 1=1 
+           AND REQ_DT               = #{REQ_DT}
+           AND REQ_SQNO             = #{REQ_SQNO}
+    </update>
+
+    <delete id="delete_TB_SY_M_DPL_SRC_MNG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_DPL_SRC_MNG */ TB_SY_M_DPL_SRC_MNG
+            SET
+                DEL_YN = 'Y'
+        
+         WHERE 1=1 
+           AND REQ_SQNO        = #{REQ_SQNO}
+           AND REQ_DT          = #{REQ_DT}
+    </delete>
+    
+</mapper>

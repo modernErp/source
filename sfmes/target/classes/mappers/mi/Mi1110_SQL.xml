@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+    <!-- 사업장별매출현황 -->
+    <select id="selectMi1110_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	SELECT /*+ selectMi1110_01 */
+	       A.CORP_C                                                                /*회사코드            */
+	     , A.BZPL_C                                                                /*사업장코드          */
+	     , B.BZPL_NM                                                               /*사업장명            */    
+	     , A.Y_SL_AM                                                               /*기준년판매금액      */
+	     , A.L_SL_AM                                                               /*전년판매금액        */
+	     , CASE WHEN A.L_SL_AM = 0 THEN 0
+	            ELSE                    ((A.Y_SL_AM-A.L_SL_AM)/A.L_SL_AM)*100
+	       END       AS Y_INDRT                                                    /*전년대비기준년증감율*/
+	     , A.M_SL_AM                                                               /*기준년월판매금액    */
+	     , A.LM_SL_AM                                                              /*전년동월판매금액    */
+	     , CASE WHEN A.LM_SL_AM = 0 THEN 0 
+	            ELSE                     ((A.M_SL_AM-A.LM_SL_AM)/A.LM_SL_AM)*100
+	       END       AS L_INDRT                                                    /*동기대비증감율      */ 
+	  FROM (
+	        SELECT 
+	               A.CORP_C
+	             , A.BZPL_C
+	             , SUM(A.Y_SL_AM)  AS Y_SL_AM
+	             , SUM(A.L_SL_AM)  AS L_SL_AM
+	             , SUM(A.M_SL_AM)  AS M_SL_AM
+	             , SUM(A.LM_SL_AM) AS LM_SL_AM
+	          FROM (
+	                SELECT 
+	                       CORP_C
+	                     , BZPL_C
+	                   <if test='VAT_YN == "Y"'>
+	                     , SUM(CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                ELSE                         -1
+	                           END * SL_AM)  AS Y_SL_AM
+	                     , 0                 AS L_SL_AM
+	                     , SUM(CASE WHEN SUBSTRING(ACG_DT, 1,6) = #{ACG_DT} THEN (CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                                                                   ELSE                         -1
+	                                                                              END) * SL_AM
+	                                ELSE                                         0
+	                           END)          AS M_SL_AM 
+	                     , 0                 AS LM_SL_AM
+	                   </if>
+	                   <if test='VAT_YN == "N"'>
+	                     , SUM(CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                ELSE                          -1
+	                           END * SPY_AM) AS Y_SL_AM
+	                     , 0                 AS L_SL_AM
+	                     , SUM(CASE WHEN SUBSTRING(ACG_DT, 1,6) = #{ACG_DT} THEN (CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                                                                   ELSE                         -1
+	                                                                              END) * SPY_AM
+	                                ELSE                                         0
+	                           END)          AS M_SL_AM 
+	                     , 0                 AS LM_SL_AM
+	                   </if>
+	                  FROM TB_SE_M_SL
+	                 WHERE 1 = 1
+	                   AND CORP_C = #{CORP_C}
+	                   AND SLP_NML_YN = 'Y'
+	                   AND ACG_DT BETWEEN #{ACG_DT1} AND #{ACG_DT2}
+	                 <if test="searchKeyword != null and searchKeyword != ''">
+	                   AND BZPL_C IN (${searchKeyword})
+	                 </if>   
+	                 GROUP BY CORP_C, BZPL_C
+	                UNION
+	                SELECT 
+	                       CORP_C
+	                     , BZPL_C
+	                   <if test='VAT_YN == "Y"'> 
+	                     , 0                 AS Y_SL_AM
+	                     , SUM(CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                ELSE                         -1
+	                           END * SL_AM)  AS L_SL_AM
+	                     , 0                 AS M_SL_AM
+	                     , SUM(CASE WHEN SUBSTRING(ACG_DT, 1,6) = #{L_ACG_DT} THEN (CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                                                                     ELSE                         -1
+	                                                                                END) * SL_AM
+	                                ELSE                                           0
+	                           END)          AS LM_SL_AM /*전년동월매출금액*/
+	                   </if>
+	                   <if test='VAT_YN == "N"'> 
+	                     , 0                 AS Y_SL_AM
+	                     , SUM(CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                ELSE                         -1
+	                           END * SPY_AM) AS L_SL_AM
+	                     , 0                 AS M_SL_AM
+	                     , SUM(CASE WHEN SUBSTRING(ACG_DT, 1,6) = #{L_ACG_DT} THEN (CASE WHEN TR_BSN_DSC = 'SE10' THEN 1
+	                                                                                     ELSE                         -1
+	                                                                                END) * SPY_AM
+	                                ELSE                                           0
+	                           END)          AS LM_SL_AM /*전년동월매출금액*/
+	                   </if>
+	                  FROM TB_SE_M_SL
+	                 WHERE 1 = 1
+	                   AND CORP_C = #{CORP_C}
+	                   AND SLP_NML_YN = 'Y'
+	                   AND ACG_DT BETWEEN #{L_ACG_DT1} AND #{L_ACG_DT2}
+	                 <if test="searchKeyword != null and searchKeyword != ''">
+	                   AND BZPL_C IN (${searchKeyword})
+	                 </if>   
+	                 GROUP BY CORP_C, BZPL_C
+	                ) A
+	          GROUP BY A.CORP_C, A.BZPL_C
+	        )           A
+	     , TB_CO_M_BZPL B
+	 WHERE 1 = 1
+	   AND A.CORP_C = B.CORP_C
+	   AND A.BZPL_C = B.BZPL_C
+	   AND A.CORP_C = #{CORP_C}
+	 <if test="searchKeyword != null and searchKeyword != ''">
+	   AND A.BZPL_C IN (${searchKeyword})
+	 </if>
+    </select>    
+</mapper>

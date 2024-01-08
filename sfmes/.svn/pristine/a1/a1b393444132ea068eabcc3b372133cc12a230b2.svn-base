@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 가격군별물품등록 전 Validation Check -->
+    <select id="selectSe1020_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ selectSe1020_ValidCheck */
+               CASE WHEN #{CORP_C}                          = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{BZPL_C}                          = '' THEN '사업장코드는 필수입력 항목입니다.'
+                    WHEN #{GDS_C}                           = '' THEN '물품코드는 필수입력 항목입니다.'
+                    WHEN DBO.SF_GET_NUMERIC(#{APL_BAS_UPR}) = 0  THEN '적용기준단가는 필수입력 항목입니다.'
+                    WHEN DBO.SF_GET_NUMERIC(#{APL_RT})      = 0  THEN '적용율은 필수입력 항목입니다.'
+                    WHEN DBO.SF_GET_NUMERIC(#{APL_SL_UPR})  = 0  THEN '적용매출단가는 필수입력 항목입니다.'
+                    WHEN #{APL_BAS_DT}                      = '' THEN '적용기준일자는 필수입력 항목입니다.'
+                    WHEN #{DEL_YN}                          = '' THEN '삭제여부는 필수입력 항목입니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>  
+
+    <!-- 물품등록여부체크 -->
+    <select id="selectSe1020_chk1" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1020_chk1 */
+               count(1)
+          FROM TB_CO_M_GDS
+         WHERE CORP_C    = #{CORP_C}
+           AND BZPL_C    = #{BZPL_C}
+           AND GDS_C     = #{GDS_C}
+    </select>
+    
+    <!-- 물품사용중지여부체크 -->
+    <select id="selectSe1020_chk2" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1020_chk2 */
+               COUNT(1)
+          FROM TB_CO_M_GDS
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND GDS_C      = #{GDS_C}
+           AND USE_YN     = 'Y'
+    </select>    
+    
+    <!-- 가격군별물품등록여부체크 -->
+    <select id="selectSe1020_chk3" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1020_chk3 */
+               count(1)
+          FROM TB_SE_M_PRGR_GDS
+         WHERE CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND PRGR_C     = #{PRGR_C}
+           AND GDS_C      = #{GDS_C}
+           AND APL_BAS_DT = #{APL_BAS_DT}
+    </select>
+        
+    <!-- 도매대출단가조회 -->
+    <select id="selectSe1020_UPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        <![CDATA[
+        SELECT /*+ selectSe1020_UPR */ 
+               ISNULL(MAX(WHSL_SL_UPR),0) AS WHSL_SL_UPR
+          FROM TB_SE_M_GDS_UPR 
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND GDS_C      = #{GDS_C}
+           AND APL_BAS_DT <= #{APL_BAS_DT} 
+           AND DEL_YN     = 'N' 
+        ]]>           
+    </select>
+    
+    <!-- 최종기준일자의 매출단가조회 -->
+    <select id="selectSe1020_MAX" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe1020_MAX */
+               MAX(A.CORP_C)      AS CORP_C         /* 회사코드     */
+             , MAX(A.BZPL_C)      AS BZPL_C         /* 사업장코드   */
+             , MAX(A.PRGR_C)      AS PRGR_C         /* 가격군코드   */
+             , A.GDS_C                              /* 물품코드     */
+             , MAX(B.GDS_DTL_NM)  AS GDS_DTL_NM     /* 물품명       */
+             , MAX(A.APL_BAS_UPR) AS APL_BAS_UPR    /* 기준단가     */
+             , MAX(A.APL_RT)      AS APL_RT         /* 적용율       */
+             , MAX(A.APL_SL_UPR)  AS APL_SL_UPR     /* 적용매출단가 */
+             , MAX(A.APL_BAS_DT)  AS APL_BAS_DT     /* 적용기준일자 */
+             , MAX(A.DEL_YN)      AS DEL_YN         /* 삭제여부     */
+             , MAX(A.RMK_CNTN)    AS RMK_CNTN       /* 비고내용     */
+          FROM TB_SE_M_PRGR_GDS       A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+         WHERE 1 = 1
+           AND A.CORP_C = #{CORP_C}
+           AND A.BZPL_C = #{BZPL_C}
+           AND A.PRGR_C = #{PRGR_C}
+           AND A.DEL_YN = 'N'
+           AND A.APL_BAS_DT = (SELECT MAX(APL_BAS_DT) AS MAX_APL_BAS_DT
+			                     FROM TB_SE_M_PRGR_GDS
+			                    WHERE CORP_C = A.CORP_C
+			                      AND BZPL_C = A.BZPL_C
+			                      AND PRGR_C = A.PRGR_C
+			                      AND GDS_C  = A.GDS_C
+			                      AND CORP_C = #{CORP_C}
+			                      AND BZPL_C = #{BZPL_C}
+			                      AND PRGR_C = #{PRGR_C}
+			                      AND DEL_YN = 'N'
+			                    GROUP BY
+			                          GDS_C)
+         GROUP BY 
+               A.GDS_C    
+    </select>
+
+</mapper>

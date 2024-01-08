@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+    <select id="selectCa6010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa6010List */
+               (SELECT ISNULL(MAX(REG_SQNO), 0) + 1
+                  FROM TB_DT_M_PRV C
+                 WHERE 1=1
+                   AND C.CORP_C = #{CORP_C}
+                   AND C.BZPL_C = #{BZPL_C}
+                   AND C.REG_DT = #{REG_DT}
+               )                                        AS REG_SQNO     /* 거래일련번호 */
+             , A.REP_BNK_C                              AS REP_BNK_C    /* 대표은행코드   */
+             , A.REP_ACNO                               AS REP_ACNO     /* 대표계좌번호   */
+             , A.DPR_NM                                 AS REP_DPR_NM   /* 대표계좌예금주 */
+             , ISNULL(B.DCZ_BNK_C, A.REP_BNK_C)         AS BNK_C        /* 거래처은행코드 */
+             , ISNULL(B.DCZ_ACNO, A.REP_ACNO)           AS STL_ACNO     /* 거래처계좌번호 */
+             , ISNULL(B.DPR_NM, A.DPR_NM)               AS DPR_NM       /* 거래처예금주   */
+          FROM TB_CO_M_BZPL_ENV A
+          LEFT OUTER JOIN TB_CO_M_TRPL_CTR B
+            ON B.CORP_C    = A.CORP_C
+          <if test = "ADJPL_C != null and ADJPL_C != ''">
+           AND B.TRPL_C    = #{ADJPL_C}
+          </if>
+          <if test = "ADJPL_C == null or ADJPL_C == ''">
+           AND B.TRPL_C    = #{BZPL_C}
+          </if>
+           AND B.BY_SL_DSC = 2
+         WHERE 1=1
+           AND A.CORP_C = #{CORP_C}
+           AND A.BZPL_C = #{BZPL_C}
+        
+    </select>
+</mapper>

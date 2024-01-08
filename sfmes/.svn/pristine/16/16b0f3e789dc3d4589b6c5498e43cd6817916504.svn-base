@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 01.최종원가조회 -->
+    <select id="selectPd3010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT A.CORP_C                                           /* 회사코드                  */
+		     , A.BZPL_C                                           /* 사업장코드                */
+		     , B.GDS_TP_DSC                                       /* 물품유형코드              */
+		     , A.GDS_C                                            /* 물품코드                  */
+		     , B.GDS_DTL_NM                                       /* 물품명                    */
+		     , A.PRD_AVE_PCS                                      /* 기간평균원가              */
+		     , A.BEF_MM_ACTL_PCS                                  /* 전월실제원가              */
+		     , A.APL_ST_DT                                        /* 적용시작일자              */
+		     , A.APL_ED_DT                                        /* 적용종료일자              */
+		     , A.PLA_PCS                                          /* 예정원가                  */
+		     , A.PLA_PCS AS PRIOR_PLA_PCS                         /* 예정원가(데이터비교용)    */
+		     , A.SNS_CNTN                                         /* 적요내용                  */
+		     , A.LSCHG_ID                                         /* 최종변경자ID              */
+		     , A.LSCHG_ID  AS LSCHG_NM                            /* 최종변경자명              */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS  LSCHG_DTM   /* 최종변경일시              */
+		  FROM TB_PD_M_PLA_PCS A                                  
+		     , TB_CO_M_GDS B                                      
+		 WHERE A.CORP_C    = B.CORP_C                                
+		   AND A.BZPL_C    = B.BZPL_C                                
+		   AND A.GDS_C     = B.GDS_C   
+		   AND A.CORP_C    = #{CORP_C}                             
+		   AND A.BZPL_C    = #{BZPL_C}                           
+		   AND A.APL_ED_DT = '99991231'      
+        <if test="USE_YN != NULL and USE_YN != ''">
+           AND B.USE_YN    = #{USE_YN}
+        </if>   
+        <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C     = #{GDS_C}
+        </if>
+    </select>
+
+    <!-- 02.적용일자조회 -->
+    <select id="selectPd3010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT A.CORP_C                                           /* 회사코드                  */
+		     , A.BZPL_C                                           /* 사업장코드                */
+		     , B.GDS_TP_DSC                                       /* 물품유형코드              */
+		     , A.GDS_C                                            /* 물품코드                  */
+		     , B.GDS_DTL_NM                                       /* 물품명                    */
+		     , A.PRD_AVE_PCS                                      /* 기간평균원가              */
+		     , A.BEF_MM_ACTL_PCS                                  /* 전월실제원가              */
+		     , A.APL_ST_DT                                        /* 적용시작일자              */
+		     , A.APL_ED_DT                                        /* 적용종료일자              */
+		     , A.PLA_PCS                                          /* 예정원가                  */
+		     , A.PLA_PCS AS PRIOR_PLA_PCS                         /* 예정원가(데이터비교용)    */
+		     , A.SNS_CNTN                                         /* 적요내용                  */
+		     , A.LSCHG_ID                                         /* 최종변경자ID              */
+             , A.LSCHG_ID  AS LSCHG_NM                            /* 최종변경자명              */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS  LSCHG_DTM   /* 최종변경일시              */
+		  FROM TB_PD_M_PLA_PCS A                                  
+		     , TB_CO_M_GDS B                                      
+		 WHERE A.CORP_C    = B.CORP_C                                
+		   AND A.BZPL_C    = B.BZPL_C                                
+		   AND A.GDS_C     = B.GDS_C
+		   AND A.CORP_C    = #{CORP_C}
+		   AND A.BZPL_C    = #{BZPL_C}                            
+		   AND A.APL_ED_DT = (SELECT MAX(APL_ED_DT) AS APL_ED_DT
+		                        FROM TB_PD_M_PLA_PCS 
+		                       WHERE CORP_C  = A.CORP_C
+		                         AND BZPL_C  = A.BZPL_C
+		                         AND GDS_C   = A.GDS_C
+		                         AND CORP_C  = #{CORP_C}
+		                         AND BZPL_C  = #{BZPL_C}
+		                         AND #{searchDate} BETWEEN APL_ST_DT AND APL_ED_DT)     
+        <if test="USE_YN != NULL and USE_YN != ''">
+           AND B.USE_YN    = #{USE_YN}
+        </if>   
+        <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C     = #{GDS_C}
+        </if>
+    </select>
+    
+    <!-- 03.신규품목 예정원가 등록을 위한 조회
+         - 신규로 등록된 품목은 예정원가가 없음. 따라서, 신규품목을 조회하여 예정원가를 등록해줘야함.
+         - 적용시작일자 : 예정원가등록한 날(오늘)
+         - 적용종료일자 : 9999-12-31 
+     -->
+    <select id="selectPd3010_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT A.CORP_C                                       /* 회사코드             */
+		     , A.BZPL_C                                       /* 사업장코드           */
+		     , A.GDS_TP_DSC                                   /* 물품유형코드         */
+		     , A.GDS_C                                        /* 물품코드             */
+		     , A.GDS_DTL_NM                                   /* 물품명               */
+		     , B.PRD_AVE_PCS                                  /* 기간평균원가         */
+		     , B.BEF_MM_ACTL_PCS                              /* 전월실제원가         */
+		     , '' AS APL_ST_DT                                /* 적용시작일자         */       
+		     , '99991231' AS APL_ED_DT                        /* 적용종료일자         */
+		     , B.PLA_PCS                                      /* 예정원가             */
+		     , B.SNS_CNTN                                     /* 적요내용             */ 
+		     , B.LSCHG_ID                                     /* 최종변경자ID(물품)   */  
+             , B.LSCHG_ID  AS LSCHG_NM                        /* 최종변경자명         */
+		     , B.LSCHG_DTM                                    /* 최종변경일시(물품)   */
+		  FROM TB_CO_M_GDS A LEFT OUTER JOIN
+		       TB_PD_M_PLA_PCS B ON (A.CORP_C = B.CORP_C AND A.BZPL_C = B.BZPL_C AND A.GDS_C = B.GDS_C)
+		 WHERE 1=1 
+		   AND A.USE_YN     = 'Y'
+		   AND A.GDS_TP_DSC IN ('10', '20')                   /* GDS_TP_DSC(물품유형구분코드: 10.제품, 20.반제품)  2021.10.30 kyu    */
+		   AND A.CORP_C     = #{CORP_C}
+		   AND A.BZPL_C     = #{BZPL_C}
+		   AND B.PLA_PCS IS NULL  
+    </select>
+    
+    <!-- 04.예정원가변경이력조회 -->
+    <select id="selectPd3010_04" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT A.CORP_C                                           /* 회사코드                  */
+             , A.BZPL_C                                           /* 사업장코드                */
+             , B.GDS_TP_DSC                                       /* 물품유형코드              */
+             , A.GDS_C                                            /* 물품코드                  */
+             , B.GDS_DTL_NM                                       /* 물품명                    */
+             , A.PRD_AVE_PCS                                      /* 기간평균원가              */
+             , A.BEF_MM_ACTL_PCS                                  /* 전월실제원가              */
+             , A.APL_ST_DT                                        /* 적용시작일자              */
+             , A.APL_ED_DT                                        /* 적용종료일자              */
+             , A.PLA_PCS                                          /* 예정원가                  */
+             , A.SNS_CNTN                                         /* 적요내용                  */
+             , A.LSCHG_ID                                         /* 최종변경자ID              */
+             , A.LSCHG_ID  AS LSCHG_NM                            /* 최종변경자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS  LSCHG_DTM   /* 최종변경일시              */
+          FROM TB_PD_M_PLA_PCS A                                  
+             , TB_CO_M_GDS B                                      
+         WHERE A.CORP_C    = B.CORP_C                                
+           AND A.BZPL_C    = B.BZPL_C                                
+           AND A.GDS_C     = B.GDS_C   
+           AND A.CORP_C    = #{CORP_C}                             
+           AND A.BZPL_C    = #{BZPL_C}       
+           AND B.GDS_C     = #{GDS_C}
+    </select> 
+
+    <!-- 예정원가 저장 전 Validation Check -->
+    <select id="selectPd3010_Insert_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C} = ''                                     THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{BZPL_C} = ''                                     THEN '사업장코드는 필수입력 항목입니다.'
+                    WHEN 1 > CAST(#{PLA_PCS} AS BIGINT)                     THEN '예정원가는 0보다 큰 금액을 입력해주세요.'
+                    WHEN #{APL_ST_DT} > #{newAPL_ST_DT}                     THEN '적용시작일자는 과거일로 입력할 수 없습니다.'
+                    WHEN '99999999999999' < CAST(#{PLA_PCS} AS BIGINT)      THEN '예정원가는 999,999,999,999,999보다 작은 금액을 입력해주세요.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>    
+    
+    <update id="updatePd3010_PriorValue" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_PLA_PCS */ TB_PD_M_PLA_PCS
+           SET 
+               APL_ED_DT           = CONVERT(VARCHAR, CONVERT(DATETIME, #{newAPL_ST_DT}) - 1, 112) /* 적용종료일자         */
+             , LSCHG_DTM           = GETDATE()    /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}    /* 최종변경자ID         */
+         WHERE 1=1 
+           AND APL_ED_DT           = #{APL_ED_DT}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </update>    
+</mapper>

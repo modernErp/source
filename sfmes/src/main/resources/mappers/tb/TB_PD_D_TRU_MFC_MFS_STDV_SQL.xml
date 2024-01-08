@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_TRU_MFC_MFS_STDV" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_TRU_MFC_MFS_STDV */ TB_PD_D_TRU_MFC_MFS_STDV
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TRU_MFC_RC_DT       /* 위탁가공의뢰일자     */
+            , TRU_MFC_RC_SQNO     /* 위탁가공의뢰일련번호 */
+            , MFS_STDV_DT         /* 제품입출고일자       */
+            , MFS_STDV_SQNO       /* 제품입출고일련번호   */
+            , STDV_DSC            /* 입출고구분코드       */
+            , STDV_QT             /* 입출고수량           */
+            , BOX_QT              /* BOX수량              */
+            , WHSE_C              /* 창고코드             */
+            , TRU_MFT_DT          /* 위탁가공일자         */
+            , TRU_MFC_AM          /* 위탁가공금액         */
+            , TRU_MFC_VAT         /* 위탁가공부가세       */
+            , ACG_DT              /* 회계일자             */
+            , QLT_ISP_TRPL_C      /* 품질검사거래처코드   */
+            , QLT_ISP_RQT_DT      /* 품질검사의뢰일자     */
+            , QLT_ISP_RQT_SQNO    /* 품질검사의뢰일련번호 */
+            , QLT_ISP_RQT_DSC     /* 품질검사의뢰구분코드 */
+            , ISP_JUD_DSC         /* 검사판정구분코드     */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , RV_YN               /* 입금여부             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{TRU_MFC_RC_DT}
+            , #{TRU_MFC_RC_SQNO}
+            , #{MFS_STDV_DT}
+            , (
+               SELECT ISNULL(MAX(MFS_STDV_SQNO),0)+1 
+                 FROM TB_PD_D_TRU_MFC_MFS_STDV
+                WHERE 1 = 1
+                  AND CORP_C          = #{CORP_C}
+                  AND BZPL_C          = #{BZPL_C}
+                  AND TRU_MFC_RC_DT   = #{TRU_MFC_RC_DT}
+                  AND TRU_MFC_RC_SQNO = #{TRU_MFC_RC_SQNO}
+                  AND MFS_STDV_DT     = #{MFS_STDV_DT}
+              )
+            , #{STDV_DSC}
+            , DBO.SF_GET_NUMERIC(#{STDV_QT})
+            , DBO.SF_GET_NUMERIC(#{BOX_QT})
+            , #{WHSE_C}
+            , #{TRU_MFT_DT}
+            , #{TRU_MFC_AM}
+            , #{TRU_MFC_VAT}
+            , #{ACG_DT}
+            , #{QLT_ISP_TRPL_C}
+            , #{QLT_ISP_RQT_DT}
+            , DBO.SF_GET_NUMERIC(#{QLT_ISP_RQT_SQNO})
+            , #{QLT_ISP_RQT_DSC}
+            , #{ISP_JUD_DSC}
+            , #{TR_BSN_DSC}
+            , DBO.SF_GET_NUMERIC(#{TR_SQNO})
+            , #{RMK_CNTN}
+            , #{RV_YN}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_TRU_MFC_MFS_STDV" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_TRU_MFC_MFS_STDV */ TB_PD_D_TRU_MFC_MFS_STDV
+           SET 
+               STDV_QT             = #{STDV_QT}               /* 입출고수량           */
+             , BOX_QT              = #{BOX_QT}                /* BOX수량              */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , TRU_MFT_DT          = #{TRU_MFT_DT}            /* 위탁가공일자         */
+             , TRU_MFC_AM          = #{TRU_MFC_AM}            /* 위탁가공금액         */
+             , TRU_MFC_VAT         = #{TRU_MFC_VAT}           /* 위탁가공부가세       */
+             , ACG_DT              = #{ACG_DT}                /* 회계일자             */
+             , QLT_ISP_TRPL_C      = #{QLT_ISP_TRPL_C}        /* 품질검사거래처코드   */
+             , QLT_ISP_RQT_DT      = #{QLT_ISP_RQT_DT}        /* 품질검사의뢰일자     */
+             , QLT_ISP_RQT_SQNO    = #{QLT_ISP_RQT_SQNO}      /* 품질검사의뢰일련번호 */
+             , QLT_ISP_RQT_DSC     = #{QLT_ISP_RQT_DSC}       /* 품질검사의뢰구분코드 */
+             , ISP_JUD_DSC         = #{ISP_JUD_DSC}           /* 검사판정구분코드     */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , RV_YN               = #{RV_YN}                 /* 입금여부             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND MFS_STDV_DT         = #{MFS_STDV_DT}
+           AND MFS_STDV_SQNO       = #{MFS_STDV_SQNO}
+           AND TRU_MFC_RC_DT       = #{TRU_MFC_RC_DT}
+           AND TRU_MFC_RC_SQNO     = #{TRU_MFC_RC_SQNO}
+           AND STDV_DSC            = #{STDV_DSC}
+    </update>
+
+    <delete id="delete_TB_PD_D_TRU_MFC_MFS_STDV" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_TRU_MFC_MFS_STDV */ FROM TB_PD_D_TRU_MFC_MFS_STDV
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND MFS_STDV_DT         = #{MFS_STDV_DT}
+           AND MFS_STDV_SQNO       = #{MFS_STDV_SQNO}
+           AND TRU_MFC_RC_DT       = #{TRU_MFC_RC_DT}
+           AND TRU_MFC_RC_SQNO     = #{TRU_MFC_RC_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_D_TRU_MFC_MFS_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_TRU_MFC_MFS_STDV */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRU_MFC_RC_DT                                     /* 위탁가공의뢰일자          */
+             , A.TRU_MFC_RC_SQNO                                   /* 위탁가공의뢰일련번호      */
+             , A.MFS_STDV_DT                                       /* 제품입출고일자            */
+             , A.MFS_STDV_SQNO                                     /* 제품입출고일련번호        */
+             , A.STDV_DSC                                          /* 입출고구분코드            */
+             , A.STDV_QT                                           /* 입출고수량                */
+             , A.BOX_QT                                            /* BOX수량                   */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.TRU_MFT_DT                                        /* 위탁가공일자              */
+             , A.TRU_MFC_AM                                        /* 위탁가공금액              */
+             , A.TRU_MFC_VAT                                       /* 위탁가공부가세            */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.QLT_ISP_TRPL_C                                    /* 품질검사거래처코드        */
+             , A.QLT_ISP_RQT_DT                                    /* 품질검사의뢰일자          */
+             , A.QLT_ISP_RQT_SQNO                                  /* 품질검사의뢰일련번호      */
+             , A.QLT_ISP_RQT_DSC                                   /* 품질검사의뢰구분코드      */
+             , A.ISP_JUD_DSC                                       /* 검사판정구분코드          */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.RV_YN                                             /* 입금여부                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_TRU_MFC_MFS_STDV A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.MFS_STDV_DT       = #{MFS_STDV_DT}
+           AND A.MFS_STDV_SQNO     = #{MFS_STDV_SQNO}
+           AND A.TRU_MFC_RC_DT     = #{TRU_MFC_RC_DT}
+           AND A.TRU_MFC_RC_SQNO   = #{TRU_MFC_RC_SQNO}
+    </select>
+</mapper>

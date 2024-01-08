@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_LATC_CLF_STD" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_LATC_CLF_STD */ TB_CO_M_LATC_CLF_STD
+        (
+              LATC_LCLC           /* 품목대분류코드       */
+            , LATC_MCLC           /* 품목중분류코드       */
+            , LATC_SCLC           /* 품목소분류코드       */
+            , LATC_LCLC_NM        /* 품목대분류명         */
+            , LATC_MCLC_NM        /* 품목중분류명         */
+            , LATC_SCLC_NM        /* 품목소분류명         */
+            , USE_YN              /* 사용여부             */
+            , RMK_CMTM            /* 비고                 */
+            , CHG_DSC             /* 변동구분(변경/신규)  */
+        )
+        VALUES
+        (
+              #{LATC_LCLC}
+            , #{LATC_MCLC}
+            , #{LATC_SCLC}
+            , #{LATC_LCLC_NM}
+            , #{LATC_MCLC_NM}
+            , #{LATC_SCLC_NM}
+            , #{USE_YN}
+            , #{RMK_CMTM}
+            , #{CHG_DSC}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_LATC_CLF_STD" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_LATC_CLF_STD */ TB_CO_M_LATC_CLF_STD
+           SET 
+               LATC_LCLC           = #{LATC_LCLC}             /* 품목대분류코드       */
+             , LATC_MCLC           = #{LATC_MCLC}             /* 품목중분류코드       */
+             , LATC_SCLC           = #{LATC_SCLC}             /* 품목소분류코드       */
+             , LATC_LCLC_NM        = #{LATC_LCLC_NM}          /* 품목대분류명         */
+             , LATC_MCLC_NM        = #{LATC_MCLC_NM}          /* 품목중분류명         */
+             , LATC_SCLC_NM        = #{LATC_SCLC_NM}          /* 품목소분류명         */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , RMK_CMTM            = #{RMK_CMTM}              /* 비고                 */
+             , CHG_DSC             = #{CHG_DSC}               /* 변동구분(변경/신규)  */
+         WHERE 1=1 
+           AND LATC_LCLC           = #{LATC_LCLC}
+           AND LATC_MCLC           = #{LATC_MCLC}
+           AND LATC_SCLC           = #{LATC_SCLC}
+    </update>
+
+    <delete id="delete_TB_CO_M_LATC_CLF_STD" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_LATC_CLF_STD */ FROM TB_CO_M_LATC_CLF_STD
+         WHERE 1=1 
+           AND LATC_LCLC           = #{LATC_LCLC}
+           AND LATC_MCLC           = #{LATC_MCLC}
+           AND LATC_SCLC           = #{LATC_SCLC}
+    </delete>
+
+    <select id="select_TB_CO_M_LATC_CLF_STD" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_LATC_CLF_STD */
+               A.LATC_LCLC                                         /* 품목대분류코드       */
+             , A.LATC_MCLC                                         /* 품목중분류코드       */
+             , A.LATC_SCLC                                         /* 품목소분류코드       */
+             , A.LATC_LCLC_NM                                      /* 품목대분류명         */
+             , A.LATC_MCLC_NM                                      /* 품목중분류명         */
+             , A.LATC_SCLC_NM                                      /* 품목소분류명         */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.RMK_CMTM                                          /* 비고                 */
+             , A.CHG_DSC                                           /* 변동구분(변경/신규)  */
+          FROM TB_CO_M_LATC_CLF_STD A
+         WHERE 1=1 
+           AND A.LATC_LCLC         = #{LATC_LCLC}
+           AND A.LATC_MCLC         = #{LATC_MCLC}
+           AND A.LATC_SCLC         = #{LATC_SCLC}
+    </select>
+</mapper>

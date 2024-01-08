@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+    <!-- 사업장별물품순위현황 -->
+    <select id="selectMi1160_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    SELECT /*+ selectMi1160_01 */
+           A.CORP_C                                 /* 회사코드                 */
+         , A.BZPL_C                                 /* 사업장코드               */
+         , D.BZPL_NM                                /* 사업장명                 */
+         , A.ORD                                    /* 매출물품순위             */
+         , A.GDS_C          AS F1_GDS_C             /* 기준년물품코드           */
+         , E.GDS_DTL_NM     AS F1_GDS_DTL_NM        /* 기준년물품명             */
+         , E.GDS_STD_NM     AS F1_GDS_STD_NM        /* 기준년물품규격           */
+         , E.UNT_C          AS F1_UNT_C             /* 기준년물품관리단위       */
+         , A.TYY_SL_QT      AS F1_TYY_SL_QT         /* 기준년매출수량           */
+         , A.TYY_SL_AM      AS F1_TYY_SL_AM         /* 기준년매출금액           */
+         , B.GDS_C          AS F2_GDS_C             /* 당월물품코드             */
+         , F.GDS_DTL_NM     AS F2_GDS_DTL_NM        /* 당월물품명               */
+         , F.GDS_STD_NM     AS F2_GDS_STD_NM        /* 당월물품규격             */
+         , F.UNT_C          AS F2_UNT_C             /* 당월물품관리단위         */
+         , B.TYY_SL_QT      AS F2_TYY_SL_QT         /* 당월매출수량             */
+         , B.TYY_SL_AM      AS F2_TYY_SL_AM         /* 당월매출금액             */
+         , C.GDS_C          AS F3_GDS_C             /* 기준전년동월물품코드     */
+         , G.GDS_DTL_NM     AS F3_GDS_DTL_NM        /* 기준전년동월물품명       */
+         , G.GDS_STD_NM     AS F3_GDS_STD_NM        /* 기준전년동월물품규격     */    
+         , G.UNT_C          AS F3_UNT_C             /* 기준전년동월물품관리단위 */
+         , C.TYY_SL_QT      AS F3_TYY_SL_QT         /* 기준전년동월매출수량     */
+         , C.TYY_SL_AM      AS F3_TYY_SL_AM         /* 기준전년동월매출금액     */
+      FROM (
+            SELECT /* 기준년 */
+                   A.CORP_C
+                 , A.BZPL_C
+                 , B.GDS_C
+               <if test='VAT_YN == "Y"'>
+                 , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                       ELSE                           -1
+                                                  END * B.SL_AM) DESC, B.GDS_C)  AS ORD                                    
+                 , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1 
+                            ELSE                           -1
+                       END * B.SL_AM)                                            AS TYY_SL_AM /* 당년전체매출금액(부가세포함) */
+               </if>
+               <if test='VAT_YN == "N"'>
+                 , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                       ELSE                           -1
+                                                  END * B.SPY_AM) DESC, B.GDS_C) AS ORD
+                 , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                            ELSE                           -1
+                       END * B.SPY_AM)                                           AS TYY_SL_AM /* 당년전체매출금액(부가세미포함) */
+                </if>
+                 , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                            ELSE                           -1
+                       END * B.SL_QT)                                            AS TYY_SL_QT /* 당년전체매출수량 */
+              FROM TB_SE_M_SL A
+                 , TB_SE_D_SL B
+             WHERE 1 = 1
+               AND A.CORP_C     = B.CORP_C
+               AND A.BZPL_C     = B.BZPL_C
+               AND A.SL_DT      = B.SL_DT
+               AND A.SL_SQNO    = B.SL_SQNO
+               AND A.CORP_C     = #{CORP_C}
+               AND A.SLP_NML_YN = 'Y'
+               AND A.ACG_DT LIKE SUBSTRING(#{ACG_DT}, 1,4)+'%'
+            <if test='searchKeyword != null and searchKeyword != ""'>
+               AND A.BZPL_C IN (${searchKeyword})
+            </if>
+             GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C                
+           )                       A
+      LEFT OUTER JOIN (
+                       SELECT /* 당월 */
+                              A.CORP_C
+                            , A.BZPL_C
+                            , B.GDS_C
+                          <if test='VAT_YN == "Y"'>
+                            , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                  ELSE                           -1
+                                                             END * B.SL_AM) DESC, B.GDS_C)  AS ORD
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SL_AM)                                            AS TYY_SL_AM /* 당월금액 */
+                          </if>
+                          <if test='VAT_YN == "N"'>
+                            , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                  ELSE                           -1
+                                                             END * B.SPY_AM) DESC, B.GDS_C) AS ORD
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SPY_AM)                                           AS TYY_SL_AM /* 당월금액 */
+                          </if>
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SL_QT)                                            AS TYY_SL_QT  /* 당월수량 */
+                         FROM TB_SE_M_SL A
+                            , TB_SE_D_SL B
+                        WHERE 1 = 1
+                          AND A.CORP_C     = B.CORP_C
+                          AND A.BZPL_C     = B.BZPL_C
+                          AND A.SL_DT      = B.SL_DT
+                          AND A.SL_SQNO    = B.SL_SQNO
+                          AND A.CORP_C     = #{CORP_C}
+                          AND A.SLP_NML_YN = 'Y'
+                          AND A.ACG_DT LIKE #{ACG_DT}+'%' /*당월*/
+                        <if test='searchKeyword != null and searchKeyword != ""'>
+                          AND A.BZPL_C IN (${searchKeyword})
+                        </if>
+                        GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                        
+                      )            B
+        ON A.CORP_C = B.CORP_C
+       AND A.BZPL_C = B.BZPL_C
+       AND A.GDS_C  = B.GDS_C
+       
+   
+    LEFT OUTER JOIN (
+                       SELECT /* 기준전년동월 */
+                              A.CORP_C
+                            , A.BZPL_C
+                            , B.GDS_C
+                          <if test='VAT_YN == "Y"'>
+                            , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                  ELSE                           -1
+                                                             END * B.SL_AM) DESC, B.GDS_C)   AS ORD
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SL_AM)                                             AS TYY_SL_AM /* 전년동월금액 */
+                          </if>
+                          <if test='VAT_YN == "N"'>
+                            , ROW_NUMBER() OVER(ORDER BY SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                                                  ELSE                           -1
+                                                             END * B.SPY_AM) DESC, B.GDS_C) AS ORD
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SPY_AM)                                            AS TYY_SL_AM /* 전년동월금액 */
+                          </if>
+                            , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                       ELSE                           -1
+                                  END * B.SL_QT)                                             AS TYY_SL_QT /* 전년동월수량 */
+                         FROM TB_SE_M_SL A
+                            , TB_SE_D_SL B
+                        WHERE 1 = 1
+                          AND A.CORP_C     = B.CORP_C
+                          AND A.BZPL_C     = B.BZPL_C
+                          AND A.SL_DT      = B.SL_DT
+                          AND A.SL_SQNO    = B.SL_SQNO
+                          AND A.CORP_C     = #{CORP_C}
+                          AND A.SLP_NML_YN = 'Y'
+                          AND A.ACG_DT LIKE CONVERT(VARCHAR, SUBSTRING(#{ACG_DT}, 1,4) -1)+SUBSTRING(#{ACG_DT}, 5,2)+'%'
+                        <if test='searchKeyword != null and searchKeyword != ""'>
+                          AND A.BZPL_C IN (${searchKeyword})
+                        </if>
+                        GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                      )            C
+        ON A.CORP_C = C.CORP_C
+       AND A.BZPL_C = C.BZPL_C
+       AND A.GDS_C  = C.GDS_C
+       
+      LEFT OUTER JOIN TB_CO_M_BZPL D
+        ON A.CORP_C = D.CORP_C
+       AND A.BZPL_C = D.BZPL_C
+      LEFT OUTER JOIN TB_CO_M_GDS  E
+        ON A.CORP_C = E.CORP_C
+       AND A.BZPL_C = E.BZPL_C
+       AND A.GDS_C  = E.GDS_C
+      LEFT OUTER JOIN TB_CO_M_GDS  F
+        ON B.CORP_C = F.CORP_C
+       AND B.BZPL_C = F.BZPL_C
+       AND B.GDS_C  = F.GDS_C
+      LEFT OUTER JOIN TB_CO_M_GDS  G
+        ON C.CORP_C = G.CORP_C
+       AND C.BZPL_C = G.BZPL_C
+       AND C.GDS_C  = G.GDS_C
+    </select>    
+</mapper>

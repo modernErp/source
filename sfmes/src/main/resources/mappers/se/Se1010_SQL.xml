@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 물품별매출단가등록 전 Validation Check -->
+    <select id="selectSe1010_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ selectSe1010_ValidCheck */
+               CASE WHEN #{CORP_C}      = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{BZPL_C}      = '' THEN '사업장코드는 필수입력 항목입니다.'
+                    WHEN #{GDS_C}       = '' THEN '물품코드는 필수입력 항목입니다.'
+                    WHEN #{APL_BAS_DT}  = '' THEN '적용기준일자는 필수입력 항목입니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>  
+
+    <!-- 물품등록여부체크 -->
+    <select id="selectSe1010_chk1" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1020_chk1 */
+               count(1)
+          FROM TB_CO_M_GDS
+         WHERE CORP_C    = #{CORP_C}
+           AND BZPL_C    = #{BZPL_C}
+           AND GDS_C     = #{GDS_C}
+    </select>
+    
+    <!-- 동일물품의 동일적용기준일자 중복체크 -->
+    <select id="selectSe1010_chk2" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1010_chk2 */
+               COUNT(1)
+          FROM TB_SE_M_GDS_UPR
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND GDS_C      = #{GDS_C}
+           AND APL_BAS_DT = #{APL_BAS_DT}
+    </select>
+    
+    <!-- 물품사용중지여부체크 -->
+    <select id="selectSe1010_chk3" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe1010_chk3 */
+               COUNT(1)
+          FROM TB_CO_M_GDS
+         WHERE 1 = 1
+           AND CORP_C     = #{CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+           AND GDS_C      = #{GDS_C}
+           AND USE_YN     = 'Y'
+    </select>
+    
+    <!-- 최종기준일자의 매출단가조회 -->
+    <select id="selectSe1010_MAX" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe1010_MAX */
+		       A.CORP_C                                            /* 회사코드                  */
+		     , A.BZPL_C                                            /* 사업장코드                */
+		     , A.GDS_C                                             /* 물품코드                  */
+		     , A.GDS_DTL_NM                                        /* 물품명                    */
+		     , A.GDS_STD_NM                                        /* 물품규격                  */
+		     , A.UNT_C                                             /* 관리단위                  */
+		     , B.WHSL_SL_UPR                                       /* 도매매출단가              */
+		     , B.RTL_SL_UPR                                        /* 소매대출단가              */
+		     , B.ARCY_SPY_UPR                                      /* 대리점공급단가            */
+		     , ISNULL(B.APL_BAS_DT, REPLACE(CONVERT(CHAR(23), GETDATE(), 23), '-', '')) AS APL_BAS_DT /* 적용기준일자              */
+		     <!-- , B.APL_BAS_DT                                        /* 기준적용일자              */ -->
+		     , B.DEL_YN                                            /* 삭제여부                  */
+		     , B.RMK_CNTN                                          /* 비고내용                  */
+		  FROM TB_CO_M_GDS A
+		  LEFT OUTER JOIN(
+		                  SELECT 
+		                         MAX(CORP_C)       AS CORP_C
+		                       , MAX(BZPL_C)       AS BZPL_C
+		                       , GDS_C
+		                       , MAX(APL_BAS_DT)   AS APL_BAS_DT                                        
+		                       , MAX(WHSL_SL_UPR)  AS WHSL_SL_UPR                                      
+		                       , MAX(RTL_SL_UPR)   AS RTL_SL_UPR                                       
+		                       , MAX(ARCY_SPY_UPR) AS ARCY_SPY_UPR                                   
+		                       , MAX(RMK_CNTN)     AS RMK_CNTN                                         
+		                       , MAX(DEL_YN)       AS DEL_YN                                           
+		                    FROM TB_SE_M_GDS_UPR
+		                   WHERE 1 = 1
+		                     AND CORP_C = #{CORP_C}
+		                     AND BZPL_C = #{BZPL_C}
+		                     AND DEL_YN = 'N'
+		                   GROUP BY GDS_C
+		                 ) B
+		    ON A.CORP_C = B.CORP_C
+		   AND A.BZPL_C = B.BZPL_C
+		   AND A.GDS_C  = B.GDS_C
+		 WHERE 1 = 1
+		   AND A.CORP_C            = #{CORP_C}
+		   AND A.BZPL_C            = #{BZPL_C}
+		   AND A.USE_YN            = 'Y'   
+		   AND A.GDS_TP_DSC IN ('10','80')   
+     <if test = "GDS_TP_DSC != null and GDS_TP_DSC != ''">
+           AND A.GDS_TP_DSC        = #{GDS_TP_DSC}
+     </if>         		   
+     <if test="searchKeyword != null and searchKeyword != ''">
+       <choose>
+         <when test="searchCondition == ''">
+           AND (A.GDS_C LIKE '%${searchKeyword}%' OR A.GDS_DTL_NM LIKE '%${searchKeyword}%')
+         </when>
+         <when test="searchCondition == 1">
+           AND A.GDS_C LIKE '%${searchKeyword}%'
+         </when>
+         <when test="searchCondition == 2">
+           AND A.GDS_DTL_NM LIKE '%${searchKeyword}%'
+         </when>
+       </choose>
+     </if>                
+    </select>
+    
+    <!-- 매출단가조회 -->
+    <select id="selectSe1010_SL_UPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        <![CDATA[    
+        SELECT /*+ selectSe1010_SL_UPR */
+               CASE WHEN A.APL_SL_UPR > 0 THEN A.APL_SL_UPR
+                    WHEN A.APL_SL_UPR = 0 THEN A.SL_UPR
+               ELSE                            0 END AS SL_UPR
+         FROM(
+              SELECT SUM(A.APL_SL_UPR) AS APL_SL_UPR
+                   , SUM(A.SL_UPR)     AS SL_UPR
+                FROM(
+                     /*가격군별물품매출단가*/
+                     SELECT A.APL_SL_UPR
+                          , 0 AS SL_UPR
+                       FROM TB_SE_M_PRGR_GDS A
+                      INNER JOIN(
+                                  /*거래처의 가격군조회*/
+                                  SELECT B.CORP_C
+                                       , B.BZPL_C
+                                       , B.PRGR_C
+                                       , C.SL_UPR_APL_DSC
+                                    FROM TB_SE_M_PRGR           A  
+                                   INNER JOIN TB_SE_M_PRGR_TRPL B
+                                      ON A.CORP_C = B.CORP_C
+                                     AND A.BZPL_C = B.BZPL_C
+                                     AND A.PRGR_C = B.PRGR_C
+                                   INNER JOIN TB_CO_M_TRPL_CTR  C
+                                      ON B.CORP_C = C.CORP_C
+                                     AND B.TRPL_C = C.TRPL_C
+                                   WHERE 1 = 1
+                                     AND B.CORP_C    = #{CORP_C}
+                                     AND B.BZPL_C    = #{BZPL_C}
+                                     AND B.TRPL_C    = #{TRPL_C}
+                                     AND A.DEL_YN    = 'N'
+                                     AND B.DEL_YN    = 'N'
+                                     AND C.BY_SL_DSC = '2'                                     
+                                 ) B
+                         ON A.CORP_C     = B.CORP_C
+                        AND A.BZPL_C     = B.BZPL_C
+                        AND A.PRGR_C     = B.PRGR_C
+                        AND A.DEL_YN     = 'N'
+                        AND A.GDS_C      = #{GDS_C}
+                        AND A.APL_BAS_DT = (SELECT MAX(APL_BAS_DT) 
+                                              FROM TB_SE_M_PRGR_GDS A
+                                             WHERE A.CORP_C     = #{CORP_C}
+                                               AND A.BZPL_C     = #{BZPL_C}
+                                               AND A.GDS_C      = #{GDS_C}
+                                               AND A.DEL_YN     = 'N'
+                                               AND A.APL_BAS_DT <= #{APL_BAS_DT})
+                     UNION ALL 
+                     /*물품매출단가조회*/
+                     SELECT 0 AS APL_SL_UPR
+                          , CASE WHEN (SELECT SL_UPR_APL_DSC 
+                                        FROM TB_CO_M_TRPL_CTR 
+                                       WHERE 1 = 1
+                                         AND CORP_C    = #{CORP_C} 
+                                         AND TRPL_C    = #{TRPL_C}
+                                         AND BY_SL_DSC = '2') = '01' THEN A.WHSL_SL_UPR 
+                            ELSE                                          A.RTL_SL_UPR  END SL_UPR
+                       FROM TB_SE_M_GDS_UPR   A
+                      WHERE 1 = 1
+                        AND A.CORP_C     = #{CORP_C}
+                        AND A.BZPL_C     = #{BZPL_C}
+                        AND A.GDS_C      = #{GDS_C}
+                        AND A.DEL_YN     = 'N'
+                        AND A.APL_BAS_DT = (SELECT MAX(APL_BAS_DT) 
+                                              FROM TB_SE_M_GDS_UPR A
+                                             WHERE A.CORP_C     = #{CORP_C}
+                                               AND A.BZPL_C     = #{BZPL_C}
+                                               AND A.GDS_C      = #{GDS_C}
+                                               AND A.DEL_YN     = 'N'
+                                               AND A.APL_BAS_DT <= #{APL_BAS_DT})            
+                    ) A
+             ) A  
+        ]]>              
+    </select>
+
+</mapper>

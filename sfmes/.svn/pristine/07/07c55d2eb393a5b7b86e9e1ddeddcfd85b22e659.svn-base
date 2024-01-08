@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_D_USR_MYMNU" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_D_USR_MYMNU */ TB_SY_D_USR_MYMNU
+        (
+              CORP_C              /* 회사코드             */
+            , USR_ID              /* 사용자아이디         */
+            , MENU_ID             /* 메뉴아이디           */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{USR_ID}
+            , #{MENU_ID}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_D_USR_MYMNU" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_D_USR_MYMNU */ TB_SY_D_USR_MYMNU
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , USR_ID              = #{USR_ID}                /* 사용자아이디         */
+             , MENU_ID             = #{MENU_ID}               /* 메뉴아이디           */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MENU_ID             = #{MENU_ID}
+           AND USR_ID              = #{USR_ID}
+    </update>
+
+    <delete id="delete_TB_SY_D_USR_MYMNU" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_D_USR_MYMNU */ FROM TB_SY_D_USR_MYMNU
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MENU_ID             = #{MENU_ID}
+           AND USR_ID              = #{USR_ID}
+    </delete>
+
+    <select id="select_TB_SY_D_USR_MYMNU" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_D_USR_MYMNU */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , A.MENU_ID                                           /* 메뉴아이디           */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_D_USR_MYMNU A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.MENU_ID           = #{MENU_ID}
+           AND A.USR_ID            = #{USR_ID}
+    </select>
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+ 
+    <!-- 품간대체처리내역 기본-->
+    <select id="searchSm4010P01_M" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+          SELECT   /*+ searchSm4010P01_M */
+                A.CORP_C                                             /*  회사코드            */
+            ,   A.BZPL_C                                             /*  사업장코드         */
+            ,   A.TFR_PRC_DT                                         /*  대체처리일자      */
+            ,   A.TFR_PRC_SQNO                                       /*  대체처리일련번호 */
+            ,   A.SLP_NML_YN                                         /*  전표정상여부      */
+            ,   A.RLTR_DT                                            /*  실거래일자         */
+            ,   A.ACG_DT                                             /*  회계일자           */
+            ,   A.IV_TFR_RSN                                         /*  품간대체사유     */
+            ,   A.RMK_CNTN                                           /*  비고내용            */
+            ,   A.TR_BSN_DSC                                         /*  거래업무구분코드  */
+            ,   A.TR_SQNO                                            /*  거래일련번호      */
+            ,   CONVERT(CHAR(23), A.FSRG_DTM, 20)       AS FSRG_DTM  /*  최초등록일시     */
+            ,   A.FSRG_ID                                            /*  최초등록자ID  */
+            ,   A.FSRG_ID                               AS FSRG_NM   /*  최초등록자      */
+            ,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)      AS LSCHG_DTM /*  최종변경일시     */
+            ,   A.LSCHG_ID                                           /*  최종변경자ID    */
+            ,   A.LSCHG_ID                              AS LSCHG_NM  /*  최종변경자       */
+        FROM    TB_SM_M_GDS_TFR A
+        WHERE   1=1
+        AND     A.CORP_C        = #{CORP_C}
+        AND     A.BZPL_C        = #{BZPL_C}
+        
+        <if test = "ST_DT != null and ST_DT != ''">
+            <if test = "ED_DT != null and ED_DT != ''">
+                 AND     A.TFR_PRC_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+            </if>
+        </if>
+        <if test = "TFR_PRC_DT != null and TFR_PRC_DT != ''">
+            AND   TFR_PRC_DT      = #{TFR_PRC_DT}
+        </if>
+        
+        <if test = "TFR_PRC_SQNO != null and TFR_PRC_SQNO != ''">
+            AND   TFR_PRC_SQNO    = #{TFR_PRC_SQNO}
+        </if>
+        AND     A.SLP_NML_YN    = 'Y'
+           
+    </select>
+    
+    
+    <!-- 품간대체처리내역 상세-->
+    <select id="searchSm4010P01_D" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+            SELECT   /*+ searchSm4010P01_D */
+                A.CORP_C                                             /* 회사코드         */
+            ,   A.BZPL_C                                             /* 사업장코드      */
+            ,   A.TFR_PRC_DT                                         /* 대체처리일자    */
+            ,   A.TFR_PRC_SQNO                                       /* 대체처리일련번호    */
+            ,   A.TFR_PRC_DSQNO                                      /* 대체처리상세일련번호 */
+            ,   A.DLR_GDS_C                                          /* 출고물품코드  */
+            ,   C.GDS_NM          AS DLR_GDS_NM                      /* 출고물품명   */
+            ,   A.DLR_WHSE_C                                         /* 출고창고코드   */
+            ,   E.WHSE_NM         AS DLR_WHSE_NM                     /* 출고창고명  */
+            ,   A.DLR_QT                                             /* 출고수량     */
+            ,   A.DLR_QT          AS STR_QT                          /* 입고수량    */
+            ,   A.DLR_WT                                             /* 출고중량     */
+            ,   A.DLR_UPR                                            /* 출고단가     */
+            ,   A.DLR_AM                                             /* 출고금액     */
+            ,   C.TXT_DSC         AS DLR_TXT_DSC                     /* 출고과세구분  */
+            ,   C.GDS_STD_NM      AS DLR_GDS_STD_NM                  /* 출고물품규격   */   
+            ,   C.GDS_TP_DSC      AS DLR_GDS_TP_DSC                  /* 출고물품구분   */
+            ,   C.UNT_C           AS DLR_UNT_C                       /* 출고물품단위  */
+            ,   A.STR_GDS_C                                          /* 입고물품코드   */
+            ,   B.GDS_NM          AS STR_GDS_NM                      /* 입고물품명   */
+            ,   B.TXT_DSC         AS STR_TXT_DSC                     /* 입고과세구분   */
+            ,   B.GDS_STD_NM      AS STR_GDS_STD_NM                  /* 입고물품규격  */
+            ,   B.GDS_TP_DSC      AS STR_GDS_TP_DSC                  /* 입고물품구분   */
+            ,   B.UNT_C           AS STR_UNT_C                       /* 입고물품단위  */
+            ,   A.STR_WHSE_C                                         /* 입고창고코드   */
+            ,   D.WHSE_NM         AS STR_WHSE_NM                    /* 입고창고명    */
+            ,   A.RMK_CNTN                                           /* 비고내용     */
+            ,   CONVERT(CHAR(23), A.FSRG_DTM, 20)    AS FSRG_DTM     /* 최초등록일시 */
+            ,   A.FSRG_ID                                            /* 최초등록자ID */
+            ,   A.FSRG_ID                            AS FSRG_NM      /* 최초등록자 */
+            ,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)   AS LSCHG_DTM    /* 최종변경일시  */
+            ,   A.LSCHG_ID                                           /* 최종변경자ID */
+            ,   A.LSCHG_ID                           AS LSCHG_NM     /* 최종변경자  */
+            ,   DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.DLR_GDS_C, '00000000')        AS DLR_GDS_STDV_QT  /* 물품재고수량  */
+            ,   (
+                 SELECT G.STPL_QT 
+                 FROM   TB_SM_D_GDS_RL_MON_TOT G
+                 WHERE  1=1
+                 AND    G.CORP_C   =  A.CORP_C
+                 AND    G.BZPL_C   =  A.BZPL_C
+                 AND    G.TOT_MN   =  CONVERT(CHAR(6), GETDATE(), 112) 
+                 AND    G.GDS_C    =  A.DLR_GDS_C
+                 AND    G.WHSE_C   =  A.DLR_WHSE_C
+                 ) AS DLR_WHSE_STDV_QT
+        FROM    TB_SM_D_GDS_TFR A
+       LEFT OUTER JOIN TB_CO_M_GDS B 
+        ON    B.CORP_C  = A.CORP_C
+        AND   B.BZPL_C  = A.BZPL_C
+        AND   B.GDS_C   = A.STR_GDS_C
+       LEFT OUTER JOIN TB_CO_M_GDS C
+        ON    C.CORP_C  = A.CORP_C
+        AND   C.BZPL_C  = A.BZPL_C
+        AND   C.GDS_C   = A.DLR_GDS_C
+       LEFT OUTER JOIN TB_CO_M_WHSE D
+        ON    D.CORP_C  = A.CORP_C
+        AND   D.BZPL_C  = A.BZPL_C
+        AND   D.WHSE_C  = A.STR_WHSE_C
+       LEFT OUTER JOIN TB_CO_M_WHSE E
+        ON    E.CORP_C  = A.CORP_C
+        AND   E.BZPL_C  = A.BZPL_C
+        AND   E.WHSE_C  = A.DLR_WHSE_C
+        WHERE   1=1
+        AND     A.CORP_C        = #{CORP_C}
+        AND     A.BZPL_C        = #{BZPL_C}
+        AND     A.TFR_PRC_DT    = #{TFR_PRC_DT}
+        AND     A.TFR_PRC_SQNO  = #{TFR_PRC_SQNO}
+    </select>
+ 
+    <!-- 품간대체처리 창고찾기 팝업 -->
+    <select id="searchSm4010P03" parameterType="linkedHashMap" resultType="linkedHashMap">
+       SELECT /*+ searchSm4010P03 */
+                A.CORP_C                                             /* 회사코드    */
+            ,   A.BZPL_C                                             /* 사업장코드   */
+            ,   A.GDS_C                                              /* 물품코드    */
+            ,   A.WHSE_C                                             /* 창고코드    */
+            ,   A.BAS_STPL_QT                                        /* 기초재고수량 */
+            ,   A.STPL_QT                                            /* 창고재고수량 */
+            ,   B.WHSE_C                                             /* 창고코드 */
+            ,   B.WHSE_NM                                            /* 창고명 */
+            ,   B.CHRR_NM                                            /* 담당자명 */
+            ,   B.USE_YN                                             /* 사용여부 */
+            ,   B.ZIP                                                /* 우편번호 */
+            ,   B.ADR1                                               /* 주소1 */
+            ,   B.ADR2                                               /* 주소2 */
+            ,   B.CHRR_TELNO                                         /* 담당자전화번호 */
+            ,   B.CHRG_DEPT_C                                        /* 담당 부서명 */
+            ,   B.WHSE_CFC                                           /* 창고분류코드 */
+            ,   B.WHSE_DSC                                           /* 창고구분코드 */
+            ,   B.MINUS_YN                                           /* 음수재고허용여부 */
+       FROM TB_SM_D_GDS_RL_MON_TOT             A
+       LEFT OUTER JOIN    TB_CO_M_WHSE      B
+            ON  A.CORP_C     = B.CORP_C
+            AND A.BZPL_C     = B.BZPL_C
+            AND A.WHSE_C     = B.WHSE_C
+       WHERE 1=1
+       AND B.WHSE_CFC        = '01'                 /* 창고분류코드    */
+       AND A.GDS_C           = #{P_DLR_GDS_C}   
+       AND A.CORP_C          = #{CORP_C}
+       AND A.BZPL_C          = #{P_BAS_BZPL_C}
+       <if test='WHSE_DSC != null and WHSE_DSC != ""'>
+            AND B.WHSE_DSC    = #{WHSE_DSC}
+        </if>
+        <if test='USE_YN != null and USE_YN != ""'>
+            AND B.USE_YN         = #{USE_YN}
+        </if>
+        <if test='WHSE_C != null and WHSE_C != ""'>
+            AND B.WHSE_C LIKE '%' + #{WHSE_C} + '%'      
+        </if>
+        <if test='WHSE_NM != null and WHSE_NM != ""'>
+            AND B.WHSE_NM LIKE '%' + #{WHSE_NM} + '%'           
+        </if>
+        
+    </select>
+    
+    
+    <!-- 품원간대체처리 전표정상여부 N  -->
+    <update id="updateSm4010_SLP_NML_YN" parameterType="linkedHashMap">
+            UPDATE /*+ updateSm4010_SLP_NML_YN*/ TB_SM_M_GDS_TFR
+            SET     SLP_NML_YN      = 'N'                          /* 전표정상여부       */
+            ,       LSCHG_DTM       = GETDATE()                    /* 최종변경일시       */
+            ,       LSCHG_ID        = #{GUSRID}                  /* 최종변경자ID   */
+            WHERE   1=1
+            AND     CORP_C          = #{CORP_C}
+            AND     BZPL_C          = #{BZPL_C}
+            AND     TFR_PRC_DT      = #{TFR_PRC_DT}
+            AND     TFR_PRC_SQNO    = #{TFR_PRC_SQNO}
+            AND     SLP_NML_YN      = 'Y'
+    </update>
+     
+</mapper>

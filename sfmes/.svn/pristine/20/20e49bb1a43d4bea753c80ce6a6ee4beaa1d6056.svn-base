@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.dl">
+
+	<!-- 유효성체크 -->
+	<select id="selectDl1020Check" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN 1 <= (SELECT COUNT(1) 
+                                FROM TB_DL_M_ACG_JNLZ
+                               WHERE CORP_C    = #{CORP_C}
+                                 AND TR_BSN_DSC = #{TR_BSN_DSC}) THEN '동일한 거래업무구분이 존재합니다.확인 후 다시 처리하세요'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+	
+	<!-- 회계분개기본 조회 -->
+	<select id="selectDl1020List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1020List01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+             , A.TR_BSN_DSNM                                       /* 거래업무구분명       */
+             , A.JNLZ_EXPL                                         /* 분개설명             */
+             , A.USE_YN                                            /* 사용여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , ( SELECT X.USR_NM
+   				   FROM TB_SY_M_USR X
+                  WHERE 1=1
+                    AND A.CORP_C  = X.CORP_C
+                    AND A.FSRG_ID = X.USR_ID )    AS FSRG_NM       /* 최초등록자명         */                   
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , ( SELECT X.USR_NM
+   				   FROM TB_SY_M_USR X
+                  WHERE 1=1
+                    AND A.CORP_C  = X.CORP_C
+                    AND A.FSRG_ID = X.USR_ID )    AS LSCHG_NM      /* 최종변경자명         */
+          FROM TB_DL_M_ACG_JNLZ A
+         WHERE 1=1
+           AND CORP_C = #{CORP_C}
+    </select>
+    
+    <!-- 회계분개상세 조회 -->
+    <select id="selectDl1020List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1020List02 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+             , A.JNLZ_SQNO                                         /* 분개일련번호         */
+             , A.ASB_NO                                            /* 조립번호             */
+             , A.JNLZ_DSC                                          /* 분개구분코드         */
+             , A.JNLZ_DTI_DSC                                      /* 분개세부구분코드     */
+             , A.ACG_ACCC                                          /* 회계계정코드         */
+             , A.ACG_ACC_CNM                                       /* 회계계정코드명       */
+             , A.JNLZ_SNSNM                                        /* 분개적요명           */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.BLB_DFC_DSC                                       /* 흑적자구분코드       */
+             , A.DB_CR_DSC                                         /* 차대변구분코드       */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_DL_D_ACG_JNLZ A
+         WHERE 1=1 
+           AND A.CORP_C = #{CORP_C}
+           AND A.TR_BSN_DSC        = #{TR_BSN_DSC}
+    </select>
+</mapper>

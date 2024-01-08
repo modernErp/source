@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CP_D_PCS_PTIN_OFR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CP_D_PCS_PTIN_OFR */ TB_CP_D_PCS_PTIN_OFR
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , GDS_C               /* 물품코드             */
+            , PTIN_GDS_C          /* 투입물품코드         */
+            , PTIN_QT             /* 투입_수량            */
+            , PTIN_AM             /* 투입_금액            */
+            , BF_CLC_ACC_QT       /* 이전월산출누적수량   */
+            , BF_CLC_ACC_AM       /* 이전월산출누적금액   */
+            , CUR_CLC_QT          /* 산출월산출수량       */
+            , CUR_CLC_AM          /* 산출월산출금액       */
+            , MTR_AM              /* 재료_금액            */
+            , LBR_CST_AM          /* 노무비               */
+            , MFT_XPN_AM          /* 제조경비             */
+            , ETC_DSC             /* 기타구분             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PCS_CLC_DT}
+            , #{PCS_CLC_SQNO}
+            , #{GDS_C}
+            , #{PTIN_GDS_C}
+            , #{PTIN_QT}
+            , #{PTIN_AM}
+            , #{BF_CLC_ACC_QT}
+            , #{BF_CLC_ACC_AM}
+            , #{CUR_CLC_QT}
+            , #{CUR_CLC_AM}
+            , #{MTR_AM}
+            , #{LBR_CST_AM}
+            , #{MFT_XPN_AM}
+            , #{ETC_DSC}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CP_D_PCS_PTIN_OFR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CP_D_PCS_PTIN_OFR */ TB_CP_D_PCS_PTIN_OFR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PCS_CLC_DT          = #{PCS_CLC_DT}            /* 원가계산일자         */
+             , PCS_CLC_SQNO        = #{PCS_CLC_SQNO}          /* 원가계산일련번호     */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , PTIN_GDS_C          = #{PTIN_GDS_C}            /* 투입물품코드         */
+             , PTIN_QT             = #{PTIN_QT}               /* 투입_수량            */
+             , PTIN_AM             = #{PTIN_AM}               /* 투입_금액            */
+             , BF_CLC_ACC_QT       = #{BF_CLC_ACC_QT}         /* 이전월산출누적수량   */
+             , BF_CLC_ACC_AM       = #{BF_CLC_ACC_AM}         /* 이전월산출누적금액   */
+             , CUR_CLC_QT          = #{CUR_CLC_QT}            /* 산출월산출수량       */
+             , CUR_CLC_AM          = #{CUR_CLC_AM}            /* 산출월산출금액       */
+             , MTR_AM              = #{MTR_AM}                /* 재료_금액            */
+             , LBR_CST_AM          = #{LBR_CST_AM}            /* 노무비               */
+             , MFT_XPN_AM          = #{MFT_XPN_AM}            /* 제조경비             */
+             , ETC_DSC             = #{ETC_DSC}               /* 기타구분             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND PTIN_GDS_C          = #{PTIN_GDS_C}
+    </update>
+
+    <delete id="delete_TB_CP_D_PCS_PTIN_OFR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CP_D_PCS_PTIN_OFR */ FROM TB_CP_D_PCS_PTIN_OFR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND PTIN_GDS_C          = #{PTIN_GDS_C}
+    </delete>
+
+    <select id="select_TB_CP_D_PCS_PTIN_OFR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CP_D_PCS_PTIN_OFR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_DT                                        /* 원가계산일자              */
+             , A.PCS_CLC_SQNO                                      /* 원가계산일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.PTIN_GDS_C                                        /* 투입물품코드              */
+             , A.PTIN_QT                                           /* 투입_수량                 */
+             , A.PTIN_AM                                           /* 투입_금액                 */
+             , A.BF_CLC_ACC_QT                                     /* 이전월산출누적수량        */
+             , A.BF_CLC_ACC_AM                                     /* 이전월산출누적금액        */
+             , A.CUR_CLC_QT                                        /* 산출월산출수량            */
+             , A.CUR_CLC_AM                                        /* 산출월산출금액            */
+             , A.MTR_AM                                            /* 재료_금액                 */
+             , A.LBR_CST_AM                                        /* 노무비                    */
+             , A.MFT_XPN_AM                                        /* 제조경비                  */
+             , A.ETC_DSC                                           /* 기타구분                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CP_D_PCS_PTIN_OFR A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.PCS_CLC_DT        = #{PCS_CLC_DT}
+           AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}
+           AND A.PTIN_GDS_C        = #{PTIN_GDS_C}
+    </select>
+</mapper>

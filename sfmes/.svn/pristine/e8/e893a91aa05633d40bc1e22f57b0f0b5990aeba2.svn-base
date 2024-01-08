@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.dl">
+    <select id="selectDl1040List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1040List */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DDL_DT                                            /* 마감일자                  */
+             , A.BY_DDL_YN                                         /* 매입마감여부              */
+             , A.PD_DDL_YN                                         /* 생산마감여부              */
+             , A.SE_DDL_YN                                         /* 매출마감여부              */
+             , A.ED_DDL_YN                                         /* 최종마감여부              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID           AS       FSRG_NM                /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID          AS       LSCHG_NM               /* 최종변경자명              */
+          FROM TB_DL_M_DAY_DDL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DDL_DT BETWEEN #{ST_DT} AND #{ED_DT}     
+    </select>
+    
+    <select id="selectDl1040Chk01" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ selectDl1040Chk */
+               CASE WHEN 0 < (SELECT COUNT(1) 
+                                FROM TB_DL_M_DAY_DDL
+                               WHERE CORP_C = #{CORP_C}
+                                 AND BZPL_C = #{BZPL_C}
+                                 AND DDL_DT = #{DDL_DT}
+                              ) THEN '입력하신 마감일자에 해당하는 내역이 이미 있습니다. 조회 후 다시 처리하세요' 
+                    ELSE 'OK' END AS RESULT_MSG
+        ]]>
+    </select>
+    
+    
+    <!-- 일마감 처리 프로시져 호출 -->
+    <select id="selectDl1040Last" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_DAY_DDL (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{DDL_DT, mode=IN, jdbcType=VARCHAR},
+        #{DDL_DSC, mode=IN, jdbcType=VARCHAR},
+        #{GUSRID, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <!-- 일마감 취소 프로시져 호출 -->
+    <select id="selectDl1040LastCancel" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_SET_DAY_DDL_CLE (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{DDL_DT, mode=IN, jdbcType=VARCHAR},
+        #{DDL_DSC, mode=IN, jdbcType=VARCHAR},
+        #{GUSRID, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_ERROR_MSG, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>    
+    <select id="selectDl1040List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1040List02 */
+               *
+          FROM TB_DL_D_DAY_DDL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DDL_DT            = #{DDL_DT}     
+    </select>
+
+</mapper>

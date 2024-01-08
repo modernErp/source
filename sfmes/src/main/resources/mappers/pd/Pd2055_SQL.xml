@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="select_Pd2055List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2055List01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , A.DLR_RQT_DSQNO                                     /* 출고의뢰상세일련번호      */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B.GDS_STD_NM                                        /* 물품규격명                */
+             , B.UNT_C                                             /* 관리단위                  */
+             , A.DLR_RQT_QT                                        /* 출고의뢰수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.BUDL_NO                                           /* 묶음번호                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.STDV_WT                                           /* 입출고중량                */
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , C.DLR_RQT_STS_DSC                                   /* 출고의뢰상태구분코드 */
+             , C.DLR_RQT_REF_DSC                                   /* 출고의뢰참조구분코드 */
+             , C.RMK_CNTN            AS RMK_CNTN_M                 /* 비고내용             */             
+          FROM TB_SM_M_DLR_RQT C
+          INNER JOIN TB_SM_D_DLR_RQT A
+            ON A.CORP_C        = C.CORP_C
+           AND A.BZPL_C        = C.BZPL_C
+           AND A.DLR_RQT_DT    = C.DLR_RQT_DT
+           AND A.DLR_RQT_SQNO  = C.DLR_RQT_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C        = B.CORP_C
+           AND A.BZPL_C        = B.BZPL_C
+           AND A.GDS_C         = B.GDS_C
+         WHERE 1=1 
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.CORP_C        = #{CORP_C}
+           AND A.DLR_RQT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test="GDS_C != '' and GDS_C != null" >
+           AND B.GDS_C             = #{GDS_C}
+        </if>
+        <if test="DEL_YN != '' and DEL_YN != null" >
+           AND A.DEL_YN            = #{DEL_YN}
+        </if>
+    </select>
+    
+    <select id="select_trsqno_cnt" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ select_trsqno_cnt */    
+               COUNT(*) AS CNT
+          FROM TB_PD_M_WK_DNTT A
+         WHERE 1=1 
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.CORP_C        = #{CORP_C}
+           AND A.TR_SQNO       = #{TR_SQNO}
+    </select>
+    
+    <update id="PRW_C_change" parameterType="LinkedHashMap">
+        UPDATE /*+ PRW_C_change */ TB_PD_M_WK_DNTT
+           SET 
+               MFC_WK_STS_C        = #{MFC_WK_STS_C}          /* 가공작업상태코드     */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TR_SQNO             = #{TR_SQNO}
+    </update>
+    
+    <update id="BOM_C_change" parameterType="LinkedHashMap">
+        UPDATE /*+ BOM_C_change */ TB_PD_D_WK_DNTT_MFS
+           SET 
+               MFC_WK_STS_C        = #{MFC_WK_STS_C}          /* 가공작업상태코드     */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TR_SQNO             = #{TR_SQNO}
+    </update>
+    
+</mapper>

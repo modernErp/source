@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <select id="selectGe3015_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT /*+ selectGe3015_01 */
+               A.AS_DT
+             , A.AS_SQNO
+             , A.AS_TIT
+             , A.AS_PRC_STS_C
+             , A.AS_DSC
+             , A.PGM_ID
+             , (SELECT CORP_NM 
+                  FROM TB_CO_M_CORP
+                 WHERE 1 = 1
+                  AND CORP_C = A.CORP_C 
+               ) AS FSRG_CORP_NM
+             , A.RQR_DT
+             , A.RQR_NM
+             , A.PZ_NM
+             , A.AS_CMP_DT
+             , A.DEL_YN
+             , A.FSRG_ID                                 
+             , A.FSRG_ID AS FSRG_NM
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID
+             , A.LSCHG_ID AS LSCHG_NM                                
+          FROM TB_GE_M_AS_RC AS A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           <if test="DEL_YN != null and DEL_YN != ''">
+               AND A.DEL_YN  = #{DEL_YN}
+           </if>        
+           <choose>
+            <when test="DT_GBN == 1">
+               AND A.AS_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+            <when test="DT_GBN == 2">
+               AND A.RQR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+            <when test="DT_GBN == 3">
+               AND A.AS_CMP_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+           </choose>
+           <if test="AS_PRC_STS_C != null and AS_PRC_STS_C != ''">
+                AND A.AS_PRC_STS_C   = #{AS_PRC_STS_C}
+           </if>
+            <if test="AS_DSC != null and AS_DSC != ''">
+                AND A.AS_DSC         = #{AS_DSC}
+           </if>
+             <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="SEARCH_TYPE == 11">
+                    AND A.AS_TIT + A.AS_CNTN LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 21">
+                    AND A.PGM_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 31">
+                    AND A.FSRG_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 41">
+                    AND (SELECT USR_NM 
+                           FROM TB_SY_M_USR 
+                          WHERE 1=1 
+                            AND CORP_C  = A.CORP_C
+                            AND BZPL_C  = A.BZPL_C
+                            AND USR_ID = A.FSRG_ID
+                            
+                         ) LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 51">
+                    AND A.PZ_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 61">
+                    AND A.RQR_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 71">
+                    AND A.LSCHG_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="SEARCH_TYPE == 81">
+                        AND (SELECT USR_NM 
+                           FROM TB_SY_M_USR 
+                          WHERE 1=1 
+                            AND CORP_C  = A.CORP_C
+                            AND BZPL_C  = A.BZPL_C
+                            AND USR_ID = A.LSCHG_ID
+                            
+                         ) LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+ 
+    </select>
+</mapper>

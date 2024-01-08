@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_L_TRPL_CTR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_L_TRPL_CTR */ TB_CO_L_TRPL_CTR
+        (
+              CORP_C              /* 회사코드             */
+            , TRPL_C              /* 거래처코드           */
+            , HST_SQNO            /* 이력일련번호         */
+            , BY_SL_DSC           /* 매입매출구분코드     */
+            , CTR_ST_DT           /* 계약시작일자         */
+            , CTR_ED_DT           /* 계약종료일자         */
+            , PPYAM_YN            /* 선급금사용여부       */
+            , PRVAM_YN            /* 선수금사용여부       */
+            , CRE_YN              /* 외상사용여부         */
+            , CASH_YN             /* 현금사용여부         */
+            , CRE_LMT_AM          /* 외상한도금액         */
+            , PPYAM_LMT_AM        /* 선급금한도금액       */
+            , PRVAM_LMT_AM        /* 선수금한도금액       */
+            , DCZ_DD_TPC          /* 결재일유형코드       */
+            , DCZ_ACNO            /* 결재계좌번호         */
+            , DCZ_BNK_C           /* 결재은행코드         */
+            , DPR_NM              /* 예금주명             */
+            , TR_STOP_YN          /* 거래중지여부         */
+            , TR_STOP_RSNC        /* 거래중지사유코드     */
+            , TR_STOP_DT          /* 거래중지일자         */
+            , CLO_YN              /* 해지여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+            , SL_UPR_APL_DSC      /* 매출단가적용구분     */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{TRPL_C}
+            , (SELECT ISNULL(MAX(HST_SQNO),0)+1
+                 FROM TB_CO_L_TRPL_CTR
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C})     
+            , #{BY_SL_DSC}
+            , #{CTR_ST_DT}
+            , #{CTR_ED_DT}
+            , #{PPYAM_YN}
+            , #{PRVAM_YN}
+            , #{CRE_YN}
+            , #{CASH_YN}
+            , #{CRE_LMT_AM}
+            , #{PPYAM_LMT_AM}
+            , #{PRVAM_LMT_AM}
+            , #{DCZ_DD_TPC}
+            , #{DCZ_ACNO}
+            , #{DCZ_BNK_C}
+            , #{DPR_NM}
+            , #{TR_STOP_YN}
+            , #{TR_STOP_RSNC}
+            , #{TR_STOP_DT}
+            , #{CLO_YN}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+            , #{SL_UPR_APL_DSC}
+        )
+    </insert>
+
+    <update id="update_TB_CO_L_TRPL_CTR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_L_TRPL_CTR */ TB_CO_L_TRPL_CTR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , HST_SQNO            = #{HST_SQNO}              /* 이력일련번호         */
+             , BY_SL_DSC           = #{BY_SL_DSC}             /* 매입매출구분코드     */
+             , CTR_ST_DT           = #{CTR_ST_DT}             /* 계약시작일자         */
+             , CTR_ED_DT           = #{CTR_ED_DT}             /* 계약종료일자         */
+             , PPYAM_YN            = #{PPYAM_YN}              /* 선급금사용여부       */
+             , PRVAM_YN            = #{PRVAM_YN}              /* 선수금사용여부       */
+             , CRE_YN              = #{CRE_YN}                /* 외상사용여부         */
+             , CASH_YN             = #{CASH_YN}               /* 현금사용여부         */
+             , CRE_LMT_AM          = #{CRE_LMT_AM}            /* 외상한도금액         */
+             , PPYAM_LMT_AM        = #{PPYAM_LMT_AM}          /* 선급금한도금액       */
+             , PRVAM_LMT_AM        = #{PRVAM_LMT_AM}          /* 선수금한도금액       */
+             , DCZ_DD_TPC          = #{DCZ_DD_TPC}            /* 결재일유형코드       */
+             , DCZ_ACNO            = #{DCZ_ACNO}              /* 결재계좌번호         */
+             , DCZ_BNK_C           = #{DCZ_BNK_C}             /* 결재은행코드         */
+             , DPR_NM              = #{DPR_NM}                /* 예금주명             */
+             , TR_STOP_YN          = #{TR_STOP_YN}            /* 거래중지여부         */
+             , TR_STOP_RSNC        = #{TR_STOP_RSNC}          /* 거래중지사유코드     */
+             , TR_STOP_DT          = #{TR_STOP_DT}            /* 거래중지일자         */
+             , CLO_YN              = #{CLO_YN}                /* 해지여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+             , SL_UPR_APL_DSC      = #{SL_UPR_APL_DSC}        /* 매출단가적용구분     */          
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </update>
+
+    <delete id="delete_TB_CO_L_TRPL_CTR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_L_TRPL_CTR */ FROM TB_CO_L_TRPL_CTR
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </delete>
+
+    <select id="select_TB_CO_L_TRPL_CTR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_L_TRPL_CTR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.HST_SQNO                                          /* 이력일련번호              */
+             , A.BY_SL_DSC                                         /* 매입매출구분코드          */
+             , A.CTR_ST_DT                                         /* 계약시작일자              */
+             , A.CTR_ED_DT                                         /* 계약종료일자              */
+             , A.PPYAM_YN                                          /* 선급금사용여부            */
+             , A.PRVAM_YN                                          /* 선수금사용여부            */
+             , A.CRE_YN                                            /* 외상사용여부              */
+             , A.CASH_YN                                           /* 현금사용여부              */
+             , A.CRE_LMT_AM                                        /* 외상한도금액              */
+             , A.PPYAM_LMT_AM                                      /* 선급금한도금액            */
+             , A.PRVAM_LMT_AM                                      /* 선수금한도금액            */
+             , A.DCZ_DD_TPC                                        /* 결재일유형코드            */
+             , A.DCZ_ACNO                                          /* 결재계좌번호              */
+             , A.DCZ_BNK_C                                         /* 결재은행코드              */
+             , A.DPR_NM                                            /* 예금주명                  */
+             , A.TR_STOP_YN                                        /* 거래중지여부              */
+             , A.TR_STOP_RSNC                                      /* 거래중지사유코드          */
+             , A.TR_STOP_DT                                        /* 거래중지일자              */
+             , A.CLO_YN                                            /* 해지여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.SL_UPR_APL_DSC                                    /* 매출단가적용구분     */          
+          FROM TB_CO_L_TRPL_CTR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.HST_SQNO          = #{HST_SQNO}
+           AND A.TRPL_C            = #{TRPL_C}
+    </select>
+</mapper>

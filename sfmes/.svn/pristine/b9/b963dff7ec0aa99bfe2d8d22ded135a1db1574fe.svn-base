@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+    <select id="selectCa4015List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa4015List */
+               A.REG_DT                            AS REG_DT           /* 지급일자                    */
+             , A.REG_SQNO                          AS REG_SQNO         /* 지급일련번호                */
+             , A.ACG_DT                            AS ACG_DT           /* 회계일자                    */
+             , A.RLTR_DT                           AS RLTR_DT          /* 실거래일자                  */
+             , A.ADJPL_C                           AS ADJPL_C          /* 정산처코드                  */
+             , B.TRPL_NM                           AS ADJPL_NM         /* 정산처명                    */
+             , A.TR_BSN_DSC                        AS TR_BSN_DSC       /* 거래구분 - 거래업무구분코드 */
+             , A.TR_SQNO                           AS TR_SQNO          /* 거래일련번호                */
+             , A.SLP_NML_YN                        AS SLP_NML_YN       /* 전표정상여부                */
+             , A.PY_STL_DSC                        AS PY_STL_DSC       /* 지급방법 - 지급결제구분코드 */
+             , A.CRE_BY_AM                         AS CRE_BY_AM        /* 지급입금                    */
+             , A.STL_ACNO                          AS STL_ACNO         /* 결제계좌번호                */
+             , A.BNK_C                             AS BNK_C            /* 은행코드                    */
+             , A.DPR_NM                            AS DPR_NM           /* 예금주명                    */
+             , A.RMK_CNTN                          AS RMK_CNTN         /* 비고내용                    */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)   AS FSRG_DTM         /* 최초등록일시                */
+             , A.FSRG_ID                           AS FSRG_ID          /* 최초등록자ID                */
+             , A.FSRG_ID                           AS FSRG_NM          /* 최초등록자명                */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20)  AS LSCHG_DTM        /* 최종변경일시                */
+             , A.LSCHG_ID                          AS LSCHG_ID         /* 최종변경자ID                */
+             , A.LSCHG_ID                          AS LSCHG_NM         /* 최종변경자명                */
+          FROM TB_DT_M_CBAM A
+         INNER JOIN TB_CO_M_TRPL B
+            ON A.CORP_C  = B.CORP_C  
+           AND A.ADJPL_C = B.TRPL_C 
+         WHERE 1=1
+           AND A.CORP_C = #{CORP_C} 
+           AND A.BZPL_C = #{BZPL_C} 
+        <if test = "ST_DT != null and ST_DT != '' and ED_DT != null and ED_DT != ''">
+            <choose>
+                <when test='searchCondition == "1"'>
+                    AND A.REG_DT BETWEEN #{ST_DT} AND #{ED_DT} 
+                </when>
+                <when test='searchCondition == "2"'>
+                    AND A.RLTR_DT    BETWEEN #{ST_DT} AND #{ED_DT} 
+                </when>
+            </choose>
+        </if>
+        <if test = "ADJPL_C != null and ADJPL_C != ''">
+            AND A.ADJPL_C = #{ADJPL_C}  
+        </if>
+        <if test = "RG_ID != null and RG_ID != ''">
+            AND A.LSCHG_ID = #{RG_ID}   
+        </if>
+        <if test = "SLP_NML_YN != null and SLP_NML_YN != ''">
+            AND A.SLP_NML_YN = #{SLP_NML_YN}
+        </if>
+            AND A.REG_DSC = 'P'    /* P:지급 */
+            AND A.DEL_YN = 'N'
+    </select>
+</mapper>

@@ -1,0 +1,1370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+
+    <!-- 채권_거래처(정산처) 계약정보 조회 -->
+    <select id="selectCa0100TrplCtr_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+     SELECT /*+ selectCa0100TrplCtr_01 */
+            A.CORP_C                        AS CORP_C               /* 회사코드 */
+          , A.TRPL_C                        AS TRPL_C               /* 거래처코드 */
+          , A.TRPL_NM                       AS TRPL_NM              /* 거래처명 */
+          , A.BY_CTR_YN                     AS BY_CTR_YN            /* 매입계약여부 */
+          , A.SL_CTR_YN                     AS SL_CTR_YN            /* 매출계약여부 */
+          , A.TRPL_APL_YN                   AS TRPL_APL_YN          /* 거래개시여부 */
+          , A.CLSD_YN                       AS CLSD_YN              /* 폐업여부 */
+          , A.USE_YN                        AS USE_YN               /* 사용여부 */
+          , B.CTR_ST_DT                     AS CTR_ST_DT            /* 계약시작일자 */
+          , B.CTR_ED_DT                     AS CTR_ED_DT            /* 계약종료일자 */
+          , ISNULL(B.PPYAM_YN, 'N')         AS PPYAM_YN             /* 선급금사용여부 */
+          , ISNULL(B.PRVAM_YN, 'N')         AS PRVAM_YN             /* 선수금사용여부 */
+          , ISNULL(B.CRE_YN, 'N')           AS CRE_YN               /* 외상사용여부 */
+          , ISNULL(B.CASH_YN, 'N')          AS CASH_YN              /* 현금사용여부 */
+          , B.CRE_LMT_AM                    AS CRE_LMT_AM           /* 외상한도금액 */
+          , B.PPYAM_LMT_AM                  AS PPYAM_LMT_AM         /* 선급금한도금액 */
+          , B.PRVAM_LMT_AM                  AS PRVAM_LMT_AM         /* 선수금한도금액 */
+          , ISNULL(B.TR_STOP_YN, 'N')       AS TR_STOP_YN           /* 거래중지여부 */
+          , ISNULL(B.CLO_YN, 'N')           AS CLO_YN               /* 해지여부 */
+       FROM TB_CO_M_TRPL A
+       LEFT OUTER JOIN TB_CO_M_TRPL_CTR B
+         ON B.CORP_C    = A.CORP_C
+        AND B.TRPL_C    = A.TRPL_C
+        AND B.BY_SL_DSC = 2        /* 1:매입, 2:매출 */
+      WHERE 1=1
+       AND A.CORP_C = #{CORP_C}
+       AND A.TRPL_C = #{ADJPL_C}
+    </select>
+    
+    <!-- 공통코드 조회 : 지급결제구분코드 '대체'코드 조회 -->
+    <select id="selectCa0100Comnc_01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100Comnc_01 */
+            COMN_C 
+       FROM TB_SY_D_COMNC
+      WHERE 1=1
+        AND CORP_C     = #{CORP_C}
+        AND COMN_GRP_C = 'PY_STL_DSC'
+        AND COMN_CNM   = '대체'
+    </select>
+    
+    <!-- ====================================================================== -->
+    <!-- =============================== 외상매출금 =============================== -->
+        
+    <!-- 외상매출금기본(발생) 사전 정합성 체크 -->
+    <select id="selectCa0100CLAMValidDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100CLAMValidDet01 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{CRE_SL_AM}, '') = '' THEN '외상매출금은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+
+    <!-- 외상매출금기본(회수) 사전 정합성 체크 -->
+    <select id="selectCa0100CLAMValidDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100CLAMValidDet02 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{CRE_SL_AM}, '') = '' THEN '외상매출금은 필수 입력항목입니다.'
+            WHEN ISNULL(#{PY_STL_DSC}, '') = '' THEN '지급결제구분코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{STL_ACNO} = '' THEN '계좌이체시 결제계좌번호는 필수 입력항목입니다.' 
+            WHEN A.COMN_CNM = '계좌이체' AND #{BNK_C} = '' THEN '계좌이체시 은행코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{DPR_NM} = '' THEN '계좌이체시 예금주명은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG
+       FROM TB_SY_D_COMNC A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.COMN_GRP_C = 'PY_STL_DSC'
+        AND A.COMN_C     = #{PY_STL_DSC}
+    </select>
+
+    <!-- 지급결제구분의 계좌이체 여부 조회 -->
+    <select id="selectCa0100AcntTranYN01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100AcntTranYN01 */
+            CASE WHEN COMN_CNM = '계좌이체' THEN 'Y' ELSE 'N'  
+        END AS RESULT_MSG
+       FROM TB_SY_D_COMNC A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.COMN_GRP_C = 'PY_STL_DSC'
+        AND A.COMN_C     = #{PY_STL_DSC}
+        AND A.USE_YN     = 'Y'
+    </select>
+
+    <!-- 외상매출금 외상한도금 제한 체크 (외상매출 발생시 호출) -->
+    <select id="selectCa0100CLAMOcrLmtDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100CLAMOcrLmtDet01 */
+            CASE WHEN ISNULL(D.CRE_LMT_AM, 0) = 0 THEN 'OK'
+                 WHEN ISNULL(D.CRE_LMT_AM, 0) <![CDATA[<]]> A.BAC - ISNULL(B.CRE_SL_AM,0) + #{CRE_SL_AM}  THEN '거래처[' + C.TRPL_NM + ']의 외상한도금액[' + CONVERT(CHAR, ISNULL(D.CRE_LMT_AM, 0)) + ']을 넘습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_S_CLAM_MON  A
+       LEFT OUTER JOIN TB_BD_M_CLAM B
+         ON B.CORP_C     = A.CORP_C
+        AND B.BZPL_C     = A.BZPL_C
+        AND B.REG_DT     = #{REG_DT}
+        AND B.REG_SQNO   = #{REG_SQNO}
+        AND B.SLP_NML_YN = 'Y'
+        AND B.DEL_YN     = 'N'
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C     = C.CORP_C
+        AND A.ADJPL_C    = C.TRPL_C
+       LEFT OUTER JOIN TB_CO_M_TRPL_CTR D
+         ON D.CORP_C     = A.CORP_C
+        AND D.TRPL_C     = A.ADJPL_C
+        AND D.BY_SL_DSC  = 2        /* 1:매입, 2:매출 */
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.ACG_MN     = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND A.ADJPL_C    = #{ADJPL_C}
+    </select>
+
+    <!-- 외상매출금기본 회수금 제한 체크 (회수_등록시) -->
+    <!-- 현재잔액 조회 방법 변경   2022.01.09 rchkorea  -->
+    <!-- 기준잔액 조회 유효성 체크방법 수정 2022.02.08 여다혜 -->
+    <select id="selectCa0100CLAMPayLmtDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100CLAMPayLmtDet01 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> dbo.SF_GET_BD_BAC(#{CORP_C}, #{BZPL_C}, #{ADJPL_C}, CONVERT(CHAR(8), GETDATE(),112)) THEN 
+                      '외상매출금 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM DUAL
+    <!-- 
+     SELECT /*+ selectCa0100CLAMPayLmtDet01 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> dbo.SF_GET_BD_BAC(A.CORP_C,A.BZPL_C,A.ADJPL_C,CONVERT(CHAR(8), GETDATE(),112)) THEN 
+                      '거래처[' + B.TRPL_NM + ']의 외상매출금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_S_CLAM_MON  A
+      INNER JOIN TB_CO_M_TRPL B
+         ON A.CORP_C  = B.CORP_C
+        AND A.ADJPL_C = B.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C  = #{CORP_C}
+        AND A.BZPL_C  = #{BZPL_C}
+        AND A.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND A.ADJPL_C = #{ADJPL_C}
+     -->
+     
+     <!--  현재잔액 조회 방법 변경   2022.01.09 rchkorea
+     SELECT /*+ selectCa0100CLAMPayLmtDet01 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> A.BAC THEN '거래처[' + B.TRPL_NM + ']의 외상매출금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_S_CLAM_MON  A
+      INNER JOIN TB_CO_M_TRPL B
+         ON A.CORP_C  = B.CORP_C
+        AND A.ADJPL_C = B.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C  = #{CORP_C}
+        AND A.BZPL_C  = #{BZPL_C}
+        AND A.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND A.ADJPL_C = #{ADJPL_C}
+      -->
+    </select>
+    
+    <!-- 외상매출금기본 회수금 제한 체크 (회수_정정시) -->
+    <!-- 현재잔액 조회 방법 변경   2022.01.09 rchkorea  -->
+    <select id="selectCa0100CLAMPayLmtDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100CLAMPayLmtDet02 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> dbo.SF_GET_BD_BAC(A.CORP_C,A.BZPL_C,A.ADJPL_C,CONVERT(CHAR(8), GETDATE(),112)) + A.CRE_SL_AM THEN 
+                      '거래처[' + C.TRPL_NM + ']의 외상매출금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_M_CLAM  A
+      INNER JOIN TB_BD_S_CLAM_MON B
+         ON B.CORP_C  = A.CORP_C
+        AND B.BZPL_C  = A.BZPL_C
+        AND B.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND B.ADJPL_C = A.ADJPL_C
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C  = C.CORP_C
+        AND A.ADJPL_C = C.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.REG_DT     = #{REG_DT}
+        AND A.REG_SQNO   = #{REG_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    
+    <!--  현재잔액 조회 방법 변경   2022.01.09 rchkorea
+     SELECT /*+ selectCa0100CLAMPayLmtDet02 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> B.BAC + A.CRE_SL_AM THEN '거래처[' + C.TRPL_NM + ']의 외상매출금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_M_CLAM  A
+      INNER JOIN TB_BD_S_CLAM_MON B
+         ON B.CORP_C  = A.CORP_C
+        AND B.BZPL_C  = A.BZPL_C
+        AND B.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND B.ADJPL_C = A.ADJPL_C
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C  = C.CORP_C
+        AND A.ADJPL_C = C.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.REG_DT     = #{REG_DT}
+        AND A.REG_SQNO   = #{REG_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+       -->
+    </select>
+
+    <!-- 외상매출금기본 정보 조회 -->
+    <select id="selectCa0100CLAM_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+     SELECT /*+ selectCa0100CLAM_01 */
+            A.CORP_C                                            /* 회사코드             */
+          , A.BZPL_C                                            /* 사업장코드           */
+          , A.REG_DT                                            /* 등록일자             */
+          , A.REG_SQNO                                          /* 등록일련번호         */
+          , A.SLP_NML_YN                                        /* 전표정상여부         */
+          , A.RLTR_DT                                           /* 실거래일자           */
+          , A.ACG_DT                                            /* 회계일자             */
+          , A.WDR_PLA_DT                                        /* 회수예정일자         */
+          , A.ADJPL_C                                           /* 정산처코드           */
+          , A.REG_DSC                                           /* 등록구분코드         */
+          , A.CRE_SL_AM                                         /* 외상매출금           */
+          , A.PY_STL_DSC                                        /* 지급결제구분코드     */
+          , A.STL_ACNO                                          /* 결제계좌번호         */
+          , A.BNK_C                                             /* 은행코드             */
+          , A.DPR_NM                                            /* 예금주명             */
+          , A.RMK_CNTN                                          /* 비고내용             */
+          , A.DEL_YN                                            /* 삭제여부             */
+          , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+          , A.TR_SQNO                                           /* 거래일련번호         */
+          , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+          , A.FSRG_ID                                           /* 최초등록자ID         */
+          , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+          , A.LSCHG_ID                                          /* 최종변경자ID         */
+       FROM TB_BD_M_CLAM A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.ADJPL_C    = #{ADJPL_C}
+        AND A.TR_SQNO    = #{TR_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+    
+    <!-- 기 입력된 외상매출금기본 DEL_YN(정정여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_CLAM_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_CLAM_01 */ TB_BD_M_CLAM
+           SET 
+               DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+    
+    <!-- 기 입력된 외상매출금기본 SLP_NML_YN(전표정상여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_CLAM_02" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_CLAM_02 */ TB_BD_M_CLAM
+           SET 
+               SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+
+    <!-- 실시간 외상매출금 월별집계 -->
+    <!--
+    <insert id="merge_RealTime_FOR_TB_BD_S_CLAM_MON_01" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_CLAM_MON_01 */ TB_BD_S_CLAM_MON AS A
+        USING 
+        (
+            SELECT 
+                   B1.CORP_C                                                 AS CORP_C       /* 회사코드     */
+                 , B1.BZPL_C                                                 AS BZPL_C       /* 사업장코드   */
+                 , CONVERT(VARCHAR(6), DATEADD(MM, A1.LV-1, #{ACG_DT}),112)  AS BAS_MM       /* 기준회계년월 */
+                 , SUBSTRING(B1.ACG_DT, 1,6 )                                AS ACG_MN       /* 회계년월     */
+                 , B1.ADJPL_C                                                AS ADJPL_C      /* 정산처코드   */
+                 , ISNULL(
+                       CASE WHEN B1.REG_DSC = 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.CRE_SL_AM         /* 외상매출금발생 추가(+) */
+                            WHEN B1.REG_DSC = 'N' AND ( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.CRE_SL_AM * -1     /* 외상매출금발생 정정(-) */
+                            ELSE 0 
+                       END 
+                   , 0 )                                                     AS ADD_DB_AM    /* 가감-외상매출금발생 */
+                 , ISNULL( 
+                       CASE WHEN B1.REG_DSC != 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.CRE_SL_AM        /* 외상매출금회수 추가(+) */
+                            WHEN B1.REG_DSC != 'N' AND( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.CRE_SL_AM * -1    /* 외상매출금회수 정정(-) */
+                            ELSE 0 
+                       END
+                   , 0 )                                                     AS ADD_CR_AM    /* 가감-외상매출금회수 */
+              FROM BAS_MM_CNT A1
+                 , TB_BD_M_CLAM B1
+             WHERE 1=1
+               AND B1.CORP_C   = #{CORP_C}
+               AND B1.BZPL_C   = #{BZPL_C}
+               AND B1.REG_DT   = #{REG_DT}
+               AND B1.REG_SQNO = #{REG_SQNO}
+
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.BAS_BAC = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.BAS_BAC
+                                    ELSE A.BAS_BAC + ADD_DB_AM - ADD_CR_AM
+                               END 
+                 , A.DB_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + ADD_DB_AM
+                                  ELSE A.DB_AM
+                             END
+                 , A.CR_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + ADD_CR_AM
+                                  ELSE A.CR_AM
+                             END 
+                 , A.DB_AAM_AM = A.DB_AAM_AM + ADD_DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + ADD_CR_AM
+                 , A.BAC = A.BAC + ADD_DB_AM - ADD_CR_AM
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN 0 ELSE B.ADD_DB_AM - B.ADD_CR_AM END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_DB_AM ELSE 0 END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_CR_AM ELSE 0 END )
+                   , B.ADD_DB_AM
+                   , B.ADD_CR_AM
+                   , B.ADD_DB_AM - B.ADD_CR_AM
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            ) 
+            ;
+    </insert>
+    -->
+    
+    <!-- 2022.01.07 서광석 실시간 외상매출금 월별집계 쿼리변경 -->
+    <insert id="merge_RealTime_FOR_TB_BD_S_CLAM_MON_01" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_CLAM_MON_01 */ TB_BD_S_CLAM_MON AS A
+        USING 
+        (
+            SELECT
+                   CORP_C
+                 , BZPL_C
+                 , BAS_MM
+                 , ACG_MN
+                 , ADJPL_C
+                 , ISNULL(ADD_DB_AM, 0) AS DB_AM
+                 , ISNULL(ADD_CR_AM, 0) AS CR_AM
+                 , ISNULL(DB_AAM_AM, 0) AS DB_AAM_AM
+                 , ISNULL(CR_AAM_AM, 0) AS CR_AAM_AM
+                 , ISNULL(BAS_BAC  , 0) AS BAS_BAC
+              FROM (        
+                    SELECT 
+                             B.CORP_C                                                  AS CORP_C       
+                           , B.BZPL_C                                                  AS BZPL_C       
+                           , CONVERT(VARCHAR(6), DATEADD(MM, A.LV-1, #{ACG_DT}), 112)  AS BAS_MM      
+                           , SUBSTRING(B.ACG_DT, 1,6 )                                 AS ACG_MN       
+                           , B.ADJPL_C                                                 AS ADJPL_C                  
+                           , ISNULL(CASE WHEN B.REG_DSC = 'N' AND B.SLP_NML_YN = 'Y' THEN B.CRE_SL_AM
+                                         WHEN B.REG_DSC = 'N' AND B.SLP_NML_YN = 'N' THEN B.CRE_SL_AM * (-1)
+                                    ELSE 0 END, 0) AS ADD_DB_AM
+                           , ISNULL(CASE WHEN B.REG_DSC = 'R' AND (B.SLP_NML_YN = 'Y' AND B.DEL_YN = 'N') THEN B.CRE_SL_AM
+                                         WHEN B.REG_DSC = 'R' AND (B.SLP_NML_YN = 'N' AND B.DEL_YN = 'N') THEN B.CRE_SL_AM * (-1)
+                                         WHEN B.REG_DSC = 'R' AND (B.SLP_NML_YN = 'Y' AND B.DEL_YN = 'Y') THEN B.CRE_SL_AM * (-1)
+                                    ELSE 0 END, 0) AS ADD_CR_AM
+                           , (SELECT
+                                     DB_AAM_AM
+                                FROM TB_BD_S_CLAM_MON
+                               WHERE 1=1
+                                 AND CORP_C  = B.CORP_C
+                                 AND BZPL_C  = B.BZPL_C
+                                 AND ADJPL_C = B.ADJPL_C  
+                                 AND ACG_MN  = CONVERT(VARCHAR(6), DATEADD(MM, A.LV-2, #{ACG_DT}), 112) 
+                             ) AS DB_AAM_AM
+                           , (SELECT
+                                     CR_AAM_AM
+                                FROM TB_BD_S_CLAM_MON
+                               WHERE 1=1
+                                 AND CORP_C  = B.CORP_C
+                                 AND BZPL_C  = B.BZPL_C
+                                 AND ADJPL_C = B.ADJPL_C  
+                                 AND ACG_MN  = CONVERT(VARCHAR(6), DATEADD(MM, A.LV-2, #{ACG_DT}), 112) 
+                             ) AS CR_AAM_AM                          
+                           , DBO.SF_GET_BD_BAC(B.CORP_C, B.BZPL_C, B.ADJPL_C, CONVERT(VARCHAR(8), DATEADD(MONTH, DATEDIFF(MONTH, 0, CONVERT(VARCHAR(8), DATEADD(MM, A.LV-1, #{ACG_DT}),112)), 0) -1, 112)) AS BAS_BAC
+                      FROM BAS_MM_CNT   A
+                         , TB_BD_M_CLAM B
+                     WHERE 1=1
+                       AND B.CORP_C   = #{CORP_C}
+                       AND B.BZPL_C   = #{BZPL_C}
+                       AND B.REG_DT   = #{REG_DT}
+                       AND B.REG_SQNO = #{REG_SQNO}
+                   ) A
+             WHERE 1=1   
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.DB_AM     = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + B.DB_AM ELSE A.DB_AM END
+                 , A.CR_AM     = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + B.CR_AM ELSE A.CR_AM END
+                 , A.DB_AAM_AM = A.DB_AAM_AM + B.DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + B.CR_AM
+                 , A.BAC       = (A.DB_AAM_AM + B.DB_AM) - (A.CR_AAM_AM + B.CR_AM)
+                 , A.BAS_BAC   = CASE WHEN B.BAS_MM = B.ACG_MN THEN B.BAS_BAC ELSE A.BAS_BAC + (B.DB_AM - B.CR_AM) END                                                               
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , CASE WHEN B.BAS_MM = B.ACG_MN THEN B.BAS_BAC ELSE (B.DB_AAM_AM + B.DB_AM) - (B.CR_AAM_AM + B.CR_AM) END   
+                   , CASE WHEN B.BAS_MM = B.ACG_MN THEN B.DB_AM ELSE 0 END
+                   , CASE WHEN B.BAS_MM = B.ACG_MN THEN B.CR_AM ELSE 0 END
+                   , B.DB_AAM_AM + B.DB_AM
+                   , B.CR_AAM_AM + B.CR_AM             
+                   , (B.DB_AAM_AM + B.DB_AM) - (B.CR_AAM_AM + B.CR_AM)
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            ) 
+            ;
+    </insert>     
+    
+    <!-- 실시간 외상매출금 월별집계 -->
+    <insert id="merge_RealTime_FOR_TB_BD_S_CLAM_MON_02" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_CLAM_MON_02 */ TB_BD_S_CLAM_MON AS A
+        USING 
+        (
+            SELECT 
+                   #{CORP_C}                                                 AS CORP_C       /* 회사코드     */
+                 , #{BZPL_C}                                                 AS BZPL_C       /* 사업장코드   */
+                 , CONVERT(VARCHAR(6), DATEADD(MM, A1.LV-1, #{ACG_DT}),112)  AS BAS_MM       /* 기준회계년월 */
+                 , SUBSTRING(#{ADJPL_C}, 1,6)                                AS ACG_MN       /* 회계년월     */
+                 , #{ADJPL_C}                                                AS ADJPL_C      /* 정산처코드   */
+                 , ISNULL(
+                       CASE WHEN #{REG_DSC} = 'N' AND THEN #{DIFF_CRE_SL_AM}     /* 외상매출금발생 */
+                            ELSE 0 
+                       END 
+                   , 0 )                                                     AS ADD_DB_AM    /* 가감-외상매출금발생 */
+                 , ISNULL( 
+                       CASE WHEN #{REG_DSC} != 'N' THEN #{DIFF_CRE_SL_AM}        /* 외상매출금회수 */
+                            ELSE 0 
+                       END
+                   , 0 )                                                     AS ADD_CR_AM    /* 가감-외상매출금회수 */
+              FROM BAS_MM_CNT A1
+             WHERE 1=1
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.BAS_BAC = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.BAS_BAC
+                                    ELSE A.BAS_BAC + ADD_DB_AM - ADD_CR_AM
+                               END 
+                 , A.DB_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + ADD_DB_AM
+                                  ELSE A.DB_AM
+                             END
+                 , A.CR_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + ADD_CR_AM
+                                  ELSE A.CR_AM
+                             END 
+                 , A.DB_AAM_AM = A.DB_AAM_AM + ADD_DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + ADD_CR_AM
+                 , A.BAC = A.BAC + ADD_DB_AM - ADD_CR_AM
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN 0 ELSE B.ADD_DB_AM - B.ADD_CR_AM END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_DB_AM ELSE 0 END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_CR_AM ELSE 0 END )
+                   , B.ADD_DB_AM
+                   , B.ADD_CR_AM
+                   , B.ADD_DB_AM - B.ADD_CR_AM
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            )
+            ; 
+    </insert>
+
+    <!-- ====================================================================== -->
+    <!-- =============================== 기타미수금 =============================== -->
+
+    <!-- 기타미수금기본(발생) 사전 정합성 체크 -->
+    <select id="selectCa0100EtcAcrvValidDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100EtcAcrvValidDet01 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{CRE_SL_AM}, '') = '' THEN '기타미수금은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG                  
+    </select>
+
+    <!-- 기타미수금기본(회수) 사전 정합성 체크 -->
+    <select id="selectCa0100EtcAcrvValidDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100EtcAcrvValidDet02 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{CRE_SL_AM}, '') = '' THEN '기타미수금은 필수 입력항목입니다.'
+            WHEN ISNULL(#{PY_STL_DSC}, '') = '' THEN '지급결제구분코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{STL_ACNO} = '' THEN '계좌이체시 결제계좌번호는 필수 입력항목입니다.' 
+            WHEN A.COMN_CNM = '계좌이체' AND #{BNK_C} = '' THEN '계좌이체시 은행코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{DPR_NM} = '' THEN '계좌이체시 예금주명은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG
+       FROM TB_SY_D_COMNC A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.COMN_GRP_C = 'PY_STL_DSC'
+        AND A.COMN_C     = #{PY_STL_DSC}
+    </select>
+
+    <!-- 기타미수금기본 회수금 제한 체크 (회수_등록시) -->
+    <select id="selectCa0100EtcAcrvPayLmtDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100EtcAcrvPayLmtDet01 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> A.BAC THEN '거래처[' + B.TRPL_NM + ']의 기타미수금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_S_ETC_ACRV_MON  A
+      INNER JOIN TB_CO_M_TRPL B
+         ON A.CORP_C  = B.CORP_C
+        AND A.ADJPL_C = B.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C  = #{CORP_C}
+        AND A.BZPL_C  = #{BZPL_C}
+        AND A.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND A.ADJPL_C = #{ADJPL_C}
+    </select>
+    
+    <!-- 기타미수금기본 회수금 제한 체크 (회수_정정시) -->
+    <select id="selectCa0100EtcAcrvPayLmtDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100EtcAcrvPayLmtDet02 */
+            CASE WHEN CONVERT(numeric(20), #{CRE_SL_AM}) <![CDATA[>]]> B.BAC + A.CRE_SL_AM THEN '거래처[' + C.TRPL_NM + ']의 기타미수금의 잔액이 회수금보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_M_ETC_ACRV  A
+      INNER JOIN TB_BD_S_ETC_ACRV_MON B
+         ON B.CORP_C  = A.CORP_C
+        AND B.BZPL_C  = A.BZPL_C
+        AND B.ACG_MN  = SUBSTRING( #{ACG_DT}, 1, 6 )
+        AND B.ADJPL_C = A.ADJPL_C
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C  = C.CORP_C
+        AND A.ADJPL_C = C.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.REG_DT     = #{REG_DT}
+        AND A.REG_SQNO   = #{REG_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+
+    <!-- 기타미수금기본 정보 조회 -->
+    <select id="selectCa0100EtcAcrv_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+     SELECT /*+ selectCa0100EtcAcrv_01 */
+            A.CORP_C                                            /* 회사코드             */
+          , A.BZPL_C                                            /* 사업장코드           */
+          , A.REG_DT                                            /* 등록일자             */
+          , A.REG_SQNO                                          /* 등록일련번호         */
+          , A.SLP_NML_YN                                        /* 전표정상여부         */
+          , A.RLTR_DT                                           /* 실거래일자           */
+          , A.ACG_DT                                            /* 회계일자             */
+          , A.WDR_PLA_DT                                        /* 회수예정일자         */
+          , A.ADJPL_C                                           /* 정산처코드           */
+          , A.REG_DSC                                           /* 등록구분코드         */
+          , A.CRE_SL_AM                                         /* 기타미수금           */
+          , A.PY_STL_DSC                                        /* 지급결제구분코드     */
+          , A.STL_ACNO                                          /* 결제계좌번호         */
+          , A.BNK_C                                             /* 은행코드             */
+          , A.DPR_NM                                            /* 예금주명             */
+          , A.RMK_CNTN                                          /* 비고내용             */
+          , A.DEL_YN                                            /* 삭제여부             */
+          , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+          , A.TR_SQNO                                           /* 거래일련번호         */
+          , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+          , A.FSRG_ID                                           /* 최초등록자ID         */
+          , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+          , A.LSCHG_ID                                          /* 최종변경자ID         */
+       FROM TB_BD_M_ETC_ACRV A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.ADJPL_C    = #{ADJPL_C}
+        AND A.TR_SQNO    = #{TR_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+    
+    <!-- 기 입력된 기타미수금기본 DEL_YN(정정여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_ETC_ACRV_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_ETC_ACRV_01 */ TB_BD_M_ETC_ACRV
+           SET 
+               DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+    
+    <!-- 기 입력된 기타미수금기본 SLP_NML_YN(전표정상여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_ETC_ACRV_02" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_ETC_ACRV_02 */ TB_BD_M_ETC_ACRV
+           SET 
+               SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+
+    <!-- 실시간 기타미수금 월별집계 -->
+    <insert id="merge_RealTime_FOR_TB_BD_S_ETC_ACRV_MON_01" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_ETC_ACRV_MON_01 */ TB_BD_S_ETC_ACRV_MON AS A
+        USING 
+        (
+            SELECT 
+                   B1.CORP_C                                                 AS CORP_C       /* 회사코드     */
+                 , B1.BZPL_C                                                 AS BZPL_C       /* 사업장코드   */
+                 , CONVERT(VARCHAR(6), DATEADD(MM, A1.LV-1, #{ACG_DT}),112)  AS BAS_MM       /* 기준회계년월 */
+                 , SUBSTRING(B1.ACG_DT, 1,6 )                                AS ACG_MN       /* 회계년월     */
+                 , B1.ADJPL_C                                                AS ADJPL_C      /* 정산처코드   */
+                 , ISNULL(
+                       CASE WHEN B1.REG_DSC = 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.CRE_SL_AM         /* 기타미수금발생 추가(+) */
+                            WHEN B1.REG_DSC = 'N' AND ( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.CRE_SL_AM * -1     /* 기타미수금발생 정정(-) */
+                            ELSE 0 
+                       END 
+                   , 0 )                                                     AS ADD_DB_AM    /* 가감-기타미수금발생 */
+                 , ISNULL( 
+                       CASE WHEN B1.REG_DSC != 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.CRE_SL_AM        /* 기타미수금회수 추가(+) */
+                            WHEN B1.REG_DSC != 'N' AND( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.CRE_SL_AM * -1    /* 기타미수금회수 정정(-) */
+                            ELSE 0 
+                       END
+                   , 0 )                                                     AS ADD_CR_AM    /* 가감-기타미수금회수 */
+              FROM BAS_MM_CNT A1
+                 , TB_BD_M_ETC_ACRV B1
+             WHERE 1=1
+               AND B1.CORP_C   = #{CORP_C}
+               AND B1.BZPL_C   = #{BZPL_C}
+               AND B1.REG_DT   = #{REG_DT}
+               AND B1.REG_SQNO = #{REG_SQNO}
+
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.BAS_BAC = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.BAS_BAC
+                                    ELSE A.BAS_BAC + ADD_DB_AM - ADD_CR_AM
+                               END 
+                 , A.DB_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + ADD_DB_AM
+                                  ELSE A.DB_AM
+                             END
+                 , A.CR_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + ADD_CR_AM
+                                  ELSE A.CR_AM
+                             END 
+                 , A.DB_AAM_AM = A.DB_AAM_AM + ADD_DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + ADD_CR_AM
+                 , A.BAC = A.BAC + ADD_DB_AM - ADD_CR_AM
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN 0 ELSE B.ADD_DB_AM - B.ADD_CR_AM END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_DB_AM ELSE 0 END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_CR_AM ELSE 0 END )
+                   , B.ADD_DB_AM
+                   , B.ADD_CR_AM
+                   , B.ADD_DB_AM - B.ADD_CR_AM
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            ) 
+            ;
+    </insert>
+    
+    <!-- 실시간 기타미수금 월별집계 -->
+    <insert id="merge_RealTime_FOR_TB_BD_S_ETC_ACRV_MON_02" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_ETC_ACRV_MON_02 */ TB_BD_S_ETC_ACRV_MON AS A
+        USING 
+        (
+            SELECT 
+                   #{CORP_C}                                                 AS CORP_C       /* 회사코드     */
+                 , #{BZPL_C}                                                 AS BZPL_C       /* 사업장코드   */
+                 , CONVERT(VARCHAR(6), DATEADD(MM, A1.LV-1, #{ACG_DT}),112)  AS BAS_MM       /* 기준회계년월 */
+                 , SUBSTRING(#{ADJPL_C}, 1,6)                                AS ACG_MN       /* 회계년월     */
+                 , #{ADJPL_C}                                                AS ADJPL_C      /* 정산처코드   */
+                 , ISNULL(
+                       CASE WHEN #{REG_DSC} = 'N' AND THEN #{DIFF_CRE_SL_AM}     /* 기타미수금발생 */
+                            ELSE 0 
+                       END 
+                   , 0 )                                                     AS ADD_DB_AM    /* 가감-기타미수금발생 */
+                 , ISNULL( 
+                       CASE WHEN #{REG_DSC} != 'N' THEN #{DIFF_CRE_SL_AM}        /* 외상매출금회수 */
+                            ELSE 0 
+                       END
+                   , 0 )                                                     AS ADD_CR_AM    /* 가감-기타미수금회수 */
+              FROM BAS_MM_CNT A1
+             WHERE 1=1
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.BAS_BAC = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.BAS_BAC
+                                    ELSE A.BAS_BAC + ADD_DB_AM - ADD_CR_AM
+                               END 
+                 , A.DB_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + ADD_DB_AM
+                                  ELSE A.DB_AM
+                             END
+                 , A.CR_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + ADD_CR_AM
+                                  ELSE A.CR_AM
+                             END 
+                 , A.DB_AAM_AM = A.DB_AAM_AM + ADD_DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + ADD_CR_AM
+                 , A.BAC = A.BAC + ADD_DB_AM - ADD_CR_AM
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN 0 ELSE B.ADD_DB_AM - B.ADD_CR_AM END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_DB_AM ELSE 0 END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_CR_AM ELSE 0 END )
+                   , B.ADD_DB_AM
+                   , B.ADD_CR_AM
+                   , B.ADD_DB_AM - B.ADD_CR_AM
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            )
+            ; 
+    </insert>
+    
+    <!-- ====================================================================== -->
+    <!-- =============================== 선급금 ================================= -->
+
+    <!-- 선급금기본(발생) 사전 정합성 체크 -->
+    <select id="selectCa0100PryamValidDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100PryamValidDet01 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{PPY_AM}, '') = '' THEN '선급금은 필수 입력항목입니다.'
+            WHEN ISNULL(#{PY_STL_DSC}, '') = '' THEN '지급결제구분코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{STL_ACNO} = '' THEN '계좌이체시 결제계좌번호는 필수 입력항목입니다.' 
+            WHEN A.COMN_CNM = '계좌이체' AND #{BNK_C} = '' THEN '계좌이체시 은행코드는 필수 입력항목입니다.'
+            WHEN A.COMN_CNM = '계좌이체' AND #{DPR_NM} = '' THEN '계좌이체시 예금주명은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG
+       FROM TB_SY_D_COMNC A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.COMN_GRP_C = 'PY_STL_DSC'
+        AND A.COMN_C     = #{PY_STL_DSC}
+    </select>
+
+    <!-- 선급금기본(사용) 사전 정합성 체크 -->
+    <select id="selectCa0100PryamValidDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100PryamValidDet02 */
+       CASE WHEN ISNULL(#{CORP_C}, '') = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{BZPL_C}, '') = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{RLTR_DT}, '') = '' THEN '실거래일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ACG_DT}, '') = '' THEN '회계일자는 필수 입력항목입니다.'
+            WHEN ISNULL(#{ADJPL_C}, '') = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{REG_DSC}, '') = '' THEN '등록구분코드는 필수 입력항목입니다.'
+            WHEN ISNULL(#{PPY_AM}, '') = '' THEN '선급금은 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG
+    </select>
+    
+    <!-- 선급금기본 사용금액 제한 체크 (사용_등록시) -->
+    <select id="selectCa0100PryamUseLmtDet01" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100PryamUseLmtDet01 */
+            CASE WHEN CONVERT(numeric(20), #{PPY_AM}) <![CDATA[>]]> A.BAC THEN '거래처[' + B.TRPL_NM + ']의 선급금의 잔액[' + CAST( A.BAC as char(20) ) + ']이 사용금액[' + CAST( #{PPY_AM} as char(20) ) + ']보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_S_PRVAM_MON  A
+      INNER JOIN TB_CO_M_TRPL B
+         ON A.CORP_C  = B.CORP_C
+        AND A.ADJPL_C = B.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C  = #{CORP_C}
+        AND A.BZPL_C  = #{BZPL_C}
+        AND A.ACG_MN  = Convert(varchar(6),Getdate(),112)
+        AND A.ADJPL_C = #{ADJPL_C}
+    </select>
+    
+    <!-- 선급금기본 사용금액 제한 체크 (지급/사용_정정시) -->
+    <select id="selectCa0100PryamUseLmtDet02" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100PryamUseLmtDet02 */
+            CASE WHEN A.REG_DSC = 'N' AND CONVERT(numeric(20), #{PPY_AM}) <![CDATA[<]]> A.PPY_AM - B.BAC THEN '거래처[' + C.TRPL_NM + ']의 선급금 지급등록 정정시 선급금의 잔액 부족으로 불가능합니다.'
+                 WHEN A.REG_DSC = 'U' AND CONVERT(numeric(20), #{PPY_AM}) <![CDATA[>]]> B.BAC + A.PPY_AM THEN '거래처[' + C.TRPL_NM + ']의 선급금의 잔액[' + CAST( B.BAC + A.PPY_AM as char(20) ) + ']이 정정_사용금액[' + CAST( #{PPY_AM} as char(20) ) + ']보다 작습니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_M_PRYAM  A
+      INNER JOIN TB_BD_S_PRVAM_MON B
+         ON B.CORP_C  = A.CORP_C
+        AND B.BZPL_C  = A.BZPL_C
+        AND B.ACG_MN  = Convert(varchar(6),Getdate(),112)
+        AND B.ADJPL_C = A.ADJPL_C
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C  = C.CORP_C
+        AND A.ADJPL_C = C.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.REG_DT     = #{REG_DT}
+        AND A.REG_SQNO   = #{REG_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+
+    <!-- 선급금기본 사용금액 제한 체크 (지급_삭제/취소시) -->
+    <select id="selectCa0100PryamUseLmtDet03" parameterType="LinkedHashMap" resultType="String">
+     SELECT /*+ selectCa0100PryamUseLmtDet03 */
+            CASE WHEN A.REG_DSC = 'N' AND B.BAC <![CDATA[<]]> A.PPY_AM THEN '거래처[' + C.TRPL_NM + ']의 선급금 지급등록 삭제/저장시 선급금의 잔액 부족으로 불가능합니다.'
+                 ELSE 'OK'
+            END AS RESULT_MSG
+       FROM TB_BD_M_PRYAM  A
+      INNER JOIN TB_BD_S_PRVAM_MON B
+         ON B.CORP_C  = A.CORP_C
+        AND B.BZPL_C  = A.BZPL_C
+        AND B.ACG_MN  = Convert(varchar(6),Getdate(),112)
+        AND B.ADJPL_C = A.ADJPL_C
+      INNER JOIN TB_CO_M_TRPL C
+         ON A.CORP_C  = C.CORP_C
+        AND A.ADJPL_C = C.TRPL_C
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.REG_DT     = #{REG_DT}
+        AND A.REG_SQNO   = #{REG_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+
+    <!-- 선급금기본 정보 조회 -->
+    <select id="selectCa0100Pryam_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+     SELECT /*+ selectCa0100Pryam_01 */
+            A.CORP_C                                            /* 회사코드             */
+          , A.BZPL_C                                            /* 사업장코드           */
+          , A.REG_DT                                            /* 등록일자             */
+          , A.REG_SQNO                                          /* 등록일련번호         */
+          , A.SLP_NML_YN                                        /* 전표정상여부         */
+          , A.RLTR_DT                                           /* 실거래일자           */
+          , A.ACG_DT                                            /* 회계일자             */
+          , A.ADJPL_C                                           /* 정산처코드           */
+          , A.REG_DSC                                           /* 등록구분코드         */
+          , A.PPY_AM                                            /* 선급금액             */
+          , A.PY_STL_DSC                                        /* 지급결제구분코드     */
+          , A.STL_ACNO                                          /* 결제계좌번호         */
+          , A.BNK_C                                             /* 은행코드             */
+          , A.DPR_NM                                            /* 예금주명             */
+          , A.RMK_CNTN                                          /* 비고내용             */
+          , A.DEL_YN                                            /* 삭제여부             */
+          , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+          , A.TR_SQNO                                           /* 거래일련번호         */
+          , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+          , A.FSRG_ID                                           /* 최초등록자ID         */
+          , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+          , A.LSCHG_ID                                          /* 최종변경자ID         */
+       FROM TB_BD_M_PRYAM A
+      WHERE 1=1
+        AND A.CORP_C     = #{CORP_C}
+        AND A.BZPL_C     = #{BZPL_C}
+        AND A.ADJPL_C    = #{ADJPL_C}
+        AND A.TR_SQNO    = #{TR_SQNO}
+        AND A.SLP_NML_YN = 'Y'
+        AND A.DEL_YN     = 'N'
+    </select>
+    
+    <!-- 기 입력된 선급금기본 DEL_YN(정정여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_PRYAM_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_PRYAM_01 */ TB_BD_M_PRYAM
+           SET 
+               DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+    
+    <!-- 기 입력된 선급금기본 SLP_NML_YN(전표정상여부)을 변경한다. -->
+    <update id="update_DEL_YN_FOR_TB_BD_M_PRYAM_02" parameterType="LinkedHashMap">
+        UPDATE /*+ update_DEL_YN_FOR_TB_BD_M_PRYAM_02 */ TB_BD_M_PRYAM
+           SET 
+               SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+        <if test = "REG_DT != null and REG_DT != ''">
+           AND REG_DT              = #{REG_DT}
+        </if>
+        <if test = "REG_SQNO != null and REG_SQNO != ''">
+           AND REG_SQNO            = #{REG_SQNO}
+        </if>
+        <if test = "TR_SQNO != null and TR_SQNO != ''">
+           AND TR_SQNO             = #{TR_SQNO}
+        </if>
+    </update>
+
+    <!-- 실시간 선급금 월별집계 -->
+    <insert id="merge_RealTime_FOR_TB_BD_S_PRVAM_MON_01" parameterType="LinkedHashMap">
+        WITH BAS_MM_CNT AS     /* 실거래일자 기준으로 월별 ROW건 생성 */
+        (
+            SELECT 1 LV
+             UNION ALL
+            SELECT LV + 1 LV 
+              FROM BAS_MM_CNT
+             WHERE LV + 1 <![CDATA[<=]]> DATEDIFF(month, #{ACG_DT}, GETDATE())+1
+        )
+        MERGE /*+ merge_RealTime_FOR_TB_BD_S_PRVAM_MON_01 */ TB_BD_S_PRVAM_MON AS A
+        USING 
+        (
+            SELECT 
+                   B1.CORP_C                                                 AS CORP_C       /* 회사코드     */
+                 , B1.BZPL_C                                                 AS BZPL_C       /* 사업장코드   */
+                 , CONVERT(VARCHAR(6), DATEADD(MM, A1.LV-1, #{ACG_DT}),112)  AS BAS_MM       /* 기준회계년월 */
+                 , SUBSTRING(B1.ACG_DT, 1,6 )                                AS ACG_MN       /* 회계년월     */
+                 , B1.ADJPL_C                                                AS ADJPL_C      /* 정산처코드   */
+                 , ISNULL(
+                       CASE WHEN B1.REG_DSC = 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.PPY_AM         /* 선급금발생 추가(+) */
+                            WHEN B1.REG_DSC = 'N' AND ( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.PPY_AM * -1     /* 선급금발생 정정(-) */
+                            ELSE 0 
+                       END 
+                   , 0 )                                                     AS ADD_DB_AM    /* 가감-선급금발생(지급) */
+                 , ISNULL( 
+                       CASE WHEN B1.REG_DSC != 'N' AND B1.DEL_YN != 'Y' AND B1.SLP_NML_YN = 'Y' THEN B1.PPY_AM        /* 선급금회수 추가(+) */
+                            WHEN B1.REG_DSC != 'N' AND( B1.DEL_YN = 'Y' OR B1.SLP_NML_YN != 'Y' ) THEN B1.PPY_AM * -1    /* 선급금회수 정정(-) */
+                            ELSE 0 
+                       END
+                   , 0 )                                                     AS ADD_CR_AM    /* 가감-선급금사용 */
+              FROM BAS_MM_CNT A1
+                 , TB_BD_M_PRYAM B1
+             WHERE 1=1
+               AND B1.CORP_C   = #{CORP_C}
+               AND B1.BZPL_C   = #{BZPL_C}
+               AND B1.REG_DT   = #{REG_DT}
+               AND B1.REG_SQNO = #{REG_SQNO}
+
+        ) B
+           ON (A.CORP_C  = B.CORP_C
+          AND  A.BZPL_C  = B.BZPL_C
+          AND  A.ACG_MN  = B.BAS_MM
+          AND  A.ADJPL_C = B.ADJPL_C
+        )
+        WHEN MATCHED THEN 
+            UPDATE 
+               SET A.BAS_BAC = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.BAS_BAC
+                                    ELSE A.BAS_BAC + ADD_DB_AM - ADD_CR_AM
+                               END 
+                 , A.DB_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.DB_AM + ADD_DB_AM
+                                  ELSE A.DB_AM
+                             END
+                 , A.CR_AM = CASE WHEN B.BAS_MM = B.ACG_MN THEN A.CR_AM + ADD_CR_AM
+                                  ELSE A.CR_AM
+                             END 
+                 , A.DB_AAM_AM = A.DB_AAM_AM + ADD_DB_AM
+                 , A.CR_AAM_AM = A.CR_AAM_AM + ADD_CR_AM
+                 , A.BAC = A.BAC + ADD_DB_AM - ADD_CR_AM
+                 , A.LSCHG_DTM = GETDATE()
+                 , A.LSCHG_ID = #{GUSRID}
+        WHEN NOT MATCHED THEN 
+            INSERT 
+            ( 
+                     CORP_C
+                   , BZPL_C
+                   , ACG_MN
+                   , ADJPL_C
+                   , BAS_BAC
+                   , DB_AM
+                   , CR_AM
+                   , DB_AAM_AM
+                   , CR_AAM_AM
+                   , BAC
+                   , FSRG_DTM
+                   , FSRG_ID
+                   , LSCHG_DTM
+                   , LSCHG_ID
+            )
+            VALUES 
+            (        
+                     B.CORP_C
+                   , B.BZPL_C
+                   , B.BAS_MM
+                   , B.ADJPL_C
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN 0 ELSE B.ADD_DB_AM - B.ADD_CR_AM END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_DB_AM ELSE 0 END )
+                   , ( CASE WHEN B.BAS_MM = B.ACG_MN THEN B.ADD_CR_AM ELSE 0 END )
+                   , B.ADD_DB_AM
+                   , B.ADD_CR_AM
+                   , B.ADD_DB_AM - B.ADD_CR_AM
+                   , GETDATE()
+                   , #{GUSRID}
+                   , GETDATE()
+                   , #{GUSRID}
+            ) 
+            ;
+    </insert>
+
+    
+    <!-- *********************************************************************************** -->
+    <!-- ********************************* 채권잔액조회 **************************************** -->
+    
+    <!-- 거래처 기준의 정산처 조회 -->
+    <select id="selectCa0100_One00_AdjplC" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ selectCa0100_One00_AdjplC */
+               ADJPL_C            /* 정산처코드 */
+          FROM TB_CO_M_TRPL
+         WHERE 1=1
+           AND CORP_C = #{CORP_C}
+           AND TRPL_C = #{TRPL_C}
+    </select>  
+    
+    <!-- 외상매출금잔액조회 -->  
+    <select id="selectCa0100One01_Clam_Bac" parameterType="LinkedHashMap" resultType="long">
+        SELECT /*+ selectCa0100One01_Clam_Bac */
+               SUM(BAS_BAC) AS BAC          /* 잔액       */
+          FROM (
+               /* NULL값 대비 기초잔액 0 생성 */
+               SELECT 0 AS BAS_BAC
+               
+               UNION ALL
+               /* 기초잔액 구하기 */
+               SELECT 
+                      BAS_BAC               /* 기초잔액              */
+                 FROM TB_BD_S_CLAM_MON
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_MN = SUBSTRING( #{REG_DT}, 0, 7 )
+                  AND ADJPL_C = #{ADJPL_C}
+
+               UNION ALL
+               SELECT 
+                    /* 조회시작월의 01일부터 기준일까지 거래금액 계산 */
+                    SUM(CASE WHEN REG_DSC = 'N' THEN CRE_SL_AM
+                             ELSE CRE_SL_AM * -1
+                        END)                                                       AS BAS_BAC      /* 기초잔액 */
+                 FROM TB_BD_M_CLAM
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_DT BETWEEN SUBSTRING( #{REG_DT}, 0, 7 ) + '01' AND #{REG_DT}
+                  AND ADJPL_C = #{ADJPL_C}
+                  AND SLP_NML_YN = 'Y'
+                  AND DEL_YN = 'N'
+               ) A
+         WHERE 1=1
+    </select>
+     
+    <!-- 기타미수금잔액조회 -->
+    <select id="selectCa0100One01_EtcAcrv_Bac" parameterType="LinkedHashMap" resultType="long">
+        SELECT /*+ selectCa0100One01_EtcAcrv_Bac */
+               SUM(BAS_BAC) AS BAC          /* 잔액       */
+          FROM (
+               /* NULL값 대비 기초잔액 0 생성 */
+               SELECT 0 AS BAS_BAC
+               
+               UNION ALL
+               /* 기초잔액 구하기 */
+               SELECT 
+                      BAS_BAC               /* 기초잔액              */
+                 FROM TB_BD_S_ETC_ACRV_MON
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_MN = SUBSTRING( #{REG_DT}, 0, 7 )
+                  AND ADJPL_C = #{ADJPL_C}
+
+               UNION ALL
+               SELECT 
+                    /* 조회시작월의 01일부터 기준일까지 거래금액 계산 */
+                    SUM(CASE WHEN REG_DSC = 'N' THEN CRE_SL_AM
+                             ELSE CRE_SL_AM * -1
+                        END)                                                       AS BAS_BAC      /* 기초잔액 */
+                 FROM TB_BD_M_ETC_ACRV
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_DT BETWEEN SUBSTRING( #{REG_DT}, 0, 7 ) + '01' AND #{REG_DT}
+                  AND ADJPL_C = #{ADJPL_C}
+                  AND SLP_NML_YN = 'Y'
+                  AND DEL_YN = 'N'
+               ) A
+         WHERE 1=1
+    </select>
+    
+    
+    <!-- 선급금잔액조회 -->
+    <select id="selectCa0100One01_Pryam_Bac" parameterType="LinkedHashMap" resultType="long">
+        SELECT /*+ selectCa0100One01_Pryam_Bac */
+               SUM(BAS_BAC) AS BAC          /* 잔액       */
+          FROM (
+               /* NULL값 대비 기초잔액 0 생성 */
+               SELECT 0 AS BAS_BAC
+               
+               UNION ALL
+               /* 기초잔액 구하기 */
+               SELECT 
+                      BAS_BAC               /* 기초잔액              */
+                 FROM TB_BD_S_PRVAM_MON
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_MN = SUBSTRING( #{REG_DT}, 0, 7 )
+                  AND ADJPL_C = #{ADJPL_C}
+
+               UNION ALL
+               SELECT 
+                    /* 조회시작월의 01일부터 기준일까지 거래금액 계산 */
+                    SUM(CASE WHEN REG_DSC = 'N' THEN PPY_AM
+                             ELSE PPY_AM * -1
+                        END)                                                       AS BAS_BAC      /* 기초잔액 */
+                 FROM TB_BD_M_PRYAM
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_DT BETWEEN SUBSTRING( #{REG_DT}, 0, 7 ) + '01' AND #{REG_DT}
+                  AND ADJPL_C = #{ADJPL_C}
+                  AND SLP_NML_YN = 'Y'
+                  AND DEL_YN = 'N'
+               ) A
+         WHERE 1=1
+     </select>  
+     
+</mapper>

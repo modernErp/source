@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <select id="selectCo1000ValidationChk" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN 0 < (SELECT COUNT(1) 
+                                FROM TB_CO_M_BZPL_ENV
+                               WHERE CORP_C = #{S_CORP_C}
+                                 AND BZPL_C = #{BZPL_C}) THEN '동일한 사업장코드가 존재합니다. 확인 후 다시 처리하세요'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+
+
+    <!-- 회사정보 업데이트(사용자용) -->
+    <update id="updateCo1000CorpInfo" parameterType="LinkedHashMap">
+        UPDATE TB_CO_M_CORP
+           SET CORP_NM     = #{CORP_NM}                      /* 회사명        */
+             , CORP_ABR_NM = #{CORP_ABR_NM}                  /* 회사약어명    */ 
+             , CORP_ENM    = #{CORP_ENM}                     /* 회사영문명    */
+             , BZMN_NM     = #{BZMN_NM}                      /* 사업자명      */
+             , BZMN_NO     = REPLACE(#{BZMN_NO}, '-','')     /* 사업자번호    */
+             , COP_NO      = REPLACE(#{COP_NO}, '-','')      /* 법인번호      */
+             , REPM_NM     = #{REPM_NM}                      /* 대표자명      */
+             , BZTP_NM     = #{BZTP_NM}                      /* 업태명        */
+             , BZC_NM      = #{BZC_NM}                       /* 업종명        */
+             , ZIP         = #{ZIP}                          /* 우편번호      */
+             , ADR1        = #{ADR1}                         /* 주소1         */
+             , ADR2        = #{ADR2}                         /* 주소2         */
+             , TEL_NO      = REPLACE(#{TEL_NO}, '-','')      /* 전화번호      */
+             , FAX_NO      = REPLACE(#{FAX_NO}, '-','')      /* FAX번호       */
+             , HOMEPG_URL  = #{HOMEPG_URL}                   /* 홈페이지      */
+             , REP_EMAIL   = #{REP_EMAIL}                    /* 대표eMail     */
+             , LSCHG_DTM   = GETDATE()                       /* 최종변경일시  */
+             , LSCHG_ID    = #{GUSRID}                       /* 최종변경자    */
+         WHERE CORP_C      = #{S_CORP_C}    
+    </update>
+    
+    <!-- 사업장 정보 저장 -->
+    <insert id="insertCo1000BzplInfo" parameterType="LinkedHashMap">
+         MERGE TB_CO_M_BZPL AS A
+         USING (SELECT   #{S_CORP_C}      AS CORP_C       /* 회사코드             */
+                       , #{BZPL_C}        AS BZPL_C       /* 사업장코드           */
+                       , #{BZPL_NM}       AS BZPL_NM      /* 사업장명             */
+                       , #{BZPL_ABR_NM}   AS BZPL_ABR_NM  /* 사업장약어명         */
+                       , GETDATE()        AS FSRG_DTM     /* 최초등록일시         */
+                       , #{GUSRID}        AS FSRG_ID      /* 최초등록자ID         */
+                       , GETDATE()        AS LSCHG_DTM    /* 최종변경일시         */
+                       , #{GUSRID}        AS LSCHG_ID     /* 최종변경자ID         */
+                 FROM  DUAL) AS B ON (A.CORP_C = B.CORP_C AND A.BZPL_C = B.BZPL_C)
+        WHEN MATCHED THEN
+        UPDATE 
+           SET  BZPL_NM     = B.BZPL_NM
+              , BZPL_ABR_NM = B.BZPL_ABR_NM
+              , LSCHG_DTM   = B.LSCHG_DTM
+              , LSCHG_ID    = B.LSCHG_ID
+        WHEN NOT MATCHED THEN
+        INSERT (
+                CORP_C       /* 회사코드             */
+              , BZPL_C       /* 사업장코드           */
+              , BZPL_NM      /* 사업장명             */
+              , BZPL_ABR_NM  /* 사업장약어명         */            
+              , USE_YN       /* 사용여부             */
+              , FSRG_DTM     /* 최초등록일시         */
+              , FSRG_ID      /* 최초등록자ID         */
+              , LSCHG_DTM    /* 최종변경일시         */
+              , LSCHG_ID     /* 최종변경자ID         */            
+               )
+        VALUES (
+                B.CORP_C       
+              , B.BZPL_C       
+              , B.BZPL_NM      
+              , B.BZPL_ABR_NM  
+              , 'Y'       
+              , B.FSRG_DTM     
+              , B.FSRG_ID      
+              , B.LSCHG_DTM    
+              , B.LSCHG_ID     
+        ); 
+    </insert>   
+        
+    <!-- 사업장기본정보조회 -->
+    <select id="select_bzpl" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_bzpl */
+               CORP_C
+             , BZPL_C
+             , BZPL_NM
+             , BZPL_ABR_NM
+             , USE_YN
+             , FSRG_DTM
+             , FSRG_ID
+             , LSCHG_DTM
+             , LSCHG_ID
+          FROM TB_CO_M_BZPL
+         WHERE 1 = 1
+           AND CORP_C = #{S_CORP_C}
+    </select> 
+
+    <!-- 사업장기본정보수정 -->
+    <update id="update_bzpl" parameterType="LinkedHashMap">
+        UPDATE /*+ update_bzpl */ TB_CO_M_BZPL
+           SET 
+               CORP_C        = #{S_CORP_C}
+             , BZPL_C        = #{BZPL_C}
+             , BZPL_NM       = #{BZPL_NM} 
+             , BZPL_ABR_NM   = #{BZPL_ABR_NM}
+             , LSCHG_DTM     = GETDATE()
+             , LSCHG_ID      = #{GUSRID}
+         WHERE 1 = 1
+           AND CORP_C        = #{S_CORP_C}
+           AND BZPL_C        = #{BZPL_C}
+   </update>
+   
+   <insert id="insert_l_bzpl" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_l_bzpl */ TB_CO_L_BZPL
+        (
+               CORP_C                    /* 회사코드      */
+             , HST_SQNO                  /* 이력일련번호  */
+             , BZPL_C                    /* 사업장코드    */
+             , BZPL_NM                   /* 사업장명      */
+             , BZPL_ABR_NM               /* 사업장약어명  */
+             , USE_YN                    /* 사용여부      */   
+             , FSRG_DTM                  /* 최초등록일시  */   
+             , FSRG_ID                   /* 최초등록자ID  */   
+             , LSCHG_DTM                 /* 최종변경일시  */   
+             , LSCHG_ID                  /* 최종변경자ID  */   
+        )
+        SELECT 
+               CORP_C                                                 /* 회사코드      */   
+             , (SELECT ISNULL (MAX(HST_SQNO),0 ) + 1 
+                  FROM TB_CO_L_BZPL) AS HST_SQNO                      /* 이력일련번호  */  
+             , BZPL_C                                                 /* 사업장코드    */
+             , BZPL_NM                                                /* 사업장명      */
+             , BZPL_ABR_NM                                            /* 사업장약어명  */
+             , USE_YN                                                 /* 사용여부      */   
+             , FSRG_DTM                                               /* 최초등록일시  */  
+             , FSRG_ID                                                /* 최초등록자ID  */  
+             , LSCHG_DTM                                              /* 최종변경일시  */  
+             , LSCHG_ID                                               /* 최종변경자ID  */  
+          FROM TB_CO_M_BZPL
+         WHERE 1 = 1
+           AND CORP_C     = #{S_CORP_C}
+           AND BZPL_C     = #{BZPL_C}
+    </insert>
+    
+    <!-- 거래처 정보 저장 -->
+    <insert id="insertCo1000TrplInfo" parameterType="LinkedHashMap">
+        MERGE TB_CO_M_TRPL AS A
+        USING (SELECT #{CORP_C}      AS CORP_C       /* 회사코드      */
+                    , #{BZPL_C}      AS TRPL_C       /* 거래처코드    */
+                    , #{BZPL_NM}     AS TRPL_NM      /* 거래처명      */
+                    , #{BZPL_ABR_NM} AS TRPL_ABR_NM  /* 거래처약어명  */ 
+                    , GETDATE()      AS FSRG_DTM     /* 최초등록일시  */
+                    , #{GUSRID}      AS FSRG_ID      /* 최초등록자ID  */
+                    , GETDATE()      AS LSCHG_DTM    /* 최종변경일시  */
+                    , #{GUSRID}      AS LSCHG_ID     /* 최종변경자ID  */
+                 FROM DUAL) AS B ON (A.CORP_C = B.CORP_C AND A.TRPL_C = B.TRPL_C)
+        WHEN MATCHED THEN
+        UPDATE 
+           SET  TRPL_NM     = B.TRPL_NM
+              , TRPL_ABR_NM = B.TRPL_ABR_NM
+              , LSCHG_DTM   = B.LSCHG_DTM
+              , LSCHG_ID    = B.LSCHG_ID
+        WHEN NOT MATCHED THEN
+        INSERT (
+               CORP_C            
+             , TRPL_C       
+             , TRPL_NM      
+             , TRPL_ABR_NM  
+             , FSRG_DTM    
+             , FSRG_ID     
+             , LSCHG_DTM   
+             , LSCHG_ID    
+               )
+        VALUES (
+               B.CORP_C     
+             , B.TRPL_C     
+             , B.TRPL_NM        
+             , B.TRPL_ABR_NM
+             , B.FSRG_DTM   
+             , B.FSRG_ID    
+             , B.LSCHG_DTM  
+             , B.LSCHG_ID   
+        );    
+    </insert>
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_TOTECD" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_TOTECD */ TB_PD_M_TOTECD
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TOTE_CODE           /* TOTE_CODE    */
+            , LOT_NO              /* LOT_NO       */
+            , GDS_TP_DSC          /* 물품구분코드         */
+            , GDS_C               /* 물품코드             */
+            , LBL_CNT             /* 라벨COUNT     */
+            , BOX_IN_QT           /* 박스내수량           */
+            , BOX_IN_WT           /* 박수내중량           */
+            , PD_DT               /* 생산일자             */
+            , DSTR_TERDT          /* 유통기한일자         */
+            , DNTT_DT             /* 지시일자             */
+            , DNTT_SQNO           /* 지시일련번호         */
+            , DNTT_DNO            /* 지시상세번호         */
+            , BAR_CODE            /* BAR_CODE     */
+            , PD_TM               /* 생산시간             */
+            , TRACE_NO            /* TRACE_NO     */
+            , TOT_DLR_QT          /* 총출고수량          */
+            , LS_DLR_DT           /* 최종출고일자       */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID    */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID    */
+        )
+        SELECT
+              #{CORP_C}
+            , #{BZPL_C}
+            , TOTE_CODE
+            , LOT_NO
+            , ITEM_CLASS
+            , ARTICLE_CODE
+            , LABEL_COUNT
+            , QUANTITY
+            , WEIGHT
+            , PRD_DATE
+            , EXPIRY_DATE
+            , POD_DATE
+            , POD_NO
+            , POD_SQ
+            , BARCODE
+            , PRD_TIME
+            , TRACE_NO
+            , 0
+            , ''
+            , GETDATE()
+            , 'admin'
+            , GETDATE()
+            , 'admin'
+         FROM VMF_TOTE_CODES 
+        WHERE 1=1 
+           AND BZPLC_ID     = #{BZPL_C}
+           AND TOTE_CODE    = #{TOTE_CODE}
+           AND ARTICLE_CODE = #{GDS_C}
+    </insert>
+
+    <update id="update_TB_PD_M_TOTECD" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_TOTECD */ TB_PD_M_TOTECD
+           SET 
+               LOT_NO              = #{LOT_NO}                /* LOT_NO       */
+             , GDS_TP_DSC          = #{GDS_TP_DSC}            /* 물품구분코드         */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , LBL_CNT             = #{LBL_CNT}               /* 라벨COUNT     */
+             , BOX_IN_QT           = #{BOX_IN_QT}             /* 박스내수량           */
+             , BOX_IN_WT           = #{BOX_IN_WT}             /* 박수내중량           */
+             , PD_DT               = #{PD_DT}                 /* 생산일자             */
+             , DSTR_TERDT          = #{DSTR_TERDT}            /* 유통기한일자         */
+             , DNTT_DT             = #{DNTT_DT}               /* 지시일자             */
+             , DNTT_SQNO           = #{DNTT_SQNO}             /* 지시일련번호         */
+             , DNTT_DNO            = #{DNTT_DNO}              /* 지시상세번호         */
+             , BAR_CODE            = #{BAR_CODE}              /* BAR_CODE      */
+             , PD_TM               = #{PD_TM}                 /* 생산시간             */
+             , TRACE_NO            = #{TRACE_NO}              /* TRACE_NO      */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID     */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+    </update>
+
+    <update id="update_TB_PD_M_TOTECD_DLR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_TOTECD_DLR */ TB_PD_M_TOTECD
+           SET 
+               TOT_DLR_QT          = TOT_DLR_QT + #{STDV_QT}  /* 총출고수량           */
+             , LS_DLR_DT           = #{LS_DLR_DT}             /* 최종출고일자         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID     */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+    </update>
+
+    <delete id="delete_TB_PD_M_TOTECD" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_TOTECD */ FROM TB_PD_M_TOTECD
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+    </delete>
+
+    <select id="select_TB_PD_M_TOTECD" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_TOTECD */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TOTE_CODE                                         /* TOTE_CODE       */
+             , A.LOT_NO                                            /* LOT_NO          */
+             , A.GDS_TP_DSC                                        /* 물품구분코드              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.LBL_CNT                                           /* 라벨COUNT        */
+             , A.BOX_IN_QT                                         /* 박스내수량                */
+             , A.BOX_IN_WT                                         /* 박수내중량                */
+             , A.PD_DT                                             /* 생산일자                  */
+             , A.DSTR_TERDT                                        /* 유통기한일자              */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.BAR_CODE                                          /* BAR_CODE        */
+             , A.PD_TM                                             /* 생산시간                  */
+             , A.TRACE_NO                                          /* TRACE_NO        */
+             , A.TOT_DLR_QT                                        /* 총출고수량               */
+             , A.LS_DLR_DT                                         /* 최종출고일자            */             
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID       */
+          FROM TB_PD_M_TOTECD A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.TOTE_CODE         = #{TOTE_CODE}
+    </select>
+    
+    
+    <select id="select_VIEW_TOTECD" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT
+              #{CORP_C}      AS CORP_C           /* 회사코드                  */
+            , #{BZPL_C}      AS BZPL_C           /* 사업장코드                */
+            , TOTE_CODE      AS TOTE_CODE        /* TOTE_CODE       */          
+            , LOT_NO         AS LOT_NO           /* LOT_NO          */          
+            , ITEM_CLASS     AS GDS_TP_DSC       /* 물품구분코드              */
+            , ARTICLE_CODE   AS GDS_C            /* 물품코드                  */
+            , LABEL_COUNT    AS LBL_CNT          /* 라벨COUNT        */         
+            , QUANTITY       AS BOX_IN_QT        /* 박스내수량                */
+            , WEIGHT         AS BOX_IN_WT        /* 박수내중량                */
+            , PRD_DATE       AS PD_DT            /* 생산일자                  */
+            , EXPIRY_DATE    AS DSTR_TERDT       /* 유통기한일자              */
+            , POD_DATE       AS DNTT_DT          /* 지시일자                  */
+            , POD_NO         AS DNTT_SQNO        /* 지시일련번호              */
+            , POD_SQ         AS DNTT_DNO         /* 지시상세번호              */
+            , BARCODE        AS BAR_CODE         /* BAR_CODE        */          
+            , PRD_TIME       AS PD_TM            /* 생산시간                  */
+            , TRACE_NO       AS TRACE_NO         /* TRACE_NO        */          
+         FROM VMF_TOTE_CODES 
+        WHERE 1=1 
+           AND BZPLC_ID     = #{BZPL_C}
+           AND TOTE_CODE    = #{TOTE_CODE}
+           AND ARTICLE_CODE = #{GDS_C}
+    </select>    
+</mapper>

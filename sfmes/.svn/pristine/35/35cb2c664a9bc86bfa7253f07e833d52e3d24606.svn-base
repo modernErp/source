@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <select id="select2015List_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_01 */
+               A.CORP_C                                                  /* 회사코드             */
+             , A.TRPL_C                                                  /* 거래처코드           */
+             , A.TRPL_NM                                                 /* 거래처명             */
+             , A.TRPL_ABR_NM                                             /* 거래처약어명         */
+             , A.TRPL_DSC                                                /* 거래처구분코드       */
+             , A.TRPL_L_CLFC                                             /* 거래처대분류코드     */
+             , A.TRPL_M_CLFC                                             /* 거래처중분류코드     */
+             , A.TRPL_S_CLFC                                             /* 거래처소분류코드     */
+             , A.BY_CTR_YN                                               /* 매입계약여부         */
+             , A.SL_CTR_YN                                               /* 매출계약여부         */
+             , A.BZMN_NO                                                 /* 사업자번호           */
+             , A.COP_NO                                                  /* 법인번호             */
+             , A.REPM_NM                                                 /* 대표자명             */
+             , A.BZC_NM                                                  /* 업종명               */
+             , A.BZTP_NM                                                 /* 업태명               */
+             , A.UP_TRPL_C                                               /* 상위거래처코드       */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.UP_TRPL_C)   AS UP_TRPL_NM /* 상위거래처명         */                                      
+             , A.MBCO_DSC                                                /* 본지사구분           */
+             , A.TXBZ_RPT_FORM_C                                         /* 세무신고형태코드     */
+             , A.TXBIL_DSC                                               /* 세금계산서발행구분코 */
+             , A.ELTTX_RMS_EMAIL                                         /* 전자세금계산서수신이 */
+             , A.TRFW_TYPE_C                                             /* 거래명세서타입코드   */
+             , A.TRPL_APL_YN                                             /* 거래개시여부         */
+             , A.TRPL_APL_DT                                             /* 거래개시일자         */
+             , A.INDI_INF_AGR_YN                                         /* 개인정보제공동의여부 */
+             , A.SMS_RMS_AGR_YN                                          /* SMS수신동의여부      */
+             , A.ADJPL_C                                                 /* 정산처코드           */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.ADJPL_C)    AS ADJPL_NM    /* 정산처명             */                                      
+             , A.CLSD_YN                                                 /* 폐업여부             */
+             , A.USE_YN                                                  /* 사용여부             */
+             , A.RMK_CNTN                                                /* 비고내용             */
+             , A.ETC_DSC1                                                /* 기타구분1            */
+             , A.ETC_DSC2                                                /* 기타구분2            */
+             , A.ETC_DSC3                                                /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM          /* 최초등록일시         */
+             , A.FSRG_ID                                                 /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                      /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM         /* 최종변경일시         */
+             , A.LSCHG_ID                                                /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                                    /* 최종변경자이름       */
+          FROM TB_CO_M_TRPL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+          <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == ''"> 
+                    AND (A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                         OR A.TRPL_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> 
+                    AND A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> 
+                    AND A.TRPL_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>                
+            </choose>
+         </if>
+         <if test = "TRPL_DSC != null and TRPL_DSC != ''">
+           AND A.TRPL_DSC            = #{TRPL_DSC}
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN            = #{USE_YN}
+         </if>    
+         
+    </select>
+    
+    <select id="select2015List_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_02 */
+               A.CORP_C                                                /* 회사코드             */
+             , A.HST_SQNO                                              /* 이력일련번호         */
+             , A.TRPL_C                                                /* 거래처코드           */
+             , A.TRPL_NM                                               /* 거래처명             */
+             , A.TRPL_ABR_NM                                           /* 거래처약어명         */
+             , A.TRPL_DSC                                              /* 거래처구분코드       */
+             , A.TRPL_L_CLFC                                           /* 거래처대분류코드     */
+             , A.TRPL_M_CLFC                                           /* 거래처중분류코드     */
+             , A.TRPL_S_CLFC                                           /* 거래처소분류코드     */
+             , A.BY_CTR_YN                                             /* 매입계약여부         */
+             , A.SL_CTR_YN                                             /* 매출계약여부         */
+             , A.BZMN_NO                                               /* 사업자번호           */
+             , A.COP_NO                                                /* 법인번호             */
+             , A.REPM_NM                                               /* 대표자명             */
+             , A.BZC_NM                                                /* 업종명               */
+             , A.BZTP_NM                                               /* 업태명               */
+             , A.MBCO_DSC                                              /* 본지사구분코드       */
+             , A.UP_TRPL_C                                             /* 상위거래처코드       */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.UP_TRPL_C) AS UP_TRPL_NM /* 상위거래처명         */
+             , A.TXBIL_DSC                                             /* 세금계산서발행구분코 */
+             , A.ELTTX_RMS_EMAIL                                       /* 전자세금계산서수신이 */
+             , A.TRFW_TYPE_C                                           /* 거래명세서타입코드   */
+             , A.TRPL_APL_YN                                           /* 거래개시여부         */
+             , A.TRPL_APL_DT                                           /* 거래개시일자         */
+             , A.INDI_INF_AGR_YN                                       /* 개인정보제공동의여부 */
+             , A.SMS_RMS_AGR_YN                                        /* SMS수신동의여부      */
+             , A.ADJPL_C                                               /* 정산처코드           */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.ADJPL_C)   AS ADJPL_NM   /* 상위거래처명         */
+             , A.CLSD_YN                                               /* 폐업여부             */
+             , A.USE_YN                                                /* 사용여부             */
+             , A.RMK_CNTN                                              /* 비고내용             */
+             , A.ETC_DSC1                                              /* 기타구분1            */
+             , A.ETC_DSC2                                              /* 기타구분2            */
+             , A.ETC_DSC3                                              /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM        /* 최초등록일시         */
+             , A.FSRG_ID                                               /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                    /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM       /* 최종변경일시         */
+             , A.LSCHG_ID                                              /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                                  /* 최종변경자이름       */
+          FROM TB_CO_L_TRPL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.TRPL_C            = #{TRPL_C}
+    </select>
+    
+    <select id="select2015List_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_03 */
+               A.CORP_C                                                /* 회사코드                  */
+             , A.TRPL_C                                                /* 거래처코드                */
+             , A.TRPL_NM                                               /* 거래처명                  */
+             , A.ZIP                                                   /* 거래처우편번호            */
+             , A.ADR1                                                  /* 거래처주소1               */
+             , A.ADR2                                                  /* 거래처주소2               */
+             , A.TRPL_ABR_NM                                           /* 거래처약어명              */
+             , A.TRPL_DSC                                              /* 거래처구분코드            */
+             , A.TRPL_L_CLFC                                           /* 거래처대분류코드          */
+             , A.TRPL_M_CLFC                                           /* 거래처중분류코드          */
+             , A.TRPL_S_CLFC                                           /* 거래처소분류코드          */
+             , A.BY_CTR_YN                                             /* 매입계약여부              */
+             , A.SL_CTR_YN                                             /* 매출계약여부              */
+             , A.BZMN_NO                                               /* 사업자번호                */
+             , A.COP_NO                                                /* 법인번호                  */
+             , A.REPM_NM                                               /* 대표자명                  */
+             , A.BZC_NM                                                /* 업종명                    */
+             , A.BZTP_NM                                               /* 업태명                    */
+             , A.UP_TRPL_C                                             /* 상위거래처코드            */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.UP_TRPL_C) AS UP_TRPL_NM /* 상위거래처명              */
+             , A.MBCO_DSC                                              /* 본지사구분코드            */
+             , A.TXBZ_RPT_FORM_C                                       /* 세무신고형태코드          */
+             , A.TXBIL_DSC                                             /* 세금계산서발행구분코      */
+             , A.ELTTX_RMS_EMAIL                                       /* 전자세금계산서수신이      */
+             , A.TRFW_TYPE_C                                           /* 거래명세서타입코드        */
+             , A.TRPL_APL_YN                                           /* 거래개시여부              */
+             , A.TRPL_APL_DT                                           /* 거래개시일자              */
+             , A.INDI_INF_AGR_YN                                       /* 개인정보제공동의여부      */
+             , A.SMS_RMS_AGR_YN                                        /* SMS수신동의여부           */
+             , A.ADJPL_C                                               /* 정산처코드                */
+             , DBO.SF_GET_TRPL_NM(A.CORP_C, A.ADJPL_C) AS ADJPL_NM     /* 정산처명                  */
+             , A.CLSD_YN                                               /* 폐업여부                  */
+             , A.USE_YN                                                /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM          /* 최초등록일시              */
+			 , A.FSRG_ID                  AS FSRG_ID                   /* 최초등록자ID              */
+			 , A.FSRG_ID                  AS FSRG_NM                   /* 최초등록자ID              */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM         /* 최종변경일시              */
+			 , A.LSCHG_ID                 AS LSCHG_ID                  /* 최종변경자ID              */
+			 , A.LSCHG_ID                 AS LSCHG_NM                  /* 최종변경자ID              */
+             , X.BY_DSC                                                /* 매입_매입매출구분코드     */
+             , X.BY_CTR_ST_DT                                          /* 매입_계약시작일자         */
+             , X.BY_CTR_ED_DT                                          /* 매입_계약종료일자         */
+             , X.BY_PPYAM_YN                                           /* 매입_선급금사용여부       */
+             , X.BY_PRVAM_YN                                           /* 매입_선수금사용여부       */
+             , X.BY_CRE_YN                                             /* 매입_외상사용여부         */
+             , X.BY_CASH_YN                                            /* 매입_현금사용여부         */
+             , X.BY_CRE_LMT_AM                                         /* 매입_외상한도금액         */
+             , X.BY_PPYAM_LMT_AM                                       /* 매입_선급금한도금액       */
+             , X.BY_PRVAM_LMT_AM                                       /* 매입_선수금한도금액       */
+             , X.BY_DCZ_DD_TPC                                         /* 매입_결재일유형코드       */
+             , X.BY_DCZ_ACNO                                           /* 매입_결재계좌번호         */
+             , X.BY_DCZ_BNK_C                                          /* 매입_결재은행코드         */
+             , X.BY_DPR_NM                                             /* 매입_예금주명             */
+             , X.BY_TR_STOP_YN                                         /* 매입_거래중지여부         */
+             , X.BY_TR_STOP_RSNC                                       /* 매입_거래중지사유코드     */
+             , X.BY_TR_STOP_DT                                         /* 매입_거래중지일자         */
+             , X.BY_CLO_YN                                             /* 매입_사용여부             */
+             , X.BY_FSRG_DTM                                           
+             , X.BY_FSRG_ID
+             , X.BY_LSCHG_DTM
+             , X.BY_LSCHG_ID
+             , X.SL_DSC                                            /* 매출_매입매출구분코드     */
+             , X.SL_CTR_ST_DT                                      /* 매출_계약시작일자         */
+             , X.SL_CTR_ED_DT                                      /* 매출_계약종료일자         */
+             , X.SL_PPYAM_YN                                       /* 매출_선급금사용여부       */
+             , X.SL_PRVAM_YN                                       /* 매출_선수금사용여부       */
+             , X.SL_CRE_YN                                         /* 매출_외상사용여부         */
+             , X.SL_CASH_YN                                        /* 매출_현금사용여부         */
+             , X.SL_CRE_LMT_AM                                     /* 매출_외상한도금액         */
+             , X.SL_PPYAM_LMT_AM                                   /* 매출_선급금한도금액       */
+             , X.SL_PRVAM_LMT_AM                                   /* 매출_선수금한도금액       */
+             , X.SL_DCZ_DD_TPC                                     /* 매출_결재일유형코드       */
+             , X.SL_DCZ_ACNO                                       /* 매출_결재계좌번호         */
+             , X.SL_DCZ_BNK_C                                      /* 매출_결재은행코드         */
+             , X.SL_DPR_NM                                         /* 매출_예금주명             */
+             , X.SL_TR_STOP_YN                                     /* 매출_거래중지여부         */
+             , X.SL_TR_STOP_RSNC                                   /* 매출_거래중지사유코드     */
+             , X.SL_TR_STOP_DT                                     /* 매출_거래중지일자         */
+             , X.SL_CLO_YN                                         /* 매출_사용여부             */
+             , X.SL_FSRG_DTM
+			 , X.SL_FSRG_ID
+			 , X.SL_LSCHG_DTM
+			 , X.SL_LSCHG_ID
+          FROM  
+             ( SELECT
+                      A.CORP_C                                            /* 회사코드                  */
+                    , A.TRPL_C                                            /* 거래처코드                */
+                    , MAX(A.BY_DSC         )   AS BY_DSC                  /* 매입_매입매출구분코드     */
+                    , MAX(A.BY_CTR_ST_DT   )   AS BY_CTR_ST_DT            /* 매입_계약시작일자         */
+                    , MAX(A.BY_CTR_ED_DT   )   AS BY_CTR_ED_DT            /* 매입_계약종료일자         */
+                    , MAX(A.BY_PPYAM_YN    )   AS BY_PPYAM_YN             /* 매입_선급금사용여부       */
+                    , MAX(A.BY_PRVAM_YN    )   AS BY_PRVAM_YN             /* 매입_선수금사용여부       */
+                    , MAX(A.BY_CRE_YN      )   AS BY_CRE_YN               /* 매입_외상사용여부         */
+                    , MAX(A.BY_CASH_YN     )   AS BY_CASH_YN              /* 매입_현금사용여부         */
+                    , MAX(A.BY_CRE_LMT_AM  )   AS BY_CRE_LMT_AM           /* 매입_외상한도금액         */
+                    , MAX(A.BY_PPYAM_LMT_AM)   AS BY_PPYAM_LMT_AM         /* 매입_선급금한도금액       */
+                    , MAX(A.BY_PRVAM_LMT_AM)   AS BY_PRVAM_LMT_AM         /* 매입_선수금한도금액       */
+                    , MAX(A.BY_DCZ_DD_TPC  )   AS BY_DCZ_DD_TPC           /* 매입_결재일유형코드       */
+                    , MAX(A.BY_DCZ_ACNO    )   AS BY_DCZ_ACNO             /* 매입_결재계좌번호         */
+                    , MAX(A.BY_DCZ_BNK_C   )   AS BY_DCZ_BNK_C            /* 매입_결재은행코드         */
+                    , MAX(A.BY_DPR_NM      )   AS BY_DPR_NM               /* 매입_예금주명             */
+                    , MAX(A.BY_TR_STOP_YN  )   AS BY_TR_STOP_YN           /* 매입_거래중지여부         */
+                    , MAX(A.BY_TR_STOP_RSNC)   AS BY_TR_STOP_RSNC         /* 매입_거래중지사유코드     */
+                    , MAX(A.BY_TR_STOP_DT  )   AS BY_TR_STOP_DT           /* 매입_거래중지일자         */
+                    , MAX(A.BY_CLO_YN      )   AS BY_CLO_YN               /* 매입_사용여부             */
+                    , MAX(CONVERT(CHAR(23), A.BY_FSRG_DTM, 20))  AS BY_FSRG_DTM   /* 최초등록일시      */
+                    , MAX(A.BY_FSRG_ID)        AS BY_FSRG_ID              /* 최초등록자ID              */
+					, MAX(CONVERT(CHAR(23), A.BY_LSCHG_DTM, 20)) AS BY_LSCHG_DTM  /* 최종변경일시      */
+					, MAX(A.BY_LSCHG_ID)       AS BY_LSCHG_ID             /* 최종변경자ID              */
+                    , MAX(A.SL_DSC         )   AS SL_DSC                  /* 매출_매입매출구분코드     */
+                    , MAX(A.SL_CTR_ST_DT   )   AS SL_CTR_ST_DT            /* 매출_계약시작일자         */
+                    , MAX(A.SL_CTR_ED_DT   )   AS SL_CTR_ED_DT            /* 매출_계약종료일자         */
+                    , MAX(A.SL_PPYAM_YN    )   AS SL_PPYAM_YN             /* 매출_선급금사용여부       */
+                    , MAX(A.SL_PRVAM_YN    )   AS SL_PRVAM_YN             /* 매출_선수금사용여부       */
+                    , MAX(A.SL_CRE_YN      )   AS SL_CRE_YN               /* 매출_외상사용여부         */
+                    , MAX(A.SL_CASH_YN     )   AS SL_CASH_YN              /* 매출_현금사용여부         */
+                    , MAX(A.SL_CRE_LMT_AM  )   AS SL_CRE_LMT_AM           /* 매출_외상한도금액         */
+                    , MAX(A.SL_PPYAM_LMT_AM)   AS SL_PPYAM_LMT_AM         /* 매출_선급금한도금액       */
+                    , MAX(A.SL_PRVAM_LMT_AM)   AS SL_PRVAM_LMT_AM         /* 매출_선수금한도금액       */
+                    , MAX(A.SL_DCZ_DD_TPC  )   AS SL_DCZ_DD_TPC           /* 매출_결재일유형코드       */
+                    , MAX(A.SL_DCZ_ACNO    )   AS SL_DCZ_ACNO             /* 매출_결재계좌번호         */
+                    , MAX(A.SL_DCZ_BNK_C   )   AS SL_DCZ_BNK_C            /* 매출_결재은행코드         */
+                    , MAX(A.SL_DPR_NM      )   AS SL_DPR_NM               /* 매출_예금주명             */
+                    , MAX(A.SL_TR_STOP_YN  )   AS SL_TR_STOP_YN           /* 매출_거래중지여부         */
+                    , MAX(A.SL_TR_STOP_RSNC)   AS SL_TR_STOP_RSNC         /* 매출_거래중지사유코드     */
+                    , MAX(A.SL_TR_STOP_DT  )   AS SL_TR_STOP_DT           /* 매출_거래중지일자         */
+                    , MAX(A.SL_CLO_YN      )   AS SL_CLO_YN               /* 매출_사용여부             */
+                    , MAX(CONVERT(CHAR(23), A.SL_FSRG_DTM, 20))  AS SL_FSRG_DTM   /* 최초등록일시      */
+					, MAX(A.SL_FSRG_ID)                  AS SL_FSRG_ID    /* 최초등록자ID              */
+					, MAX(CONVERT(CHAR(23), A.SL_LSCHG_DTM, 20)) AS SL_LSCHG_DTM  /* 최종변경일시      */
+					, MAX(A.SL_LSCHG_ID)                 AS SL_LSCHG_ID   /* 최종변경자ID              */
+                FROM 
+				    ( SELECT
+                             CORP_C                                              /* 회사코드             */
+                           , TRPL_C                                              /* 거래처코드           */
+                           , BY_SL_DSC                AS BY_DSC                  /* 매입매출구분코드     */
+                           , CTR_ST_DT                AS BY_CTR_ST_DT            /* 계약시작일자         */
+                           , CTR_ED_DT                AS BY_CTR_ED_DT            /* 계약종료일자         */
+                           , PPYAM_YN                 AS BY_PPYAM_YN             /* 선급금사용여부       */
+                           , PRVAM_YN                 AS BY_PRVAM_YN             /* 선수금사용여부       */
+                           , CRE_YN                   AS BY_CRE_YN               /* 외상사용여부         */
+                           , CASH_YN                  AS BY_CASH_YN              /* 현금사용여부         */
+                           , CRE_LMT_AM               AS BY_CRE_LMT_AM           /* 외상한도금액         */
+                           , PPYAM_LMT_AM             AS BY_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , PRVAM_LMT_AM             AS BY_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , DCZ_DD_TPC               AS BY_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , DCZ_ACNO                 AS BY_DCZ_ACNO             /* 결재계좌번호         */
+                           , DCZ_BNK_C                AS BY_DCZ_BNK_C            /* 결재은행코드         */
+                           , DPR_NM                   AS BY_DPR_NM               /* 예금주명             */
+                           , TR_STOP_YN               AS BY_TR_STOP_YN           /* 거래중지여부         */
+                           , TR_STOP_RSNC             AS BY_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , TR_STOP_DT               AS BY_TR_STOP_DT           /* 거래중지일자         */
+                           , CLO_YN                   AS BY_CLO_YN               /* 사용여부             */
+                           , CONVERT(CHAR(23), FSRG_DTM, 20)  AS BY_FSRG_DTM     /* 최초등록일시         */
+						   , FSRG_ID                  AS BY_FSRG_ID              /* 최초등록자ID         */
+                           , CONVERT(CHAR(23), LSCHG_DTM, 20) AS BY_LSCHG_DTM    /* 최종변경일시         */
+                           , LSCHG_ID                 AS BY_LSCHG_ID             /* 최종변경자ID         */
+                           , ''                       AS SL_DSC                  /* 매입매출구분코드     */
+                           , ''                       AS SL_CTR_ST_DT            /* 계약시작일자         */
+                           , ''                       AS SL_CTR_ED_DT            /* 계약종료일자         */
+                           , ''                       AS SL_PPYAM_YN             /* 선급금사용여부       */
+                           , ''                       AS SL_PRVAM_YN             /* 선수금사용여부       */
+                           , ''                       AS SL_CRE_YN               /* 외상사용여부         */
+                           , ''                       AS SL_CASH_YN              /* 현금사용여부         */
+                           , 0                        AS SL_CRE_LMT_AM           /* 외상한도금액         */
+                           , 0                        AS SL_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , 0                        AS SL_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , ''                       AS SL_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , ''                       AS SL_DCZ_ACNO             /* 결재계좌번호         */
+                           , ''                       AS SL_DCZ_BNK_C            /* 결재은행코드         */
+                           , ''                       AS SL_DPR_NM               /* 예금주명             */
+                           , ''                       AS SL_TR_STOP_YN           /* 거래중지여부         */
+                           , ''                       AS SL_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , ''                       AS SL_TR_STOP_DT           /* 거래중지일자         */
+                           , ''                       AS SL_CLO_YN               /* 사용여부             */
+                           , ''                       AS SL_FSRG_DTM             /* 최초등록일시         */
+						   , ''                       AS SL_FSRG_ID              /* 최초등록자ID         */
+                           , ''                       AS SL_LSCHG_DTM            /* 최종변경일시         */
+                           , ''                       AS SL_LSCHG_ID             /* 최종변경자ID         */
+                        FROM TB_CO_M_TRPL_CTR A
+                       WHERE 1=1 
+                         AND BY_SL_DSC         = '1'
+                         
+                       UNION ALL
+                       
+                      SELECT                                                    
+                             CORP_C                                              /* 회사코드             */
+                           , TRPL_C                                              /* 거래처코드           */
+                           , ''                       AS BY_DSC                  /* 매입매출구분코드     */
+                           , ''                       AS BY_CTR_ST_DT            /* 계약시작일자         */
+                           , ''                       AS BY_CTR_ED_DT            /* 계약종료일자         */
+                           , ''                       AS BY_PPYAM_YN             /* 선급금사용여부       */
+                           , ''                       AS BY_PRVAM_YN             /* 선수금사용여부       */
+                           , ''                       AS BY_CRE_YN               /* 외상사용여부         */
+                           , ''                       AS BY_CASH_YN              /* 현금사용여부         */
+                           , 0                        AS BY_CRE_LMT_AM           /* 외상한도금액         */
+                           , 0                        AS BY_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , 0                        AS BY_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , ''                       AS BY_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , ''                       AS BY_DCZ_ACNO             /* 결재계좌번호         */
+                           , ''                       AS BY_DCZ_BNK_C            /* 결재은행코드         */
+                           , ''                       AS BY_DPR_NM               /* 예금주명             */
+                           , ''                       AS BY_TR_STOP_YN           /* 거래중지여부         */
+                           , ''                       AS BY_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , ''                       AS BY_TR_STOP_DT           /* 거래중지일자         */
+                           , ''                       AS BY_CLO_YN               /* 사용여부             */
+                           , ''                       AS BY_FSRG_DTM             /* 최초등록일시         */
+						   , ''                       AS BY_FSRG_ID              /* 최초등록자ID         */
+						   , ''                       AS BY_LSCHG_DTM            /* 최종변경일시         */
+						   , ''                       AS BY_LSCHG_ID             /* 최종변경자ID         */
+                           , BY_SL_DSC                AS SL_DSC                  /* 매입매출구분코드     */
+                           , CTR_ST_DT                AS SL_CTR_ST_DT            /* 계약시작일자         */
+                           , CTR_ED_DT                AS SL_CTR_ED_DT            /* 계약종료일자         */
+                           , PPYAM_YN                 AS SL_PPYAM_YN             /* 선급금사용여부       */
+                           , PRVAM_YN                 AS SL_PRVAM_YN             /* 선수금사용여부       */
+                           , CRE_YN                   AS SL_CRE_YN               /* 외상사용여부         */
+                           , CASH_YN                  AS SL_CASH_YN              /* 현금사용여부         */
+                           , CRE_LMT_AM               AS SL_CRE_LMT_AM           /* 외상한도금액         */
+                           , PPYAM_LMT_AM             AS SL_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , PRVAM_LMT_AM             AS SL_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , DCZ_DD_TPC               AS SL_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , DCZ_ACNO                 AS SL_DCZ_ACNO             /* 결재계좌번호         */
+                           , DCZ_BNK_C                AS SL_DCZ_BNK_C            /* 결재은행코드         */
+                           , DPR_NM                   AS SL_DPR_NM               /* 예금주명             */
+                           , TR_STOP_YN               AS SL_TR_STOP_YN           /* 거래중지여부         */
+                           , TR_STOP_RSNC             AS SL_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , TR_STOP_DT               AS SL_TR_STOP_DT           /* 거래중지일자         */
+                           , CLO_YN                   AS SL_CLO_YN               /* 사용여부             */
+                           , CONVERT(CHAR(23), FSRG_DTM, 20)  AS SL_FSRG_DTM     /* 최초등록일시         */
+						   , FSRG_ID                  AS SL_FSRG_ID              /* 최초등록자ID         */
+						   , CONVERT(CHAR(23), LSCHG_DTM, 20) AS SL_LSCHG_DTM    /* 최종변경일시         */
+						   , LSCHG_ID                 AS SL_LSCHG_ID             /* 최종변경자ID         */
+                        FROM TB_CO_M_TRPL_CTR B
+                       WHERE 1=1                            
+                         AND BY_SL_DSC         = '2'      
+                    )  A
+                 GROUP BY A.CORP_C, A.TRPL_C
+             )  X           
+            RIGHT OUTER JOIN
+             (SELECT A.* , M.ZIP, M.ADR1, M.ADR2
+                FROM TB_CO_M_TRPL      A
+                   , TB_CO_M_TRPL_INFO M
+               WHERE 1 = 1 
+                 AND M.CORP_C  = A.CORP_C
+                 AND M.TRPL_C  = A.TRPL_C
+             ) A
+            ON X.CORP_C  = A.CORP_C
+           AND X.TRPL_C  = A.TRPL_C
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+          <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == ''"> 
+                    AND (A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                         OR A.TRPL_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> 
+                    AND A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> 
+                    AND A.TRPL_NM LIKE '%' + #{searchKeyword} + '%'
+                </when> 
+                <when test="searchCondition == 3"> 
+                    AND A.BZMN_NO LIKE '%' + #{searchKeyword} + '%'
+                </when>               
+            </choose>
+         </if>
+         <if test = "TRPL_DSC != null and TRPL_DSC != ''">
+           AND A.TRPL_DSC            = #{TRPL_DSC}
+         </if>
+         <if test = "TRPL_L_CLFC != null and TRPL_L_CLFC != ''">
+           AND A.TRPL_L_CLFC         = #{TRPL_L_CLFC}
+         </if>
+         <if test = "TRPL_M_CLFC != null and TRPL_M_CLFC != ''">
+           AND A.TRPL_M_CLFC         = #{TRPL_M_CLFC}
+         </if>
+         <if test = "TRPL_S_CLFC != null and TRPL_S_CLFC != ''">
+           AND A.TRPL_S_CLFC         = #{TRPL_S_CLFC}
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN              = #{USE_YN}
+         </if>  
+         <if test = "BY_SL_DSC != null and BY_SL_DSC != ''">
+           <choose>
+                <when test="BY_SL_DSC == 1"> 
+                    AND A.BY_CTR_YN     = 'Y'
+                </when>
+                <when test="BY_SL_DSC == 2"> 
+                    AND A.SL_CTR_YN     = 'Y'
+                </when>              
+            </choose>
+         </if>    
+         
+    </select>
+    
+    <select id="select2015List_04" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_04 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.HST_SQNO                                          /* 이력일련번호         */
+             , A.TRPL_C                                            /* 거래처코드           */
+             , A.BY_SL_DSC                                         /* 매입매출구분코드     */
+             , A.CTR_ST_DT                                         /* 계약시작일자         */
+             , A.CTR_ED_DT                                         /* 계약종료일자         */
+             , A.PPYAM_YN                                          /* 선급금사용여부       */
+             , A.PRVAM_YN                                          /* 선수금사용여부       */
+             , A.CRE_YN                                            /* 외상사용여부         */
+             , A.CASH_YN                                           /* 현금사용여부         */   
+             , A.CRE_LMT_AM                                        /* 외상한도금액         */
+             , A.PPYAM_LMT_AM                                      /* 선급금한도금액       */
+             , A.PRVAM_LMT_AM                                      /* 선수금한도금액       */
+             , A.DCZ_DD_TPC                                        /* 결재일유형코드       */
+             , A.DCZ_ACNO                                          /* 결재계좌번호         */
+             , A.DCZ_BNK_C                                         /* 결재은행코드         */
+             , A.DPR_NM                                            /* 예금주명             */
+             , A.TR_STOP_YN                                        /* 거래중지여부         */
+             , A.TR_STOP_RSNC                                      /* 거래중지사유코드     */
+             , A.TR_STOP_DT                                        /* 거래중지일자         */
+             , A.CLO_YN                                            /* 해지여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름       */
+          FROM TB_CO_L_TRPL_CTR A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+    </select>
+
+    <select id="select2015List_05" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_05 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.TRPL_NM                                           /* 거래처명                  */
+             , A.ZIP                                               /* 거래처우편번호            */
+             , A.ADR1                                              /* 거래처주소1               */
+             , A.ADR2                                              /* 거래처주소2               */
+             , A.TRPL_ABR_NM                                       /* 거래처약어명              */
+             , A.TRPL_DSC                                          /* 거래처구분코드            */
+             , A.TRPL_L_CLFC                                       /* 거래처대분류코드          */
+             , A.TRPL_M_CLFC                                       /* 거래처중분류코드          */
+             , A.TRPL_S_CLFC                                       /* 거래처소분류코드          */
+             , A.BY_CTR_YN                                         /* 매입계약여부              */
+             , A.SL_CTR_YN                                         /* 매출계약여부              */
+             , A.BZMN_NO                                           /* 사업자번호                */
+             , A.COP_NO                                            /* 법인번호                  */
+             , A.REPM_NM                                           /* 대표자명                  */
+             , A.BZC_NM                                            /* 업종명                    */
+             , A.BZTP_NM                                           /* 업태명                    */
+             , A.UP_TRPL_C                                         /* 상위거래처코드            */
+             , (SELECT TRPL_NM                                                                  
+                  FROM TB_CO_M_TRPL X                                                           
+                 WHERE 1=1                                                                      
+                   AND A.CORP_C    = X.CORP_C                                                   
+                   AND A.UP_TRPL_C = X.TRPL_C) AS UP_TRPL_NM       /* 상위거래처명              */
+             , A.MBCO_DSC                                          /* 본지사구분                */
+             , A.TXBZ_RPT_FORM_C                                   /* 세무신고형태코드          */
+             , A.TXBIL_DSC                                         /* 세금계산서발행구분코      */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이      */
+             , A.TRFW_TYPE_C                                       /* 거래명세서타입코드        */
+             , A.TRPL_APL_YN                                       /* 거래개시여부              */
+             , A.TRPL_APL_DT                                       /* 거래개시일자              */
+             , A.INDI_INF_AGR_YN                                   /* 개인정보제공동의여부      */
+             , A.SMS_RMS_AGR_YN                                    /* SMS수신동의여부           */
+             , A.ADJPL_C                                           /* 정산처코드                */
+             , (SELECT TRPL_NM                                                                  
+                  FROM TB_CO_M_TRPL X                                                           
+                 WHERE 1=1                                                                      
+                   AND A.CORP_C   = X.CORP_C                                                    
+                   AND A.ADJPL_C  = X.TRPL_C) AS ADJPL_NM          /* 정산처명                  */
+             , A.CLSD_YN                                           /* 폐업여부                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , X.BY_DSC                                            /* 매입_매입매출구분코드     */
+             , X.BY_CTR_ST_DT                                      /* 매입_계약시작일자         */
+             , X.BY_CTR_ED_DT                                      /* 매입_계약종료일자         */
+             , X.BY_PPYAM_YN                                       /* 매입_선급금사용여부       */
+             , X.BY_PRVAM_YN                                       /* 매입_선수금사용여부       */
+             , X.BY_CRE_YN                                         /* 매입_외상사용여부         */
+             , X.BY_CASH_YN                                        /* 매입_현금사용여부         */
+             , X.BY_CRE_LMT_AM                                     /* 매입_외상한도금액         */
+             , X.BY_PPYAM_LMT_AM                                   /* 매입_선급금한도금액       */
+             , X.BY_PRVAM_LMT_AM                                   /* 매입_선수금한도금액       */
+             , X.BY_DCZ_DD_TPC                                     /* 매입_결재일유형코드       */
+             , X.BY_DCZ_ACNO                                       /* 매입_결재계좌번호         */
+             , X.BY_DCZ_BNK_C                                      /* 매입_결재은행코드         */
+             , X.BY_DPR_NM                                         /* 매입_예금주명             */
+             , X.BY_TR_STOP_YN                                     /* 매입_거래중지여부         */
+             , X.BY_TR_STOP_RSNC                                   /* 매입_거래중지사유코드     */
+             , X.BY_TR_STOP_DT                                     /* 매입_거래중지일자         */
+             , X.BY_CLO_YN                                         /* 매입_사용여부             */
+             , X.SL_DSC                                            /* 매출_매입매출구분코드     */
+             , X.SL_CTR_ST_DT                                      /* 매출_계약시작일자         */
+             , X.SL_CTR_ED_DT                                      /* 매출_계약종료일자         */
+             , X.SL_PPYAM_YN                                       /* 매출_선급금사용여부       */
+             , X.SL_PRVAM_YN                                       /* 매출_선수금사용여부       */
+             , X.SL_CRE_YN                                         /* 매출_외상사용여부         */
+             , X.SL_CASH_YN                                        /* 매출_현금사용여부         */
+             , X.SL_CRE_LMT_AM                                     /* 매출_외상한도금액         */
+             , X.SL_PPYAM_LMT_AM                                   /* 매출_선급금한도금액       */
+             , X.SL_PRVAM_LMT_AM                                   /* 매출_선수금한도금액       */
+             , X.SL_DCZ_DD_TPC                                     /* 매출_결재일유형코드       */
+             , X.SL_DCZ_ACNO                                       /* 매출_결재계좌번호         */
+             , X.SL_DCZ_BNK_C                                      /* 매출_결재은행코드         */
+             , X.SL_DPR_NM                                         /* 매출_예금주명             */
+             , X.SL_TR_STOP_YN                                     /* 매출_거래중지여부         */
+             , X.SL_TR_STOP_RSNC                                   /* 매출_거래중지사유코드     */
+             , X.SL_TR_STOP_DT                                     /* 매출_거래중지일자         */
+             , X.SL_CLO_YN                                         /* 매출_사용여부             */
+          FROM  
+             ( SELECT
+                      A.CORP_C                                            /* 회사코드                  */
+                    , A.TRPL_C                                            /* 거래처코드                */
+                    , MAX(A.BY_DSC         )   AS BY_DSC                  /* 매입_매입매출구분코드     */
+                    , MAX(A.BY_CTR_ST_DT   )   AS BY_CTR_ST_DT            /* 매입_계약시작일자         */
+                    , MAX(A.BY_CTR_ED_DT   )   AS BY_CTR_ED_DT            /* 매입_계약종료일자         */
+                    , MAX(A.BY_PPYAM_YN    )   AS BY_PPYAM_YN             /* 매입_선급금사용여부       */
+                    , MAX(A.BY_PRVAM_YN    )   AS BY_PRVAM_YN             /* 매입_선수금사용여부       */
+                    , MAX(A.BY_CRE_YN      )   AS BY_CRE_YN               /* 매입_외상사용여부         */
+                    , MAX(A.BY_CASH_YN     )   AS BY_CASH_YN              /* 매입_현금사용여부         */
+                    , MAX(A.BY_CRE_LMT_AM  )   AS BY_CRE_LMT_AM           /* 매입_외상한도금액         */
+                    , MAX(A.BY_PPYAM_LMT_AM)   AS BY_PPYAM_LMT_AM         /* 매입_선급금한도금액       */
+                    , MAX(A.BY_PRVAM_LMT_AM)   AS BY_PRVAM_LMT_AM         /* 매입_선수금한도금액       */
+                    , MAX(A.BY_DCZ_DD_TPC  )   AS BY_DCZ_DD_TPC           /* 매입_결재일유형코드       */
+                    , MAX(A.BY_DCZ_ACNO    )   AS BY_DCZ_ACNO             /* 매입_결재계좌번호         */
+                    , MAX(A.BY_DCZ_BNK_C   )   AS BY_DCZ_BNK_C            /* 매입_결재은행코드         */
+                    , MAX(A.BY_DPR_NM      )   AS BY_DPR_NM               /* 매입_예금주명             */
+                    , MAX(A.BY_TR_STOP_YN  )   AS BY_TR_STOP_YN           /* 매입_거래중지여부         */
+                    , MAX(A.BY_TR_STOP_RSNC)   AS BY_TR_STOP_RSNC         /* 매입_거래중지사유코드     */
+                    , MAX(A.BY_TR_STOP_DT  )   AS BY_TR_STOP_DT           /* 매입_거래중지일자         */
+                    , MAX(A.BY_CLO_YN      )   AS BY_CLO_YN               /* 매입_사용여부             */
+                    , MAX(A.SL_DSC         )   AS SL_DSC                  /* 매출_매입매출구분코드     */
+                    , MAX(A.SL_CTR_ST_DT   )   AS SL_CTR_ST_DT            /* 매출_계약시작일자         */
+                    , MAX(A.SL_CTR_ED_DT   )   AS SL_CTR_ED_DT            /* 매출_계약종료일자         */
+                    , MAX(A.SL_PPYAM_YN    )   AS SL_PPYAM_YN             /* 매출_선급금사용여부       */
+                    , MAX(A.SL_PRVAM_YN    )   AS SL_PRVAM_YN             /* 매출_선수금사용여부       */
+                    , MAX(A.SL_CRE_YN      )   AS SL_CRE_YN               /* 매출_외상사용여부         */
+                    , MAX(A.SL_CASH_YN     )   AS SL_CASH_YN              /* 매출_현금사용여부         */
+                    , MAX(A.SL_CRE_LMT_AM  )   AS SL_CRE_LMT_AM           /* 매출_외상한도금액         */
+                    , MAX(A.SL_PPYAM_LMT_AM)   AS SL_PPYAM_LMT_AM         /* 매출_선급금한도금액       */
+                    , MAX(A.SL_PRVAM_LMT_AM)   AS SL_PRVAM_LMT_AM         /* 매출_선수금한도금액       */
+                    , MAX(A.SL_DCZ_DD_TPC  )   AS SL_DCZ_DD_TPC           /* 매출_결재일유형코드       */
+                    , MAX(A.SL_DCZ_ACNO    )   AS SL_DCZ_ACNO             /* 매출_결재계좌번호         */
+                    , MAX(A.SL_DCZ_BNK_C   )   AS SL_DCZ_BNK_C            /* 매출_결재은행코드         */
+                    , MAX(A.SL_DPR_NM      )   AS SL_DPR_NM               /* 매출_예금주명             */
+                    , MAX(A.SL_TR_STOP_YN  )   AS SL_TR_STOP_YN           /* 매출_거래중지여부         */
+                    , MAX(A.SL_TR_STOP_RSNC)   AS SL_TR_STOP_RSNC         /* 매출_거래중지사유코드     */
+                    , MAX(A.SL_TR_STOP_DT  )   AS SL_TR_STOP_DT           /* 매출_거래중지일자         */
+                    , MAX(A.SL_CLO_YN      )   AS SL_CLO_YN               /* 매출_사용여부             */
+                FROM 
+				    ( SELECT
+                             CORP_C                                              /* 회사코드             */
+                           , TRPL_C                                              /* 거래처코드           */
+                           , BY_SL_DSC                AS BY_DSC                  /* 매입매출구분코드     */
+                           , CTR_ST_DT                AS BY_CTR_ST_DT            /* 계약시작일자         */
+                           , CTR_ED_DT                AS BY_CTR_ED_DT            /* 계약종료일자         */
+                           , PPYAM_YN                 AS BY_PPYAM_YN             /* 선급금사용여부       */
+                           , PRVAM_YN                 AS BY_PRVAM_YN             /* 선수금사용여부       */
+                           , CRE_YN                   AS BY_CRE_YN               /* 외상사용여부         */
+                           , CASH_YN                  AS BY_CASH_YN              /* 현금사용여부         */
+                           , CRE_LMT_AM               AS BY_CRE_LMT_AM           /* 외상한도금액         */
+                           , PPYAM_LMT_AM             AS BY_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , PRVAM_LMT_AM             AS BY_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , DCZ_DD_TPC               AS BY_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , DCZ_ACNO                 AS BY_DCZ_ACNO             /* 결재계좌번호         */
+                           , DCZ_BNK_C                AS BY_DCZ_BNK_C            /* 결재은행코드         */
+                           , DPR_NM                   AS BY_DPR_NM               /* 예금주명             */
+                           , TR_STOP_YN               AS BY_TR_STOP_YN           /* 거래중지여부         */
+                           , TR_STOP_RSNC             AS BY_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , TR_STOP_DT               AS BY_TR_STOP_DT           /* 거래중지일자         */
+                           , CLO_YN                   AS BY_CLO_YN               /* 사용여부             */
+                           , ''                       AS SL_DSC                  /* 매입매출구분코드     */
+                           , ''                       AS SL_CTR_ST_DT            /* 계약시작일자         */
+                           , ''                       AS SL_CTR_ED_DT            /* 계약종료일자         */
+                           , ''                       AS SL_PPYAM_YN             /* 선급금사용여부       */
+                           , ''                       AS SL_PRVAM_YN             /* 선수금사용여부       */
+                           , ''                       AS SL_CRE_YN               /* 외상사용여부         */
+                           , ''                       AS SL_CASH_YN              /* 현금사용여부         */
+                           , 0                        AS SL_CRE_LMT_AM           /* 외상한도금액         */
+                           , 0                        AS SL_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , 0                        AS SL_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , ''                       AS SL_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , ''                       AS SL_DCZ_ACNO             /* 결재계좌번호         */
+                           , ''                       AS SL_DCZ_BNK_C            /* 결재은행코드         */
+                           , ''                       AS SL_DPR_NM               /* 예금주명             */
+                           , ''                       AS SL_TR_STOP_YN           /* 거래중지여부         */
+                           , ''                       AS SL_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , ''                       AS SL_TR_STOP_DT           /* 거래중지일자         */
+                           , ''                       AS SL_CLO_YN               /* 사용여부             */
+                        FROM TB_CO_M_TRPL_CTR A
+                       WHERE 1=1 
+                         AND BY_SL_DSC         = '1'
+                       UNION ALL
+                      SELECT                                                    
+                             CORP_C                                              /* 회사코드             */
+                           , TRPL_C                                              /* 거래처코드           */
+                           , ''                       AS BY_DSC                  /* 매입매출구분코드     */
+                           , ''                       AS BY_CTR_ST_DT            /* 계약시작일자         */
+                           , ''                       AS BY_CTR_ED_DT            /* 계약종료일자         */
+                           , ''                       AS BY_PPYAM_YN             /* 선급금사용여부       */
+                           , ''                       AS BY_PRVAM_YN             /* 선수금사용여부       */
+                           , ''                       AS BY_CRE_YN               /* 외상사용여부         */
+                           , ''                       AS BY_CASH_YN              /* 현금사용여부         */
+                           , 0                        AS BY_CRE_LMT_AM           /* 외상한도금액         */
+                           , 0                        AS BY_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , 0                        AS BY_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , ''                       AS BY_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , ''                       AS BY_DCZ_ACNO             /* 결재계좌번호         */
+                           , ''                       AS BY_DCZ_BNK_C            /* 결재은행코드         */
+                           , ''                       AS BY_DPR_NM               /* 예금주명             */
+                           , ''                       AS BY_TR_STOP_YN           /* 거래중지여부         */
+                           , ''                       AS BY_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , ''                       AS BY_TR_STOP_DT           /* 거래중지일자         */
+                           , ''                       AS BY_CLO_YN               /* 사용여부             */
+                           , BY_SL_DSC                AS SL_DSC                  /* 매입매출구분코드     */
+                           , CTR_ST_DT                AS SL_CTR_ST_DT            /* 계약시작일자         */
+                           , CTR_ED_DT                AS SL_CTR_ED_DT            /* 계약종료일자         */
+                           , PPYAM_YN                 AS SL_PPYAM_YN             /* 선급금사용여부       */
+                           , PRVAM_YN                 AS SL_PRVAM_YN             /* 선수금사용여부       */
+                           , CRE_YN                   AS SL_CRE_YN               /* 외상사용여부         */
+                           , CASH_YN                  AS SL_CASH_YN              /* 현금사용여부         */
+                           , CRE_LMT_AM               AS SL_CRE_LMT_AM           /* 외상한도금액         */
+                           , PPYAM_LMT_AM             AS SL_PPYAM_LMT_AM         /* 선급금한도금액       */
+                           , PRVAM_LMT_AM             AS SL_PRVAM_LMT_AM         /* 선수금한도금액       */
+                           , DCZ_DD_TPC               AS SL_DCZ_DD_TPC           /* 결재일유형코드       */
+                           , DCZ_ACNO                 AS SL_DCZ_ACNO             /* 결재계좌번호         */
+                           , DCZ_BNK_C                AS SL_DCZ_BNK_C            /* 결재은행코드         */
+                           , DPR_NM                   AS SL_DPR_NM               /* 예금주명             */
+                           , TR_STOP_YN               AS SL_TR_STOP_YN           /* 거래중지여부         */
+                           , TR_STOP_RSNC             AS SL_TR_STOP_RSNC         /* 거래중지사유코드     */
+                           , TR_STOP_DT               AS SL_TR_STOP_DT           /* 거래중지일자         */
+                           , CLO_YN                   AS SL_CLO_YN               /* 사용여부             */
+                        FROM TB_CO_M_TRPL_CTR B
+                       WHERE 1=1                            
+                         AND BY_SL_DSC         = '2'      
+                    )  A
+                 GROUP BY A.CORP_C, A.TRPL_C
+             )  X           
+            RIGHT OUTER JOIN
+             (SELECT A.* , M.ZIP, M.ADR1, M.ADR2
+                FROM TB_CO_M_TRPL      A
+                   , TB_CO_M_TRPL_INFO M
+               WHERE 1 = 1 
+                 AND M.CORP_C  = A.CORP_C
+                 AND M.TRPL_C  = A.TRPL_C
+             ) A
+            ON X.CORP_C  = A.CORP_C
+           AND X.TRPL_C  = A.TRPL_C
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.TRPL_C  = #{TRPL_C}
+  
+    </select>
+    
+    <select id="select2015List_06" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2015List_06 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.TRPL_C                                            /* 거래처코드           */
+             , A.TRPL_NM                                           /* 거래처명             */
+             , (SELECT ZIP
+                  FROM TB_CO_M_TRPL_INFO X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.ADJPL_C  = X.TRPL_C) AS ZIP              /* 거래처우편번호        */
+             , (SELECT ADR1
+                  FROM TB_CO_M_TRPL_INFO X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.ADJPL_C  = X.TRPL_C) AS ADR1              /* 거래처주소1          */
+             , (SELECT ADR2
+                  FROM TB_CO_M_TRPL_INFO X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.ADJPL_C  = X.TRPL_C) AS ADR2              /* 거래처주소2          */
+             , A.TRPL_ABR_NM                                       /* 거래처약어명         */
+             , A.TRPL_DSC                                          /* 거래처구분코드       */
+             , A.TRPL_L_CLFC                                       /* 거래처대분류코드     */
+             , A.TRPL_M_CLFC                                       /* 거래처중분류코드     */
+             , A.TRPL_S_CLFC                                       /* 거래처소분류코드     */
+             , A.BY_CTR_YN                                         /* 매입계약여부         */
+             , A.SL_CTR_YN                                         /* 매출계약여부         */
+             , A.BZMN_NO                                           /* 사업자번호           */
+             , A.COP_NO                                            /* 법인번호             */
+             , A.REPM_NM                                           /* 대표자명             */
+             , A.BZC_NM                                            /* 업종명               */
+             , A.BZTP_NM                                           /* 업태명               */
+             , A.UP_TRPL_C                                         /* 상위거래처코드       */
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL X
+                 WHERE 1=1 
+                   AND A.CORP_C    = X.CORP_C
+                   AND A.UP_TRPL_C = X.TRPL_C) AS UP_TRPL_NM       /* 상위거래처명         */
+             , A.MBCO_DSC                                          /* 본지사구분           */
+             , A.TXBZ_RPT_FORM_C                                   /* 세무신고형태코드     */
+             , A.TXBIL_DSC                                         /* 세금계산서발행구분코 */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이 */
+             , A.TRFW_TYPE_C                                       /* 거래명세서타입코드   */
+             , A.TRPL_APL_YN                                       /* 거래개시여부         */
+             , A.TRPL_APL_DT                                       /* 거래개시일자         */
+             , A.INDI_INF_AGR_YN                                   /* 개인정보제공동의여부 */
+             , A.SMS_RMS_AGR_YN                                    /* SMS수신동의여부      */
+             , A.ADJPL_C                                           /* 정산처코드           */
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.ADJPL_C  = X.TRPL_C) AS ADJPL_NM          /* 정산처명             */
+             , A.CLSD_YN                                           /* 폐업여부             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                         /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름       */
+          FROM TB_CO_M_TRPL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+          <if test = "searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == ''"> 
+                    AND (A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                         OR A.TRPL_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> 
+                    AND A.TRPL_C LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> 
+                    AND A.TRPL_NM LIKE '%' + #{searchKeyword} + '%'
+                </when> 
+                <when test="searchCondition == 3"> 
+                    AND A.BZMN_NO LIKE '%' + #{searchKeyword} + '%'
+                </when>               
+            </choose>
+         </if>
+         <if test = "TRPL_DSC != null and TRPL_DSC != ''">
+           AND A.TRPL_DSC            = #{TRPL_DSC}
+         </if>
+         <if test = "TRPL_L_CLFC != null and TRPL_L_CLFC != ''">
+           AND A.TRPL_L_CLFC         = #{TRPL_L_CLFC}
+         </if>
+         <if test = "TRPL_M_CLFC != null and TRPL_M_CLFC != ''">
+           AND A.TRPL_M_CLFC         = #{TRPL_M_CLFC}
+         </if>
+         <if test = "TRPL_S_CLFC != null and TRPL_S_CLFC != ''">
+           AND A.TRPL_S_CLFC         = #{TRPL_S_CLFC}
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN              = #{USE_YN}
+         </if>  
+         <if test = "BY_SL_DSC != null and BY_SL_DSC != ''">
+           <choose>
+                <when test="BY_SL_DSC == 1"> 
+                    AND A.BY_CTR_YN     = 'Y'
+                </when>
+                <when test="BY_SL_DSC == 2"> 
+                    AND A.SL_CTR_YN     = 'Y'
+                </when>              
+            </choose>
+         </if>    
+         
+    </select>
+    
+    
+</mapper>

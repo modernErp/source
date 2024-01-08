@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <select id="selectCo3010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo3010List */
+                 A.MSG_NO                                      /*메세지번호                */
+               , A.MSG_KWRD                                   /* 키워드                    */ 
+               , A.MSG_RMS_DSC                                /* 메시지수신구분            */
+               , A.MSG_UZ                                     /* 메시지용도                */
+               , A.SMS_CNTN                                   /* SMS내용                   */
+               , A.PUSH_TIT                                   /* PUSH제목                  */
+               , A.PUSH_CNTN                                  /* PUSH메세지내용            */
+               , A.MSG_RMK                                    /* 메세지비고                */
+               , A.USE_YN                                     /* 사용여부                  */
+               , A.SND_TEL_NO                                 /* 발신전화번호              */
+               , A.PARA1                                      /* 파라미터1                 */
+               , A.PARA2                                      /* 파라미터2                 */
+               , A.PARA3                                      /* 파라미터3                 */
+               , A.PARA4                                      /* 파라미터4                 */
+               , A.PARA5                                      /* 파라미터5                 */
+               , A.PARA6                                      /* 파라미터6                 */
+               , A.PARA7                                      /* 파라미터7                 */
+               , A.PARA8                                      /* 파라미터8                 */
+               , A.PARA9                                      /* 파라미터9                 */
+               , A.PARA10                                     /* 파라미터10                 */
+          FROM TB_CO_M_SMS_MSG A
+         WHERE 1=1 
+           AND A.CORP_C           = #{CORP_C}
+         <if test = "SMS_CNTN != null and SMS_CNTN != ''">
+           AND SMS_CNTN LIKE '%' + #{SMS_CNTN} + '%'
+         </if>
+         <if test = "PARA != null and PARA != ''">
+           AND (PARA1 LIKE '%' + #{PARA} + '%'
+            OR PARA2 LIKE '%' + #{PARA} + '%'
+            OR PARA3 LIKE '%' + #{PARA} + '%'
+            OR PARA4 LIKE '%' + #{PARA} + '%'
+            OR PARA5 LIKE '%' + #{PARA} + '%'
+            OR PARA6 LIKE '%' + #{PARA} + '%'
+            OR PARA7 LIKE '%' + #{PARA} + '%'
+            OR PARA8 LIKE '%' + #{PARA} + '%'
+            OR PARA9 LIKE '%' + #{PARA} + '%'
+            OR PARA10 LIKE '%' + #{PARA} + '%'
+               )
+         </if>
+         <if test = "MSG_KWRD != null and MSG_KWRD != ''">
+           AND A.MSG_KWRD         = #{MSG_KWRD}  
+         </if>
+         <if test = "USE_YN != null and USE_YN != ''">
+           AND A.USE_YN           = #{USE_YN}
+         </if>
+    </select>
+    
+    <select id="selectCo3010_01List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo3010_01List */
+            CASE WHEN MAX(A.MSG_NO) IS NULL THEN #{MSG_KWRD} + '-' + '0000001'  
+                 ELSE #{MSG_KWRD} + '-' + RIGHT('0000000' + CONVERT( NVARCHAR, SUBSTRING(MAX(A.MSG_NO),4, 7) +1), 7)
+                  END  AS  MSG_NO
+          FROM TB_CO_M_SMS_MSG A
+         WHERE 1=1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.MSG_KWRD = #{MSG_KWRD}
+    </select>        
+</mapper>

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_PLA_PCS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_PLA_PCS */ TB_PD_M_PLA_PCS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , GDS_C               /* 물품코드             */
+            , APL_ED_DT           /* 적용종료일자         */
+            , APL_ST_DT           /* 적용시작일자         */
+            , PRD_AVE_PCS         /* 기간평균원가         */
+            , BEF_MM_ACTL_PCS     /* 직전월실제원가       */
+            , PLA_PCS             /* 예정원가             */
+            , LBRCS_DSBN_CAM      /* 노무비배부적수       */
+            , MFT_XPN_DSBN_CAM    /* 제조경비배부적수     */
+            , PLA_PCS_CHG_DSC     /* 예정원가변경구분코드 */
+            , SNS_CNTN            /* 적요내용             */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}                           /* 회사코드             */
+            , #{BZPL_C}                           /* 사업장코드           */
+            , #{GDS_C}                            /* 물품코드             */
+            , '99991231'                          /* 적용종료일자         */
+            , #{newAPL_ST_DT}                     /* 적용시작일자         */
+            , 0                                   /* 기간평균원가         */
+            , 0                                   /* 직전월실제원가       */
+            , #{PLA_PCS}          /* 예정원가             */
+            , 100                 /* 노무비배부적수       */
+            , 100                 /* 제조경비배부적수     */
+            , '1'                 /* 예정원가변경구분코드 - 1:수기등록 / 2:배부차액정리후자동등록 / 3:기간별평균가 / 9:기타 */ 
+            , #{SNS_CNTN}         /* 적요내용             */
+            , #{RMK_CNTN}         /* 비고내용             */
+            , 'Y'                 /* 사용여부             */
+            , #{ETC_DSC1}         /* 기타구분1            */
+            , #{ETC_DSC2}         /* 기타구분2            */
+            , #{ETC_DSC3}         /* 기타구분3            */
+            , GETDATE()           /* 최초등록일시         */
+            , #{GUSRID}           /* 최초등록자ID         */
+            , GETDATE()           /* 최종변경일시         */
+            , #{GUSRID}           /* 최종변경자ID         */
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_PLA_PCS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_PLA_PCS */ TB_PD_M_PLA_PCS
+           SET 
+               PLA_PCS             = #{PLA_PCS}               /* 예정원가             */
+             , SNS_CNTN            = #{SNS_CNTN}              /* 적요내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND APL_ED_DT           = #{APL_ED_DT}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </update>
+
+    <delete id="delete_TB_PD_M_PLA_PCS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_PLA_PCS */ FROM TB_PD_M_PLA_PCS
+         WHERE 1=1 
+           AND APL_ED_DT           = #{APL_ED_DT}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </delete>
+
+    <select id="select_TB_PD_M_PLA_PCS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_PLA_PCS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.APL_ED_DT                                         /* 적용종료일자              */
+             , A.APL_ST_DT                                         /* 적용시작일자              */
+             , A.PRD_AVE_PCS                                       /* 기간평균원가              */
+             , A.BEF_MM_ACTL_PCS                                   /* 직전월실제원가            */
+             , A.PLA_PCS                                           /* 예정원가                  */
+             , A.LBRCS_DSBN_CAM                                    /* 노무비배부적수            */
+             , A.MFT_XPN_DSBN_CAM                                  /* 제조경비배부적수          */
+             , A.PLA_PCS_CHG_DSC                                   /* 예정원가변경구분코드      */
+             , A.SNS_CNTN                                          /* 적요내용                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_PLA_PCS A
+         WHERE 1=1 
+           AND A.APL_ED_DT         = #{APL_ED_DT}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+    </select>
+</mapper>

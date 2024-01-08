@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_GE_D_CVAP_AFF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_GE_D_CVAP_AFF */ TB_GE_D_CVAP_AFF
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRC_DT              /* 처리일자             */
+            , PRC_SQNO            /* 처리일련번호         */
+            , PRC_DSQNO           /* 처리상세일련번호     */
+            , GDS_C               /* 물품코드             */
+            , STR_QT              /* 입고수량             */
+            , MFPL_NM             /* 제조처명             */
+            , DEL_YN                          
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PRC_DT}
+            , #{PRC_SQNO}
+            , (
+               SELECT ISNULL(MAX(PRC_DSQNO),0)+1
+                 FROM TB_GE_D_CVAP_AFF
+                WHERE 1 = 1
+                  AND CORP_C   = #{CORP_C}
+                  AND BZPL_C   = #{BZPL_C}
+                  AND PRC_DT   = #{PRC_DT}
+                  AND PRC_SQNO = #{PRC_SQNO}
+              )
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{STR_QT})
+            , #{MFPL_NM}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_GE_D_CVAP_AFF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_GE_D_CVAP_AFF */ TB_GE_D_CVAP_AFF
+           SET 
+               GDS_C       = #{GDS_C}                   
+             , STR_QT      = DBO.SF_GET_FLOAT(#{STR_QT})                
+             , MFPL_NM     = #{MFPL_NM}
+             , DEL_YN      = #{DEL_YN}                                        
+             , LSCHG_DTM   = GETDATE()                    
+             , LSCHG_ID    = #{GUSRID}                              
+         WHERE 1 = 1 
+           AND BZPL_C    = #{BZPL_C}
+           AND CORP_C    = #{CORP_C}
+           AND PRC_DT    = #{PRC_DT}
+           AND PRC_SQNO  = #{PRC_SQNO}           
+           AND PRC_DSQNO = #{RNO}
+    </update>
+
+    <delete id="delete_TB_GE_D_CVAP_AFF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_GE_D_CVAP_AFF */ FROM TB_GE_D_CVAP_AFF 
+         WHERE 1 = 1
+           AND CORP_C    = #{CORP_C}
+           AND BZPL_C    = #{BZPL_C}
+           AND PRC_DT    = #{PRC_DT}
+           AND PRC_SQNO  = #{PRC_SQNO}           
+           AND PRC_DSQNO = #{PRC_DSQNO}
+    </delete>
+
+    <select id="select_TB_GE_D_CVAP_AFF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_GE_D_CVAP_AFF */
+               CORP_C                                              /* 회사코드         */
+             , BZPL_C                                              /* 사업장코드       */
+             , PRC_DT                                              /* 처리일자         */
+             , PRC_SQNO                                            /* 처리일련번호     */
+             , PRC_DSQNO                                           /* 처리상세일련번호 */
+             , GDS_C                                               /* 물품코드         */
+             , STR_QT                                              /* 입고수량         */
+             , MFPL_NM                                             /* 제조처명         */
+             , DEL_YN
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시     */
+             , A.FSRG_ID                                           /* 최초등록자ID     */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시     */
+             , A.LSCHG_ID                                          /* 최종변경자ID     */
+          FROM TB_GE_D_CVAP_AFF A
+         WHERE 1 = 1
+           AND A.CORP_C    = #{CORP_C}
+           AND A.BZPL_C    = #{BZPL_C}
+           AND A.PRC_DT    = #{PRC_DT}
+           AND A.PRC_SQNO  = #{PRC_SQNO}           
+           AND A.PRC_DSQNO = #{PRC_DSQNO}
+           AND A.DEL_YN    = #{DEL_YN}
+    </select>
+</mapper>

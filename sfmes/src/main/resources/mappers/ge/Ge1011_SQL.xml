@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <!-- 공지사항 목록 조회(조회전용-GE1011) -->
+    <select id="selectGe1011_OFANC_List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ select_TB_CO_M_OFANC */
+		      A.CORP_C                                            /* 회사코드                  */
+		    , (SELECT CORP_NM
+		         FROM TB_CO_M_CORP
+		        WHERE CORP_C = A.CORP_C)        AS CORP_NM        /* 등록자회사명              */
+		    , A.BZPL_C                                            /* 사업장코드                */
+		    , (SELECT BZPL_NM
+		         FROM TB_CO_M_BZPL
+		        WHERE CORP_C = A.CORP_C
+		          AND BZPL_C = A.BZPL_C)        AS BZPL_NM        /* 등록사무소명              */
+		    , A.OFANC_SQNO                                        /* 공지사항일련번호          */
+		    , A.OFANC_DSC                                         /* 공지사항구분코드          */
+		    , A.BLTN_RNGE_C                                       /* 게시범위코드              */
+		    , A.TIT                                               /* 제목                      */
+		    , A.CNTN                                              /* 내용                      */
+		    , A.INQCN                                             /* 조회수                    */
+		    , A.BLTN_ST_DT                                        /* 게시시작일자              */
+		    , A.BLTN_ED_DT                                        /* 게시종료일자              */
+		    , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+		    , CASE WHEN APD_FILE_AMN_NO IS NULL THEN 'N'
+		           WHEN APD_FILE_AMN_NO = ''    THEN 'N' 
+		           ELSE 'Y' 
+		       END AS APD_YN                                      /* 첨부파일여부              */
+		    , A.POPU_YN                                           /* 팝업여부                  */
+		    , A.DEL_YN                                            /* 삭제여부                  */
+		    , A.ETC_DSC1                                          /* 기타구분1                 */
+		    , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+		    , A.FSRG_ID                                           /* 최초등록자ID              */
+		    , A.FSRG_ID                          AS   FSRG_NM     /* 최초등록자명              */
+		    , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+		    , A.LSCHG_ID                                          /* 최종변경자ID              */
+		    , A.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자명              */
+		 FROM (SELECT * 
+		         FROM TB_CO_M_OFANC
+		        WHERE BLTN_RNGE_C = '1'
+		
+		        UNION 
+		
+		       SELECT *
+		         FROM TB_CO_M_OFANC
+		        WHERE CORP_C = #{CORP_C}
+		          AND BLTN_RNGE_C = '2'
+		
+		        UNION 
+		         
+		       SELECT *
+		         FROM TB_CO_M_OFANC
+		        WHERE CORP_C = #{CORP_C}
+		          AND BZPL_C = #{BZPL_C}
+		          AND BLTN_RNGE_C = '3'
+		
+		      ) A
+		WHERE 1=1 
+		  AND A.DEL_YN = 'N'
+       <if test='OFANC_DSC != null and OFANC_DSC != ""'>
+            AND A.OFANC_DSC = #{OFANC_DSC}
+       </if>                                  
+       <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == 0">
+                    AND TIT + CNTN LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 1">
+                    AND TIT LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2">
+                    AND CNTN LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 3">
+                    AND FSRG_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+        <if test="ST_DT != null and ST_DT != ''">
+            AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[>=]]> #{ST_DT}          /* 조회일자 */
+        </if>
+        <if test="ED_DT != null and ED_DT != ''">
+            AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[<=]]> #{ED_DT}          /* 조회일자 */
+        </if>
+    
+    
+    </select>
+</mapper>

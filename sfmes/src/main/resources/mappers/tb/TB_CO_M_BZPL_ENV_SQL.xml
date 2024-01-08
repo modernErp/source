@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_BZPL_ENV" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_BZPL_ENV */ TB_CO_M_BZPL_ENV
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , SYS_OPEN_DT         /* 시스템오픈일자       */
+            , LS_PCS_DT           /* 최종원가계산일자     */
+            , LBRCS_DSBN_METH_C   /* 노무비배부방법코드   */
+            , MFT_XPN_DSBN_METH_C /* 제조경비배부방법코드 */
+            , CAM_ADT_DSBN_YN     /* 적수추가배부사용여부 */
+            , PLA_PCS_CHG_DSC     /* 예정원가변경구분코드 */
+            , PLA_PCS_AUT_DSC     /* 예정원가자동구분코드 */
+            , PD_QLTSP_ESS_YN     /* 생산품질검사필수여부 */
+            , VAT_ICL_YN          /* 부가세포함여부            */
+            , VAT_CAL_DSC         /* 부가세계산방식구분코드    */
+            , LFIC_BYTX_RT_USE_YN /* 의제매입세사용여부        */
+            , LFIC_BYTX_RT_N      /* 의제매입세율(분자)   */
+            , LFIC_BYTX_RT_D      /* 의제매입세율(분모)   */
+            , BZPL_STMP_FILE_PATH /* 사업장직인파일경로   */
+            , BZPL_STMP_FILE_NM   /* 사업장직인파일명     */
+            , ENV_EST_NUM_CNTN1   /* 환경설정숫자내용1    */
+            , ENV_EST_STR_CNTN1   /* 환경설정문자내용1    */
+            , ENV_EST_NUM_CNTN2   /* 환경설정숫자내용2    */
+            , ENV_EST_STR_CNTN2   /* 환경설정문자내용2    */
+            , ENV_EST_NUM_CNTN3   /* 환경설정숫자내용3    */
+            , ENV_EST_STR_CNTN3   /* 환경설정문자내용3    */
+            , ENV_EST_NUM_CNTN4   /* 환경설정숫자내용4    */
+            , ENV_EST_STR_CNTN4   /* 환경설정문자내용4    */
+            , ENV_EST_NUM_CNTN5   /* 환경설정숫자내용5    */
+            , ENV_EST_STR_CNTN5   /* 환경설정문자내용5    */
+            , GAP_ATTC_YN         /* GAP인증여부          */
+            , GAP_ATTC_NO         /* GAP인증번호          */
+            , HACCP_ATTC_YN       /* HACCP인증여부        */
+            , HACCP_ATTC_NO       /* HACCP인증번호        */
+            , RCGDWD_USE_YN       /* 인정감모율사용여부   */
+            , STR_BSC_WHSE_C      /* 입고기본창고코드     */
+            , DLR_BSC_WHSE_C      /* 출고기본창고코드     */
+            , SRA_HST_AMN_C       /* 축산이력관리코드     */
+            , BY_SPY_AM_RKON_BASCD/* 매입공급금액산정기준 */
+            , SE_SPY_AM_RKON_BASCD/* 매출공급금액산정기준 */
+            , RMK_CNTN            /* 비고내용             */
+            , REP_BNK_C           /* 대표은행코드         */
+            , REP_ACNO            /* 대표계좌번호         */
+            , DPR_NM              /* 예금주명             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{SYS_OPEN_DT}
+            , #{LS_PCS_DT}
+            , #{LBRCS_DSBN_METH_C}
+            , #{MFT_XPN_DSBN_METH_C}
+            , #{CAM_ADT_DSBN_YN}
+            , #{PLA_PCS_CHG_DSC}
+            , #{PLA_PCS_AUT_DSC}
+            , #{PD_QLTSP_ESS_YN}
+            , #{VAT_ICL_YN}
+            , #{VAT_CAL_DSC}
+            , #{LFIC_BYTX_RT_USE_YN}
+            , DBO.SF_GET_FLOAT(#{LFIC_BYTX_RT_N})
+            , DBO.SF_GET_FLOAT(#{LFIC_BYTX_RT_D})
+            , #{BZPL_STMP_FILE_PATH}
+            , #{BZPL_STMP_FILE_NM}
+            , DBO.SF_GET_FLOAT(#{ENV_EST_NUM_CNTN1})
+            , #{ENV_EST_STR_CNTN1}
+            , DBO.SF_GET_FLOAT(#{ENV_EST_NUM_CNTN2})
+            , #{ENV_EST_STR_CNTN2}
+            , DBO.SF_GET_FLOAT(#{ENV_EST_NUM_CNTN3})
+            , #{ENV_EST_STR_CNTN3}
+            , DBO.SF_GET_FLOAT(#{ENV_EST_NUM_CNTN4})
+            , #{ENV_EST_STR_CNTN4}
+            , DBO.SF_GET_FLOAT(#{ENV_EST_NUM_CNTN5})
+            , #{ENV_EST_STR_CNTN5}
+            , #{GAP_ATTC_YN}
+            , #{GAP_ATTC_NO}
+            , #{HACCP_ATTC_YN}
+            , #{HACCP_ATTC_NO}
+            , #{RCGDWD_USE_YN}
+            , #{STR_BSC_WHSE_C}
+            , #{DLR_BSC_WHSE_C}
+            , #{SRA_HST_AMN_C}
+            , #{BY_SPY_AM_RKON_BASCD}
+            , #{SE_SPY_AM_RKON_BASCD}
+            , #{RMK_CNTN}
+            , #{REP_BNK_C}
+            , #{REP_ACNO}
+            , #{DPR_NM}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_BZPL_ENV" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_BZPL_ENV */ TB_CO_M_BZPL_ENV
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , SYS_OPEN_DT         = #{SYS_OPEN_DT}           /* 시스템오픈일자       */
+             , LS_PCS_DT           = #{LS_PCS_DT}             /* 최종원가계산일자     */
+             , LBRCS_DSBN_METH_C   = #{LBRCS_DSBN_METH_C}     /* 노무비배부방법코드   */
+             , MFT_XPN_DSBN_METH_C = #{MFT_XPN_DSBN_METH_C}   /* 제조경비배부방법코드 */
+             , CAM_ADT_DSBN_YN     = #{CAM_ADT_DSBN_YN}       /* 적수추가배부사용여부 */
+             , PLA_PCS_CHG_DSC     = #{PLA_PCS_CHG_DSC}       /* 예정원가변경구분코드 */
+             , PLA_PCS_AUT_DSC     = #{PLA_PCS_AUT_DSC}       /* 예정원가자동구분코드 */
+             , PD_QLTSP_ESS_YN     = #{PD_QLTSP_ESS_YN}       /* 생산품질검사필수여부 */
+             , VAT_ICL_YN          = #{VAT_ICL_YN}            /* 부가세포함여부            */
+           	 , VAT_CAL_DSC         = #{VAT_CAL_DSC}           /* 부가세계산방식구분코드    */
+           	 , LFIC_BYTX_RT_USE_YN = #{LFIC_BYTX_RT_USE_YN}   /* 의제매입세사용여부        */
+             , LFIC_BYTX_RT_N      = #{LFIC_BYTX_RT_N}        /* 의제매입세율(분자)   */
+             , LFIC_BYTX_RT_D      = #{LFIC_BYTX_RT_D}        /* 의제매입세율(분모)   */
+             , BZPL_STMP_FILE_PATH = #{BZPL_STMP_FILE_PATH}   /* 사업장직인파일경로   */
+             , BZPL_STMP_FILE_NM   = #{BZPL_STMP_FILE_NM}     /* 사업장직인파일명     */
+             , ENV_EST_NUM_CNTN1   = #{ENV_EST_NUM_CNTN1}     /* 환경설정숫자내용1    */
+             , ENV_EST_STR_CNTN1   = #{ENV_EST_STR_CNTN1}     /* 환경설정문자내용1    */
+             , ENV_EST_NUM_CNTN2   = #{ENV_EST_NUM_CNTN2}     /* 환경설정숫자내용2    */
+             , ENV_EST_STR_CNTN2   = #{ENV_EST_STR_CNTN2}     /* 환경설정문자내용2    */
+             , ENV_EST_NUM_CNTN3   = #{ENV_EST_NUM_CNTN3}     /* 환경설정숫자내용3    */
+             , ENV_EST_STR_CNTN3   = #{ENV_EST_STR_CNTN3}     /* 환경설정문자내용3    */
+             , ENV_EST_NUM_CNTN4   = #{ENV_EST_NUM_CNTN4}     /* 환경설정숫자내용4    */
+             , ENV_EST_STR_CNTN4   = #{ENV_EST_STR_CNTN4}     /* 환경설정문자내용4    */
+             , ENV_EST_NUM_CNTN5   = #{ENV_EST_NUM_CNTN5}     /* 환경설정숫자내용5    */
+             , ENV_EST_STR_CNTN5   = #{ENV_EST_STR_CNTN5}     /* 환경설정문자내용5    */
+             , GAP_ATTC_YN         = #{GAP_ATTC_YN}           /* GAP인증여부          */
+             , GAP_ATTC_NO         = #{GAP_ATTC_NO}           /* GAP인증번호          */
+             , HACCP_ATTC_YN       = #{HACCP_ATTC_YN}         /* HACCP인증여부        */
+             , HACCP_ATTC_NO       = #{HACCP_ATTC_NO}         /* HACCP인증번호        */
+             , RCGDWD_USE_YN       = #{RCGDWD_USE_YN}         /* 인정감모율사용여부   */
+             , STR_BSC_WHSE_C      = #{STR_BSC_WHSE_C}        /* 입고기본창고코드     */
+             , DLR_BSC_WHSE_C      = #{DLR_BSC_WHSE_C}        /* 출고기본창고코드     */
+             , SRA_HST_AMN_C       = #{SRA_HST_AMN_C}         /* 축산이력관리코드     */
+             , BY_SPY_AM_RKON_BASCD= #{BY_SPY_AM_RKON_BASCD}  /* 매입공급금액산정기준 */
+             , SE_SPY_AM_RKON_BASCD= #{SE_SPY_AM_RKON_BASCD}  /* 매출공급금액산정기준 */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , REP_BNK_C           = #{REP_BNK_C}             /* 대표은행코드         */
+             , REP_ACNO            = #{REP_ACNO}              /* 대표계좌번호         */
+             , DPR_NM              = #{DPR_NM}                /* 예금주명             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_BZPL_ENV" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_BZPL_ENV */ FROM TB_CO_M_BZPL_ENV
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_CO_M_BZPL_ENV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_BZPL_ENV */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.SYS_OPEN_DT                                       /* 시스템오픈일자            */
+             , A.LS_PCS_DT                                         /* 최종원가계산일자          */
+             , A.LBRCS_DSBN_METH_C                                 /* 노무비배부방법코드        */
+             , A.MFT_XPN_DSBN_METH_C                               /* 제조경비배부방법코드      */
+             , A.CAM_ADT_DSBN_YN                                   /* 적수추가배부사용여부      */
+             , A.PLA_PCS_CHG_DSC                                   /* 예정원가변경구분코드      */
+             , A.PLA_PCS_AUT_DSC                                   /* 예정원가자동구분코드      */
+             , A.PD_QLTSP_ESS_YN                                   /* 생산품질검사필수여부      */
+             , A.LFIC_BYTX_RT_N                                    /* 의제매입세율(분자)        */
+             , A.LFIC_BYTX_RT_D                                    /* 의제매입세율(분모)        */
+             , A.BZPL_STMP_FILE_PATH                               /* 사업장직인파일경로        */
+             , A.BZPL_STMP_FILE_NM                                 /* 사업장직인파일명          */
+             , A.ENV_EST_NUM_CNTN1                                 /* 환경설정숫자내용1         */
+             , A.ENV_EST_STR_CNTN1                                 /* 환경설정문자내용1         */
+             , A.ENV_EST_NUM_CNTN2                                 /* 환경설정숫자내용2         */
+             , A.ENV_EST_STR_CNTN2                                 /* 환경설정문자내용2         */
+             , A.ENV_EST_NUM_CNTN3                                 /* 환경설정숫자내용3         */
+             , A.ENV_EST_STR_CNTN3                                 /* 환경설정문자내용3         */
+             , A.ENV_EST_NUM_CNTN4                                 /* 환경설정숫자내용4         */
+             , A.ENV_EST_STR_CNTN4                                 /* 환경설정문자내용4         */
+             , A.ENV_EST_NUM_CNTN5                                 /* 환경설정숫자내용5         */
+             , A.ENV_EST_STR_CNTN5                                 /* 환경설정문자내용5         */
+             , A.GAP_ATTC_YN                                       /* GAP인증여부               */
+             , A.GAP_ATTC_NO                                       /* GAP인증번호               */
+             , A.HACCP_ATTC_YN                                     /* HACCP인증여부             */
+             , A.HACCP_ATTC_NO                                     /* HACCP인증번호             */
+             , A.RCGDWD_USE_YN                                     /* 인정감모율사용여부        */
+             , A.STR_BSC_WHSE_C                                    /* 입고기본창고코드          */
+             , A.DLR_BSC_WHSE_C                                    /* 출고기본창고코드          */
+             , A.SRA_HST_AMN_C                                     /* 축산이력관리코드          */
+             , A.BY_SPY_AM_RKON_BASCD                              /* 매입공급금액산정기준코드  */
+             , A.SE_SPY_AM_RKON_BASCD                              /* 매출공급금액산정기준코드  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.REP_BNK_C                                         /* 대표은행코드              */
+             , A.REP_ACNO                                          /* 대표계좌번호              */
+             , A.DPR_NM                                            /* 예금주명                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_BZPL_ENV A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+    </select>
+</mapper>

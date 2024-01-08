@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 거래처별배송지등록 조회 -->
+    <select id="selectSe4010" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe4010 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */             
+             , A.REG_SQNO                                          /* 등록일련번호              */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.REP_DVYAA_YN                                      /* 대표배송지여부            */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_TRPL_DVYAA A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.TRPL_C            = #{TRPL_C}
+           AND A.DEL_YN            = 'N'
+    </select>  
+    
+    <!-- 거래처별등록배송지내역 -->
+    <select id="selectSe4015" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe4015 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                  */             
+             , A.REG_SQNO                                          /* 등록일련번호              */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.REP_DVYAA_YN                                      /* 대표배송지여부            */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_TRPL_DVYAA A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DEL_YN            = 'N'
+          <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C      = #{TRPL_C}
+          </if>
+    </select> 
+          
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">
+    <!-- 출고처원장조회 -->
+    <select id="selectSm2220List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe3015_02 */
+               A.CORP_C                                            /* 회사코드                 */
+             , A.BZPL_C                                            /* 사업장코드               */
+             , A.SL_DT                                             /* 매출일자                 */
+             , A.SL_SQNO                                           /* 매출일련번호             */
+             , A.RLTR_DT                                           /* 실거래일자               */ 
+             , A.ACG_DT                                            /* 회계일자                 */ 
+             , A.WDR_PLA_DT                                        /* 지급예정일자             */  
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드         */ 
+             , A.TRPL_C                                            /* 거래처코드               */
+             , (SELECT dbo.SF_GET_TRPL_NM(A.CORP_C,A.TRPL_C)
+               ) AS TRPL_NM                                        /* 거래처명                 */
+             , A.ADJPL_C                                           /* 정산처코드               */   
+             , (SELECT dbo.SF_GET_TRPL_NM(A.CORP_C,A.ADJPL_C)
+               ) AS ADJPL_NM                                          /* 정산처명                 */
+             , B.SL_DSQNO                                             /* 매출상세일련번호         */ 
+             , B.GDS_C                                                /* 물품코드                 */ 
+             , C.GDS_DTL_NM                                           /* 물품명                   */ 
+             , C.GDS_STD_NM                                           /* 물품규격                 */ 
+             , C.UNT_C                                                /* 관리단위                 */ 
+             , B.SL_QT     * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                              ELSE                                  1
+                              END) AS SL_QT                           /* 수(중)량                 */
+             , B.TR_UNT_C                                             /* 단위(거래단위)           */ 
+             , B.SL_BOX_QT * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1 
+                              ELSE                                  1
+                              END) AS SL_BOX_QT                       /* 박스수량                 */     
+             , B.SL_UPR                                               /* 매출단가                 */ 
+             , B.SPY_AM    * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                              ELSE                                  1
+                              END) AS SPY_AM                          /* 공급금액                 */
+             , B.VAT       * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                              ELSE                                  1
+                              END) AS VAT                             /* 부가세                   */
+             , B.SL_AM     * (CASE WHEN A.TR_BSN_DSC = 'SE11' THEN -1
+                              ELSE                                  1
+                              END) AS SL_AM                           /* 매출금액                 */
+             , B.WHSE_C                                               /* 창고코드                 */ 
+             , (SELECT WHSE_NM
+                  FROM TB_CO_M_WHSE
+                 WHERE 1 = 1
+                   AND CORP_C = B.CORP_C
+                   AND BZPL_C = B.BZPL_C
+                   AND WHSE_C = B.WHSE_C
+               ) WHSE_NM                                           /* 창고명                   */ 
+             , B.DSTR_TERDT                                        /* 유통기한일자             */     
+             , B.HST_AMN_DSC                                       /* 이력관리구분             */ 
+             , B.GDS_HST_NO                                        /* 이력번호(LOT번호)        */ 
+             , A.RMK_CNTN                                          /* 비고내용                 */
+             , B.DEL_YN                                            /* 삭제여부                 */ 
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시             */
+             , A.FSRG_ID                                           /* 최초등록자ID             */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시             */
+             , A.LSCHG_ID                                          /* 최종변경자ID             */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명             */
+          FROM TB_SE_M_SL            A 
+          LEFT OUTER JOIN TB_SE_D_SL B
+            ON A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.SL_DT             = B.SL_DT
+           AND A.SL_SQNO           = B.SL_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON B.CORP_C            = C.CORP_C
+           AND B.BZPL_C            = C.BZPL_C
+           AND B.GDS_C             = C.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND B.DEL_YN            = 'N'
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+       <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C             = #{GDS_C}
+       </if>    
+        <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C           = #{TRPL_C}
+       </if>
+       <if test="SLP_NML_YN != null and SLP_NML_YN != ''">
+           AND A.SLP_NML_YN        = #{SLP_NML_YN}
+       </if>            
+    </select>
+    
+     <!-- 출고처원장조회 -->
+    <select id="selectSm2220List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSm2220List02 */
+               ISNULL(SUM(A.BEF_BD_BAC),0)          AS BEF_BD_BAC        /* 외상매출금_전일(시작일)이월잔액   */
+             , ISNULL(SUM(A.BD_DB_AM),0)            AS BD_DB_AM          /* 외상매출금_발생액                 */
+             , ISNULL(SUM(A.BD_CR_AM),0)            AS BD_CR_AM          /* 외상매출금_회수액                 */
+             , ISNULL(SUM(A.NOW_BD_BAC),0)          AS NOW_BD_BAC        /* 외상매출금_현재잔액               */
+             , ISNULL(SUM(A.BEF_ETC_ACRV_BAC),0)    AS BEF_ETC_ACRV_BAC  /* 기타미수금_전일(시작일)이월잔액   */
+             , ISNULL(SUM(A.ETC_ACRV_DB_AM),0)      AS ETC_ACRV_DB_AM    /* 기타미수금_발생액                 */
+             , ISNULL(SUM(A.ETC_ACRV_CR_AM),0)      AS ETC_ACRV_CR_AM    /* 기타미수금_회수액                 */
+             , ISNULL(SUM(A.NOW_ETC_ACRV_BAC),0)    AS NOW_ETC_ACRV_BAC  /* 기타미수금_현재잔액               */
+          FROM (
+                 /* TB_BD_M_CLAM (채권_외상매출금) */
+                SELECT
+                      (select dbo.SF_GET_BD_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8),DATEADD(DD,-1,CONVERT(datetime ,#{ST_DT})) ,112)))   AS BEF_BD_BAC   /* 외상매출금_전일(시작일)이월잔액   */
+                     , SUM(ISNULL(A.BD_DB_AM,0))                                                                                                    AS BD_DB_AM     /* 외상매출금_발생액                     */
+                     , SUM(ISNULL(A.BD_CR_AM,0))                                                                                                    AS BD_CR_AM     /* 외상매출금_회수액                   */
+                     , (select dbo.SF_GET_BD_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8), GETDATE(),112)))                                   AS NOW_BD_BAC   /* 외상매출금_현재잔액                */
+                     , 0    AS BEF_ETC_ACRV_BAC                 /* 기타미수금_전일(시작일)이월잔액   */
+                     , 0    AS ETC_ACRV_DB_AM                   /* 기타미수금_발생액                 */
+                     , 0    AS ETC_ACRV_CR_AM                   /* 기타미수금_회수액                 */
+                     , 0    AS NOW_ETC_ACRV_BAC                 /* 기타미수금_현재잔액               */
+                  FROM (
+                        SELECT 
+                               ADJPL_C                                                                 /* 정산처코드            */
+                             , SUM(CASE WHEN REG_DSC = 'N' THEN CRE_SL_AM  ELSE 0  END)   AS BD_DB_AM  /* 차변(외상매출금-발생) */
+                             , SUM(CASE WHEN REG_DSC = 'R' THEN CRE_SL_AM  ELSE 0  END)   AS BD_CR_AM  /* 대변(외상매출금-회수) */
+                          FROM TB_BD_M_CLAM                     /* 채권_외상매출금기본 */
+                         WHERE 1=1
+                           AND CORP_C     = #{CORP_C}
+                           AND BZPL_C     = #{BZPL_C}
+                           AND ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                           AND SLP_NML_YN = #{SLP_NML_YN}
+                           AND DEL_YN     = 'N'
+                           AND ADJPL_C    = #{ADJPL_C}
+                         GROUP BY ADJPL_C
+                       ) A
+                   GROUP BY A.ADJPL_C
+       
+                UNION ALL
+
+                 /* TB_BD_M_ETC_ACRV (채권_기타미수금기본) */
+                SELECT
+                       0    AS BEF_BD_BAC                 /* 외상매출금_전일(시작일)이월잔액   */
+                     , 0    AS BD_DB_AM                   /* 외상매출금_발생액                 */
+                     , 0    AS BD_CR_AM                   /* 외상매출금_회수액                 */
+                     , 0    AS NOW_BD_BAC                 /* 외상매출금_현재잔액               */
+                     , (select dbo.SF_GET_ETC_ACRV_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8),DATEADD(DD,-1,CONVERT(datetime ,#{ST_DT})) ,112)))     AS BEF_ETC_ACRV_BAC   /* 기타미수금기준일잔액  */
+                     , SUM(ISNULL(A.ETC_ACRV_DB_AM,0))                                                                                                       AS ETC_ACRV_DB_AM     /* 기타미수금발생액      */
+                     , SUM(ISNULL(A.ETC_ACRV_CR_AM,0))                                                                                                       AS ETC_ACRV_CR_AM     /* 기타미수금회수액      */
+                     , (select dbo.SF_GET_ETC_ACRV_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8), GETDATE(),112)))                                      AS NOW_ETC_ACRV_BAC   /* 기타미수금현재잔액    */
+                  FROM (
+                        SELECT
+                               ADJPL_C                                                                          /* 정산처코드            */
+                             , SUM(CASE WHEN REG_DSC = 'N' THEN CRE_SL_AM  ELSE 0  END)    AS ETC_ACRV_DB_AM    /* 차변(기타미수금-발생) */
+                             , SUM(CASE WHEN REG_DSC = 'R' THEN CRE_SL_AM  ELSE 0  END)    AS ETC_ACRV_CR_AM    /* 대변(기타미수금-회수) */
+                          FROM TB_BD_M_ETC_ACRV                    /* 채권_기타미수금기본 */
+                         WHERE 1=1
+                           AND CORP_C     = #{CORP_C}
+                           AND BZPL_C     = #{BZPL_C}
+                           AND ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                           AND SLP_NML_YN = #{SLP_NML_YN}
+                           AND DEL_YN     = 'N'
+                           AND ADJPL_C    = #{ADJPL_C}
+                         GROUP BY ADJPL_C
+                       ) A
+                   GROUP BY A.ADJPL_C
+          ) A       
+    </select>
+</mapper>

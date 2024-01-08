@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+   
+   <!-- 사업장환경설정 조회 -->
+   <select id="selectCo1020List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ selectCo1020List01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.FAC_TPC                                           /* 공장유형코드         */
+             , A.SYS_OPEN_DT                                       /* 시스템오픈일자       */
+             , A.LS_PCS_DT                                         /* 최종원가계산일자     */
+             , A.PLA_DSBN_METH_C                                   /* 예정배부방법코드     */
+             , A.LBRCS_DSBN_METH_C                                 /* 노무비배부방법코드   */
+             , A.MFT_XPN_DSBN_METH_C                               /* 제조경비배부방법코드 */
+             , A.CAM_ADT_DSBN_YN                                   /* 적수추가배부사용여부 */
+             , A.PLA_PCS_CHG_DSC                                   /* 예정원가변경구분코드 */
+             , A.PLA_PCS_AUT_DSC                                   /* 예정원가자동구분코드 */
+             , A.OMTR_QLTSP_ESS_YN                                 /* 원재료품질검사필수여 */
+             , A.ANXTH_QLTSP_ESS_YN                                /* 첨가물품질검사필수여 */
+             , A.PKMTR_QLTSP_ESS_YN                                /* 포장재품질검사필수여 */
+             , A.PD_QLTSP_ESS_YN                                   /* 생산품질검사필수여부 */
+             , A.LFIC_BYTX_RT_N                                    /* 의제매입세공제율(분  */
+             , A.LFIC_BYTX_RT_D                                    /* 의제매입세공제율(분  */
+             , A.SMS_USE_YN                                        /* SMS사용여부          */
+             , A.BSC_WHSE_C                                        /* 기본창고코드         */
+			 , B.WHSE_NM               AS BSC_WHSE_NM              /* 기본창고명           */			 
+             , A.BZPL_STMP_FILE_PATH                               /* 사업장직인파일경로   */
+             , A.BZPL_STMP_FILE_NM                                 /* 사업장직인파일명     */
+             , A.ENV_EST_NUM_CNTN1                                 /* 환경설정숫자내용1    */
+             , A.ENV_EST_STR_CNTN1                                 /* 환경설정문자내용1    */
+             , A.ENV_EST_NUM_CNTN2                                 /* 환경설정숫자내용2    */
+             , A.ENV_EST_STR_CNTN2                                 /* 환경설정문자내용2    */
+             , A.ENV_EST_NUM_CNTN3                                 /* 환경설정숫자내용3    */
+             , A.ENV_EST_STR_CNTN3                                 /* 환경설정문자내용3    */
+             , A.ENV_EST_NUM_CNTN4                                 /* 환경설정숫자내용4    */
+             , A.ENV_EST_STR_CNTN4                                 /* 환경설정문자내용4    */
+             , A.ENV_EST_NUM_CNTN5                                 /* 환경설정숫자내용5    */
+             , A.ENV_EST_STR_CNTN5                                 /* 환경설정문자내용5    */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.REP_BNK_C                                         /* 대표은행코드         */
+             , A.REP_ACNO                                          /* 대표계좌번호         */
+             , A.DPR_NM                                            /* 예금주명             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_BZPL_ENV A 
+               RIGHT OUTER JOIN TB_CO_M_WHSE B ON
+		       A.CORP_C = B.CORP_C
+		   AND A.BSC_WHSE_C = B.WHSE_C 
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C} 		  
+    </select>
+
+    <!-- 사업장환경설정 변경이력 조회 -->
+    <select id="selectCo1020ListP01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ selectCo1020ListP01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.HST_SQNO                                          /* 이력일련번호         */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.FAC_TPC                                           /* 공장유형코드         */
+             , A.SYS_OPEN_DT                                       /* 시스템오픈일자       */
+             , A.LS_PCS_DT                                         /* 최종원가계산일자     */
+             , A.PLA_DSBN_METH_C                                   /* 예정배부방법코드     */
+             , A.LBRCS_DSBN_METH_C                                 /* 노무비배부방법코드   */
+             , A.MFT_XPN_DSBN_METH_C                               /* 제조경비배부방법코드 */
+             , A.CAM_ADT_DSBN_YN                                   /* 적수추가배부사용여부 */
+             , A.PLA_PCS_CHG_DSC                                   /* 예정원가변경구분코드 */
+             , A.PLA_PCS_AUT_DSC                                   /* 예정원가자동구분코드 */
+             , A.OMTR_QLTSP_ESS_YN                                 /* 원재료품질검사필수여 */
+             , A.ANXTH_QLTSP_ESS_YN                                /* 첨가물품질검사필수여 */
+             , A.PKMTR_QLTSP_ESS_YN                                /* 포장재품질검사필수여 */
+             , A.PD_QLTSP_ESS_YN                                   /* 생산품질검사필수여부 */
+             , A.LFIC_BYTX_RT_N                                    /* 의제매입세공제율(분  */
+             , A.LFIC_BYTX_RT_D                                    /* 의제매입세공제율(분  */
+             , A.SMS_USE_YN                                        /* SMS사용여부          */
+             , A.BSC_WHSE_C                                        /* 기본창고코드         */
+			 , B.WHSE_NM               AS BSC_WHSE_NM              /* 기본창고명           */             			
+             , A.BZPL_STMP_FILE_PATH                               /* 사업장직인파일경로   */
+             , A.BZPL_STMP_FILE_NM                                 /* 사업장직인파일명     */
+             , A.ENV_EST_NUM_CNTN1                                 /* 환경설정숫자내용1    */
+             , A.ENV_EST_STR_CNTN1                                 /* 환경설정문자내용1    */
+             , A.ENV_EST_NUM_CNTN2                                 /* 환경설정숫자내용2    */
+             , A.ENV_EST_STR_CNTN2                                 /* 환경설정문자내용2    */
+             , A.ENV_EST_NUM_CNTN3                                 /* 환경설정숫자내용3    */
+             , A.ENV_EST_STR_CNTN3                                 /* 환경설정문자내용3    */
+             , A.ENV_EST_NUM_CNTN4                                 /* 환경설정숫자내용4    */
+             , A.ENV_EST_STR_CNTN4                                 /* 환경설정문자내용4    */
+             , A.ENV_EST_NUM_CNTN5                                 /* 환경설정숫자내용5    */
+             , A.ENV_EST_STR_CNTN5                                 /* 환경설정문자내용5    */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.REP_BNK_C                                         /* 대표은행코드         */
+             , A.REP_ACNO                                          /* 대표계좌번호         */
+             , A.DPR_NM                                            /* 예금주명             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_L_BZPL_ENV A RIGHT OUTER JOIN TB_CO_M_WHSE B ON 
+		       A.CORP_C        = B.CORP_C 
+		   AND A.BSC_WHSE_C    = B.WHSE_C 
+         WHERE 1=1 
+           AND A.BZPL_C = #{P_BZPL_C}
+         <if test='ST_DT != null and ST_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[>=]]> #{ST_DT}
+        </if>
+        <if test='ED_DT != null and ED_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[<=]]> #{ED_DT}
+        </if>
+    </select>
+    
+    <!--사업장환경설정 인정감모율 조회  -->
+    <select id="selectCo1020List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ select_TB_CO_M_RCGDWD */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드     */
+             , A.RCGDWD_RT                                         /* 인정감모율           */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_RCGDWD A
+          WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+    </select>
+    
+    <!-- 인정감모율 유효성체크  -->
+    <select id="selectCo1020_RCGDWD_PKCHK" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ selectCo1020_RCGDWD_PKCHK */
+                A.BZPL_C                                            /* 사업장코드           */
+              , A.GDS_TP_DSC                                        /* 물품유형구분코드     */
+          FROM TB_CO_M_RCGDWD A
+          WHERE 1=1 
+            AND A.BZPL_C               = #{BZPL_C} 
+            AND A.GDS_TP_DSC            = #{GDS_TP_DSC}
+    </select>
+</mapper>

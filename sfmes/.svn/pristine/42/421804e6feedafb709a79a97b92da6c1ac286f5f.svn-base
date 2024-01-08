@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+    <select id="selectCa4020List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa4020List */
+               ISNULL(MAX(REG_SQNO), 0) + 1    AS REG_SQNO     /* 거래일련번호 */
+          FROM TB_DT_M_CBAM C
+         WHERE 1=1
+           AND C.CORP_C = #{CORP_C}
+           AND C.BZPL_C = #{BZPL_C}
+           AND C.REG_DT = #{REG_DT}
+
+    </select>
+    
+    <!-- 외상매입금원장기초등록내역조회 --> 
+    <select id="selectCa4020List_2" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa4020List_2 */
+               A.REG_DT                            AS REG_DT        /* 등록일자               */
+             , A.REG_SQNO                          AS REG_SQNO      /* 등록일련번호           */
+             , A.ACG_DT                            AS ACG_DT        /* 회계일자               */
+             , A.RLTR_DT                           AS RLTR_DT       /* 실거래일자             */
+             , A.PY_PLA_DT                         AS PY_PLA_DT     /* 지급예정일자           */
+             , A.PY_STL_DSC                        AS PY_STL_DSC    /* 지급방법구분코드      */
+             , A.TR_BSN_DSC                        AS TR_BSN_DSC    /* 거래업무구분코드       */
+             , A.TR_SQNO                           AS TR_SQNO       /* 거래일련번호           */
+             , A.ADJPL_C                           AS ADJPL_C       /* 정산처코드             */
+             , B.TRPL_NM                           AS ADJPL_NM      /* 정산처명               */
+             , A.REG_DSC                           AS REG_DSC       /* 등록구분코드           */
+             , A.CRE_BY_AM                         AS CRE_BY_AM     /* 외상매입금             */
+             , A.SLP_NML_YN                        AS SLP_NML_YN    /* 전표정상여부           */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)   AS FSRG_DTM      /* 최초등록일시           */
+             , A.FSRG_ID                           AS FSRG_ID       /* 최초등록자ID           */
+             , A.FSRG_ID                           AS FSRG_NM       /* 최초등록자명           */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20)  AS LSCHG_DTM     /* 최종변경일시           */
+             , A.LSCHG_ID                          AS LSCHG_ID      /* 최종변경자ID           */
+             , A.LSCHG_ID                          AS LSCHG_NM      /* 최종변경자명           */
+          FROM TB_DT_M_CBAM  A
+         INNER JOIN TB_CO_M_TRPL B
+            ON A.CORP_C  = B.CORP_C  
+           AND A.ADJPL_C = B.TRPL_C 
+         WHERE 1=1
+           AND A.CORP_C     = #{CORP_C} 
+           AND A.BZPL_C     = #{BZPL_C} 
+           AND A.REG_DT     = #{REG_DT}  
+           AND A.REG_SQNO   = #{REG_SQNO}
+           AND A.ADJPL_C    = #{ADJPL_C}
+           AND A.DEL_YN     = 'N'
+           AND A.TR_BSN_DSC = 'DT11'    /* 외상매입금계수정정등록 */
+    </select>
+</mapper>

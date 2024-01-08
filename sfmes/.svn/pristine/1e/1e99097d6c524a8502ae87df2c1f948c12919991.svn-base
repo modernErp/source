@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_SMS_MSG" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_SMS_MSG */ TB_CO_M_SMS_MSG
+        (
+              CORP_C              /* 회사코드             */
+            , MSG_NO              /* 메시지번호           */
+            , MSG_KWRD            /* 키워드               */
+            , MSG_UZ              /* 메시지용도           */
+            , MSG_RMS_DSC         /* 메시지수신구분       */
+            , SMS_CNTN            /* SMS내용              */
+            , PUSH_TIT            /* PUSH제목             */
+            , PUSH_CNTN           /* PUSH메세지내용       */
+            , MSG_RMK             /* 메세지비고           */
+            , SND_TEL_NO          /* 발신전화번호         */
+            , PARA1               /* 파라미터1            */
+            , PARA2               /* 파라미터2            */
+            , PARA3               /* 파라미터3            */
+            , PARA4               /* 파라미터4            */
+            , PARA5               /* 파라미터5            */
+            , PARA6               /* 파라미터6            */
+            , PARA7               /* 파라미터7            */
+            , PARA8               /* 파라미터8            */
+            , PARA9               /* 파라미터9            */
+            , PARA10              /* 파라미터10           */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{MSG_NO}
+            , #{MSG_KWRD}
+            , #{MSG_UZ}
+            , #{MSG_RMS_DSC}
+            , #{SMS_CNTN}
+            , #{PUSH_TIT}
+            , #{PUSH_CNTN}
+            , #{MSG_RMK}
+            , #{SND_TEL_NO}
+            , #{PARA1}
+            , #{PARA2}
+            , #{PARA3}
+            , #{PARA4}
+            , #{PARA5}
+            , #{PARA6}
+            , #{PARA7}
+            , #{PARA8}
+            , #{PARA9}
+            , #{PARA10}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_SMS_MSG" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_SMS_MSG */ TB_CO_M_SMS_MSG
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , MSG_NO              = #{MSG_NO}                /* 메시지번호           */
+             , MSG_KWRD            = #{MSG_KWRD}              /* 키워드               */
+             , MSG_UZ              = #{MSG_UZ}                /* 메시지용도           */
+             , MSG_RMS_DSC         = #{MSG_RMS_DSC}           /* 메시지수신구분       */
+             , SMS_CNTN            = #{SMS_CNTN}              /* SMS내용              */
+             , PUSH_TIT            = #{PUSH_TIT}              /* PUSH제목             */
+             , PUSH_CNTN           = #{PUSH_CNTN}             /* PUSH메세지내용       */
+             , MSG_RMK             = #{MSG_RMK}               /* 메세지비고           */
+             , SND_TEL_NO          = #{SND_TEL_NO}            /* 발신전화번호         */
+             , PARA1               = #{PARA1}                 /* 파라미터1            */
+             , PARA2               = #{PARA2}                 /* 파라미터2            */
+             , PARA3               = #{PARA3}                 /* 파라미터3            */
+             , PARA4               = #{PARA4}                 /* 파라미터4            */
+             , PARA5               = #{PARA5}                 /* 파라미터5            */
+             , PARA6               = #{PARA6}                 /* 파라미터6            */
+             , PARA7               = #{PARA7}                 /* 파라미터7            */
+             , PARA8               = #{PARA8}                 /* 파라미터8            */
+             , PARA9               = #{PARA9}                 /* 파라미터9            */
+             , PARA10              = #{PARA10}                /* 파라미터10           */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MSG_NO              = #{MSG_NO}
+    </update>
+
+    <delete id="delete_TB_CO_M_SMS_MSG" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_SMS_MSG */ FROM TB_CO_M_SMS_MSG
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MSG_NO              = #{MSG_NO}
+    </delete>
+
+    <select id="select_TB_CO_M_SMS_MSG" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_SMS_MSG */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.MSG_NO                                            /* 메시지번호                */
+             , A.MSG_KWRD                                          /* 키워드                    */
+             , A.MSG_UZ                                            /* 메시지용도                */
+             , A.MSG_RMS_DSC                                       /* 메시지수신구분            */
+             , A.SMS_CNTN                                          /* SMS내용                   */
+             , A.PUSH_TIT                                          /* PUSH제목                  */
+             , A.PUSH_CNTN                                         /* PUSH메세지내용            */
+             , A.MSG_RMK                                           /* 메세지비고                */
+             , A.SND_TEL_NO                                        /* 발신전화번호              */
+             , A.PARA1                                             /* 파라미터1                 */
+             , A.PARA2                                             /* 파라미터2                 */
+             , A.PARA3                                             /* 파라미터3                 */
+             , A.PARA4                                             /* 파라미터4                 */
+             , A.PARA5                                             /* 파라미터5                 */
+             , A.PARA6                                             /* 파라미터6                 */
+             , A.PARA7                                             /* 파라미터7                 */
+             , A.PARA8                                             /* 파라미터8                 */
+             , A.PARA9                                             /* 파라미터9                 */
+             , A.PARA10                                            /* 파라미터10                */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_SMS_MSG A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.MSG_NO            = #{MSG_NO}
+    </select>
+</mapper>

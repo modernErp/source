@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_TRPL_INFO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_TRPL_INFO */ TB_CO_M_TRPL_INFO
+        (
+              CORP_C              /* 회사코드             */
+            , TRPL_C              /* 거래처코드           */
+            , ZIP                 /* 우편번호             */
+            , ADR1                /* 주소1                */
+            , ADR2                /* 주소2                */
+            , TEL_NO              /* 전화번호             */
+            , FAX_NO              /* FAX번호              */
+            , CHRR_NM             /* 담당자명             */
+            , CHRR_TEL            /* 담당자전화번호       */
+            , CHRR_SMS_RCV_TEL    /* 담당자SMS수신전화번호*/
+            , CHRR_EMAIL          /* 담당자eMail          */
+            , MYCO_DEPT_C         /* 당사주관부서코드     */
+            , MYCO_CHRR_NM        /* 당사담당자명         */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{TRPL_C}
+            , #{ZIP}
+            , #{ADR1}
+            , #{ADR2}
+            , REPLACE(#{TEL_NO}, '-','')
+            , REPLACE(#{FAX_NO}, '-','')
+            , #{CHRR_NM}
+            , REPLACE(#{CHRR_TEL}, '-','')
+            , REPLACE(#{CHRR_SMS_RCV_TEL}, '-','')
+            , #{CHRR_EMAIL}
+            , #{MYCO_DEPT_C}
+            , #{MYCO_CHRR_NM}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_TRPL_INFO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_TRPL_INFO */ TB_CO_M_TRPL_INFO
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , ZIP                 = #{ZIP}                   /* 우편번호             */
+             , ADR1                = #{ADR1}                  /* 주소1                */
+             , ADR2                = #{ADR2}                  /* 주소2                */
+             , TEL_NO              = REPLACE(#{TEL_NO}, '-','')/* 전화번호            */
+             , FAX_NO              = REPLACE(#{FAX_NO}, '-','')/* FAX번호             */
+             , CHRR_NM             = #{CHRR_NM}               /* 담당자명             */
+             , CHRR_TEL            = REPLACE(#{CHRR_TEL}, '-','')        /* 담당자전화번호       */
+             , CHRR_SMS_RCV_TEL    = REPLACE(#{CHRR_SMS_RCV_TEL}, '-','')/* 담당자SMS수신전화번호*/
+             , CHRR_EMAIL          = #{CHRR_EMAIL}            /* 담당자eMail          */
+             , MYCO_DEPT_C         = #{MYCO_DEPT_C}           /* 당사주관부서코드     */
+             , MYCO_CHRR_NM        = #{MYCO_CHRR_NM}          /* 당사담당자명         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND TRPL_C              = #{TRPL_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_TRPL_INFO" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_TRPL_INFO */ FROM TB_CO_M_TRPL_INFO
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND TRPL_C              = #{TRPL_C}
+    </delete>
+
+    <select id="select_TB_CO_M_TRPL_INFO" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_TRPL_INFO */
+               A.CORP_C                                            /* 회사코드             */
+             , A.TRPL_C                                            /* 거래처코드           */
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.TEL_NO                                            /* 전화번호             */
+             , A.FAX_NO                                            /* FAX번호              */
+             , A.CHRR_NM                                           /* 담당자명             */
+             , A.CHRR_TEL                                          /* 담당자전화번호       */
+             , A.CHRR_SMS_RCV_TEL                                  /* 담당자SMS수신전화번호*/
+             , A.CHRR_EMAIL                                        /* 담당자eMail          */
+             , A.MYCO_DEPT_C                                       /* 당사주관부서코드     */
+             , A.MYCO_CHRR_NM                                      /* 당사담당자명         */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_TRPL_INFO A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.TRPL_C            = #{TRPL_C}
+    </select>
+</mapper>

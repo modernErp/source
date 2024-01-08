@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 수탁가공접수내역조회 -->
+    <select id="selectPd4130_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        WITH ETR_MFC_OMTR_STDV AS (
+            SELECT CORP_C                                        /* 회사코드             */
+                 , BZPL_C                                        /* 사업장코드           */
+                 , ETR_MFC_RC_DT                                 /* 수탁가공접수일자     */
+                 , ETR_MFC_RC_SQNO                               /* 수탁가공접수일련번호 */
+                 , ISNULL(SUM(CASE OMTR_STDV_DSC WHEN 'I' THEN 1
+                       END), 0)            AS STDV_QT_IN_CNT     /* 원부재료 인수건수    */ 
+                 , ISNULL(SUM(CASE OMTR_STDV_DSC WHEN 'O' THEN 1
+                       END), 0)            AS STDV_QT_OUT_CNT    /* 원부재료 출고건수    */
+              FROM TB_PD_D_ETR_MFC_OMTR_STDV
+             WHERE 1=1
+               AND CORP_C = #{CORP_C}
+               AND BZPL_C = #{BZPL_C}
+               AND DEL_YN = 'N'
+             GROUP BY CORP_C
+                    , BZPL_C
+                    , ETR_MFC_RC_DT
+                    , ETR_MFC_RC_SQNO
+        ),
+        ETR_MFC_MFS_STDV AS (
+            SELECT
+                   CORP_C                                         /* 회사코드                */    
+                 , BZPL_C                                         /* 사업장코드              */
+                 , ETR_MFC_RC_DT                                  /* 수탁가공접수일자        */
+                 , ETR_MFC_RC_SQNO                                /* 수탁가공접수일련번호    */
+                 , COUNT(CASE STDV_DSC WHEN 'O' THEN STDV_QT
+                        END)          AS OUT_CNT                  /* 제품출고건수            */
+				 , SUM(CASE STDV_DSC WHEN 'O' THEN ETR_MFC_AM
+                        END)          AS ETR_MFC_AM_OUT_SUM       /* 제품출고금액 합계       */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN ETR_MFC_AM                            
+                        END)          AS ETR_MFC_AM_IN_SUM        /* 제품입고금액 합계       */
+				 , SUM(CASE STDV_DSC WHEN 'O' THEN ETR_MFC_VAT                           
+                        END)          AS ETR_MFC_VAT_OUT_SUM      /* 제품출고수량 합계       */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN ETR_MFC_VAT                           
+                        END)          AS ETR_MFC_VAT_IN_SUM       /* 제품출고수량 합계       */
+				 , SUM(CASE STDV_DSC WHEN 'O' THEN LBRCS                                 
+                        END)          AS LBRCS_OUT_SUM            /* 노무비 합계             */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN LBRCS                                 
+                        END)          AS LBRCS_IN_SUM             /* 노무비 합계             */
+				 , SUM(CASE STDV_DSC WHEN 'O' THEN ETR_MFC_XPN
+                        END)          AS ETR_MFC_XPN_OUT_SUM      /* 수탁가공 출고경비합계   */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN ETR_MFC_XPN   
+                        END)          AS ETR_MFC_XPN_IN_SUM       /* 수탁가공 입고경비합계   */
+				 , SUM(CASE STDV_DSC WHEN 'O' THEN ETR_MFC_MTRCS
+                        END)          AS ETR_MFC_MTRCS_OUT_SUM    /* 수탁가공출고재료비 합계 */
+                 , SUM(CASE STDV_DSC WHEN 'I' THEN ETR_MFC_MTRCS   
+                        END)          AS ETR_MFC_MTRCS_IN_SUM     /* 수탁가공입고재료비 합계 */
+              FROM TB_PD_D_ETR_MFC_MFS_STDV
+             WHERE 1=1
+               AND CORP_C = #{CORP_C}
+               AND BZPL_C = #{BZPL_C}
+               AND DEL_YN = 'N'
+             GROUP BY CORP_C
+                    , BZPL_C
+                    , ETR_MFC_RC_DT
+                    , ETR_MFC_RC_SQNO
+        )
+        SELECT A.CORP_C                                /* 회사코드                  */
+             , A.BZPL_C                                /* 사업장코드                */
+             , A.ETR_MFC_RC_DT                         /* 수탁가공접수일자          */
+             , A.ETR_MFC_RC_SQNO                       /* 수탁가공접수일련번호      */
+             , A.TRPL_C                                /* 거래처코드                */
+             , (SELECT
+                      TRPL_NM
+                FROM
+                      TB_CO_M_TRPL
+                WHERE CORP_C = A.CORP_C
+                  AND TRPL_C = A.TRPL_C) AS TRPL_NM    /* 거래처명                  */
+             , A.GDS_C                                 /* 물품코드                  */
+             , D.GDS_DTL_NM                            /* 물품명상세(물품명 + 규격) */
+             , D.GDS_STD_NM                            /* 물품규격                  */
+             , D.UNT_C                                 /* 물품단위코드              */
+             , D.GDS_TP_DSC                            /* 물품유형구분코드          */
+             , A.ETR_MFC_STS_DSC                       /* 수탁가공상태구분코드      */
+             , A.CTR_QT                                /* 계약수량                  */
+             , A.PD_TOT_QT                             /* 생산총수량                */
+             , A.DLR_TOT_QT                            /* 출고총수량                */
+             , A.ETR_MFC_UPR                           /* 수탁가공물품단가          */
+             , A.ETR_MFC_AM                            /* 수탁가공금액              */
+             , A.ETR_MFC_VAT                           /* 수탁가공부가세            */
+             , ISNULL(C.OUT_CNT, 0)                                                   AS OUT_CNT              /* 제품 출고건수             */
+             , ISNULL(C.ETR_MFC_AM_OUT_SUM, 0) - ISNULL(C.ETR_MFC_AM_IN_SUM, 0)       AS ETR_MFC_AM_SUM       /* 수탁가공금액 합계         */
+             , ISNULL(C.ETR_MFC_VAT_OUT_SUM, 0) - ISNULL(C.ETR_MFC_VAT_IN_SUM, 0)     AS ETR_MFC_VAT_SUM      /* 수탁가공부가세 합계       */
+             , ISNULL(C.LBRCS_OUT_SUM, 0) - ISNULL(C.LBRCS_IN_SUM, 0)                 AS LBRCS_SUM            /* 노무비 합계               */
+             , ISNULL(C.ETR_MFC_XPN_OUT_SUM, 0) - ISNULL(C.ETR_MFC_XPN_IN_SUM, 0)     AS ETR_MFC_XPN_SUM      /* 수탁가공경비 합계         */
+             , ISNULL(C.ETR_MFC_MTRCS_OUT_SUM, 0) - ISNULL(C.ETR_MFC_MTRCS_IN_SUM, 0) AS ETR_MFC_MTRCS_SUM    /* 수탁가공재료비 합계       */
+             , B.STDV_QT_IN_CNT                        /* 원부재료 인수건수         */ 
+             , B.STDV_QT_OUT_CNT                       /* 원부재료 출고건수         */
+          FROM TB_PD_M_ETR_MFC_RC A
+               LEFT JOIN ETR_MFC_OMTR_STDV B
+                 ON B.CORP_C          = A.CORP_C
+                AND B.BZPL_C          = A.BZPL_C
+                AND B.ETR_MFC_RC_DT   = A.ETR_MFC_RC_DT
+                AND B.ETR_MFC_RC_SQNO = A.ETR_MFC_RC_SQNO
+               LEFT JOIN ETR_MFC_MFS_STDV  C
+                 ON C.CORP_C          = A.CORP_C
+                AND C.BZPL_C          = A.BZPL_C
+                AND C.ETR_MFC_RC_DT   = A.ETR_MFC_RC_DT
+                AND C.ETR_MFC_RC_SQNO = A.ETR_MFC_RC_SQNO
+               LEFT JOIN TB_CO_M_GDS D    
+                 ON D.CORP_C          = A.CORP_C
+                AND D.BZPL_C          = A.BZPL_C
+                AND D.GDS_C           = A.GDS_C
+         WHERE 1=1
+           AND A.CORP_C          = #{CORP_C}
+           AND A.BZPL_C          = #{BZPL_C}
+           AND A.ETR_MFC_RC_DT   BETWEEN #{ST_DT} AND #{ED_DT}
+           AND A.DEL_YN = 'N'
+        <if test="GDS_C != ''">
+           AND A.GDS_C           = #{GDS_C}
+        </if>
+        <if test="TRPL_C != ''">
+           AND A.TRPL_C          = #{TRPL_C}
+        </if>
+        <if test="ETR_MFC_STS_DSC != ''">
+           AND A.ETR_MFC_STS_DSC = #{ETR_MFC_STS_DSC}
+        </if>
+    </select>
+</mapper>

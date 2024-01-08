@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_D_INTF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_D_INTF */ TB_SY_D_INTF
+        (
+              CORP_C              /* 회사코드             */
+            , INTF_ID             /* 인터페이스ID         */
+            , RQR_RSP_DSC         /* 요청응답구분코드     */
+            , INTF_COL_SQNO       /* 연계컬럼일련번호     */            
+            , INTF_DATA_DSC       /* 연계자료구분코드(Hea */
+            , INTF_DTL_DSC        /* 연계상세구분코드(추  */
+            , INTF_COL_ID         /* 연계컬럼ID           */
+            , INTF_COL_NM         /* 연계컬럼명           */
+            , INTF_BSC_VAL        /* 연계기본값           */
+            , INTF_COL_TP_DSC     /* 연계컬럼유형구분코드 */
+            , INTF_COL_LEN        /* 연계컬럼길이         */
+            , INTF_COL_ST_LOC     /* 연계컬럼시작위치     */
+            , INTF_COL_ED_LOC     /* 연계컬럼종료위치     */
+            , RMK_CNTN            /* 비고내용             */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{INTF_ID}
+            , #{RQR_RSP_DSC}
+            , #{INTF_COL_SQNO}
+            , #{INTF_DATA_DSC}
+            , #{INTF_DTL_DSC}
+            , #{INTF_COL_ID}
+            , #{INTF_COL_NM}
+            , #{INTF_BSC_VAL}
+            , #{INTF_COL_TP_DSC}
+            , #{INTF_COL_LEN}
+            , #{INTF_COL_ST_LOC}
+            , #{INTF_COL_ED_LOC}
+            , #{RMK_CNTN}
+            , #{USE_YN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_D_INTF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_D_INTF */ TB_SY_D_INTF
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , INTF_ID             = #{INTF_ID}               /* 인터페이스ID         */
+             , RQR_RSP_DSC         = #{RQR_RSP_DSC}           /* 요청응답구분코드     */
+             , INTF_COL_SQNO       = #{INTF_COL_SQNO}         /* 연계컬럼일련번호     */             
+             , INTF_DATA_DSC       = #{INTF_DATA_DSC}         /* 연계자료구분코드(Hea */
+             , INTF_DTL_DSC        = #{INTF_DTL_DSC}          /* 연계상세구분코드(추  */
+             , INTF_COL_ID         = #{INTF_COL_ID}           /* 연계컬럼ID           */
+             , INTF_COL_NM         = #{INTF_COL_NM}           /* 연계컬럼명           */
+             , INTF_BSC_VAL        = #{INTF_BSC_VAL}          /* 연계기본값           */
+             , INTF_COL_TP_DSC     = #{INTF_COL_TP_DSC}       /* 연계컬럼유형구분코드 */
+             , INTF_COL_LEN        = #{INTF_COL_LEN}          /* 연계컬럼길이         */
+             , INTF_COL_ST_LOC     = #{INTF_COL_ST_LOC}       /* 연계컬럼시작위치     */
+             , INTF_COL_ED_LOC     = #{INTF_COL_ED_LOC}       /* 연계컬럼종료위치     */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_COL_SQNO       = #{INTF_COL_SQNO}
+           AND INTF_ID             = #{INTF_ID}
+           AND RQR_RSP_DSC         = #{RQR_RSP_DSC}
+    </update>
+
+    <delete id="delete_TB_SY_D_INTF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_D_INTF */ FROM TB_SY_D_INTF
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND INTF_COL_SQNO       = #{INTF_COL_SQNO}
+           AND INTF_ID             = #{INTF_ID}
+           AND RQR_RSP_DSC         = #{RQR_RSP_DSC}
+    </delete>
+
+    <select id="select_TB_SY_D_INTF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SY_D_INTF */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+             , A.RQR_RSP_DSC                                       /* 요청응답구분코드     */
+             , A.INTF_COL_SQNO                                     /* 연계컬럼일련번호     */
+             , A.TR_SQNO                                           /* 거래일련번호         */
+             , A.INTF_DATA_DSC                                     /* 연계자료구분코드(Hea */
+             , A.INTF_DTL_DSC                                      /* 연계상세구분코드(추  */
+             , A.INTF_COL_ID                                       /* 연계컬럼ID           */
+             , A.INTF_COL_NM                                       /* 연계컬럼명           */
+             , A.INTF_BSC_VAL                                      /* 연계기본값           */
+             , A.INTF_COL_TP_DSC                                   /* 연계컬럼유형구분코드 */
+             , A.INTF_COL_LEN                                      /* 연계컬럼길이         */
+             , A.INTF_COL_ST_LOC                                   /* 연계컬럼시작위치     */
+             , A.INTF_COL_ED_LOC                                   /* 연계컬럼종료위치     */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_D_INTF A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.INTF_COL_SQNO     = #{INTF_COL_SQNO}
+           AND A.INTF_ID           = #{INTF_ID}
+           AND A.RQR_RSP_DSC       = #{RQR_RSP_DSC}
+    </select>
+    
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_DL_D_ACG_SLP" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_DL_D_ACG_SLP */ TB_DL_D_ACG_SLP
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , ACG_DT              /* 회계일자             */
+            , ACG_SQNO            /* 회계일련번호         */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , ACG_DSQNO           /* 회계상세일련번호     */
+            , ASB_NO              /* 분개순서             */
+            , JNLZ_DSC            /* 분개구분코드         */
+            , JNLZ_DTI_DSC        /* 분개세부구분코드     */
+            , ACG_ACCC            /* 회계계정코드         */
+            , ACG_AM              /* 회계계정금액         */
+            , BLB_DFC_DSC         /* 흑적자구분코드       */
+            , DB_CR_DSC           /* 차대변구분코드       */
+            , JNLZ_SNSNM          /* 분개적요명           */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{ACG_DT}
+            , #{ACG_SQNO}
+            , #{TR_BSN_DSC}
+            , #{ACG_DSQNO}
+            , #{ASB_NO}
+            , #{JNLZ_DSC}
+            , #{JNLZ_DTI_DSC}
+            , #{ACG_ACCC}
+            , #{ACG_AM}
+            , #{BLB_DFC_DSC}
+            , #{DB_CR_DSC}
+            , #{JNLZ_SNSNM}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_DL_D_ACG_SLP" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_DL_D_ACG_SLP */ TB_DL_D_ACG_SLP
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , ACG_DT              = #{ACG_DT}                /* 회계일자             */
+             , ACG_SQNO            = #{ACG_SQNO}              /* 회계일련번호         */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , ACG_DSQNO           = #{ACG_DSQNO}             /* 회계상세일련번호     */
+             , ASB_NO              = #{ASB_NO}                /* 분개순서             */
+             , JNLZ_DSC            = #{JNLZ_DSC}              /* 분개구분코드         */
+             , JNLZ_DTI_DSC        = #{JNLZ_DTI_DSC}          /* 분개세부구분코드     */
+             , ACG_ACCC            = #{ACG_ACCC}              /* 회계계정코드         */
+             , ACG_AM              = #{ACG_AM}                /* 회계계정금액         */
+             , BLB_DFC_DSC         = #{BLB_DFC_DSC}           /* 흑적자구분코드       */
+             , DB_CR_DSC           = #{DB_CR_DSC}             /* 차대변구분코드       */
+             , JNLZ_SNSNM          = #{JNLZ_SNSNM}            /* 분개적요명           */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND ACG_DSQNO           = #{ACG_DSQNO}
+           AND ACG_DT              = #{ACG_DT}
+           AND ACG_SQNO            = #{ACG_SQNO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TR_BSN_DSC          = #{TR_BSN_DSC}
+    </update>
+
+    <delete id="delete_TB_DL_D_ACG_SLP" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_DL_D_ACG_SLP */ FROM TB_DL_D_ACG_SLP
+         WHERE 1=1 
+           AND ACG_DSQNO           = #{ACG_DSQNO}
+           AND ACG_DT              = #{ACG_DT}
+           AND ACG_SQNO            = #{ACG_SQNO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND TR_BSN_DSC          = #{TR_BSN_DSC}
+    </delete>
+
+    <select id="select_TB_DL_D_ACG_SLP" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_DL_D_ACG_SLP */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.ACG_SQNO                                          /* 회계일련번호              */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.ACG_DSQNO                                         /* 회계상세일련번호          */
+             , A.ASB_NO                                            /* 분개순서                  */
+             , A.JNLZ_DSC                                          /* 분개구분코드              */
+             , A.JNLZ_DTI_DSC                                      /* 분개세부구분코드          */
+             , A.ACG_ACCC                                          /* 회계계정코드              */
+             , A.ACG_AM                                            /* 회계계정금액              */
+             , A.BLB_DFC_DSC                                       /* 흑적자구분코드            */
+             , A.DB_CR_DSC                                         /* 차대변구분코드            */
+             , A.JNLZ_SNSNM                                        /* 분개적요명                */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_DL_D_ACG_SLP A
+         WHERE 1=1 
+           AND A.ACG_DSQNO         = #{ACG_DSQNO}
+           AND A.ACG_DT            = #{ACG_DT}
+           AND A.ACG_SQNO          = #{ACG_SQNO}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.TR_BSN_DSC        = #{TR_BSN_DSC}
+    </select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CP_M_DBSN_SL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CP_M_DBSN_SL */ TB_CP_M_DBSN_SL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , GDS_C               /* 물품코드             */
+            , TRPL_C              /* 거래처코드           */
+            , SL_QT               /* 매출수량             */
+            , SL_AM               /* 매출금액             */
+            , SL_PCS_AM           /* 매출원가금액         */
+            , ARG_RTO             /* 정리비율             */
+            , ARG_AM              /* 정리금액             */
+            , ETC_DSC             /* 기타구분             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PCS_CLC_DT}
+            , #{PCS_CLC_SQNO}
+            , #{GDS_C}
+            , #{TRPL_C}
+            , #{SL_QT}
+            , #{SL_AM}
+            , #{SL_PCS_AM}
+            , #{ARG_RTO}
+            , #{ARG_AM}
+            , #{ETC_DSC}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CP_M_DBSN_SL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CP_M_DBSN_SL */ TB_CP_M_DBSN_SL
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PCS_CLC_DT          = #{PCS_CLC_DT}            /* 원가계산일자         */
+             , PCS_CLC_SQNO        = #{PCS_CLC_SQNO}          /* 원가계산일련번호     */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , SL_QT               = #{SL_QT}                 /* 매출수량             */
+             , SL_AM               = #{SL_AM}                 /* 매출금액             */
+             , SL_PCS_AM           = #{SL_PCS_AM}             /* 매출원가금액         */
+             , ARG_RTO             = #{ARG_RTO}               /* 정리비율             */
+             , ARG_AM              = #{ARG_AM}                /* 정리금액             */
+             , ETC_DSC             = #{ETC_DSC}               /* 기타구분             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </update>
+
+    <delete id="delete_TB_CP_M_DBSN_SL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CP_M_DBSN_SL */ FROM TB_CP_M_DBSN_SL
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND TRPL_C              = #{TRPL_C}
+    </delete>
+
+    <select id="select_TB_CP_M_DBSN_SL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CP_M_DBSN_SL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_DT                                        /* 원가계산일자              */
+             , A.PCS_CLC_SQNO                                      /* 원가계산일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.SL_QT                                             /* 매출수량                  */
+             , A.SL_AM                                             /* 매출금액                  */
+             , A.SL_PCS_AM                                         /* 매출원가금액              */
+             , A.ARG_RTO                                           /* 정리비율                  */
+             , A.ARG_AM                                            /* 정리금액                  */
+             , A.ETC_DSC                                           /* 기타구분                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CP_M_DBSN_SL A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.PCS_CLC_DT        = #{PCS_CLC_DT}
+           AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}
+           AND A.TRPL_C            = #{TRPL_C}
+    </select>
+</mapper>

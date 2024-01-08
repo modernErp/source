@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="select_Pd2140list_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Pd2140list_01 */
+		       COUNT(1) AS RPT_CNT
+             , B.GDS_C                                             /* 물품코드                  */
+        	 , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , C.GDS_DTL_NM                                        /* 물품명상세(물품+규격      */
+             , C.UNT_C                                             /* 물품유형구분코드          */
+             , C.GDS_STD_NM                                        /* 규격                      */
+             , A.MFC_DSC                                           /* 가공구분                  */ 
+        	 , SUM(B.MFS_DNTT_QT)   AS MFS_DNTT_QT                 /* 제품지시량                */
+             , SUM(B.PD_QT)         AS PD_QT                       /* 생산수량                  */
+        	 , SUM(B.PD_AM)         AS PD_AM                       /* 생산금액                  */
+          FROM TB_PD_M_WK_RPT A
+        	 , TB_PD_D_WK_RPT_MFS B
+        	 , TB_CO_M_GDS C
+         WHERE 1=1
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.CORP_C            = B.CORP_C
+           AND A.RPT_DT            = B.RPT_DT
+           AND A.RPT_SQNO          = B.RPT_SQNO
+           AND B.BZPL_C            = C.BZPL_C
+           AND B.CORP_C            = C.CORP_C
+           AND B.GDS_C             = C.GDS_C
+           AND A.MFC_WK_STS_C  IN ('06','07','08')
+           AND A.DEL_YN            = 'N'
+           AND B.DEL_YN            = 'N'
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+     <choose>
+        <when test="DT_DSC == 1">
+           AND A.RPT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        </when>
+        <when test="DT_DSC == 2">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        </when>
+     </choose>   
+        <if test="GDS_TP_DSC != '' and GDS_TP_DSC != null" >
+           AND C.GDS_TP_DSC        = #{GDS_TP_DSC}
+        </if>
+        <if test="MFC_DSC != '' and MFC_DSC != null" >
+           AND A.MFC_DSC           = #{MFC_DSC}
+        </if>
+         GROUP BY B.GDS_C      
+        	    , C.GDS_TP_DSC 
+        	    , C.GDS_DTL_NM 
+        	    , C.UNT_C      
+        		, C.GDS_STD_NM 
+        		, A.MFC_DSC
+    </select>
+
+</mapper>

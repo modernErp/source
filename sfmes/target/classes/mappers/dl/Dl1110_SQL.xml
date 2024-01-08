@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.dl">
+    <select id="selectDl1110List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+            SELECT /*+ selectDl1110List */
+                    A.ACG_ACCC
+                  , B.ACG_ACC_NM AS ACG_ACC_NM
+                  , B.UP_ACC_C AS UP_ACC_C
+                  , A.BLB_DFC_DSC
+                  , CASE WHEN A.DB_CR_DSC = '1' THEN 1
+                         ELSE 0
+                          END AS DB_CNT
+                  , CASE WHEN A.DB_CR_DSC = '1' THEN A.ACG_AM
+                         ELSE 0
+                          END AS DB_AM
+                  , CASE WHEN A.DB_CR_DSC = '2' THEN 1
+                         ELSE 0
+                          END AS CR_CNT
+                  , CASE WHEN A.DB_CR_DSC = '2' THEN A.ACG_AM
+                         ELSE 0
+                          END AS CR_AM
+             FROM TB_DL_D_ACG_SLP A
+       INNER JOIN TB_DL_M_ACG B
+               ON A.CORP_C    =  B.CORP_C
+              AND A.ACG_ACCC  = B.ACG_ACC_C
+            WHERE 1 = 1
+              AND A.CORP_C    = #{CORP_C}
+              AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+           <if test = "TR_BSN_DSC != null and TR_BSN_DSC != ''">
+              AND A.TR_BSN_DSC   = #{TR_BSN_DSC}
+           </if>
+           <if test = "FSRG_ID != null and FSRG_ID != ''">
+              AND A.FSRG_ID      = #{FSRG_ID}
+           </if>
+           <if test = "ACG_ACCC != null and ACG_ACCC != ''">
+              AND A.ACG_ACCC     = #{ACG_ACCC}
+           </if>  
+           <if test = "CRC_CAN_DSC != null and CRC_CAN_DSC != ''">
+              AND A.CRC_CAN_DSC  = #{CRC_CAN_DSC}
+           </if>
+    </select>
+</mapper>

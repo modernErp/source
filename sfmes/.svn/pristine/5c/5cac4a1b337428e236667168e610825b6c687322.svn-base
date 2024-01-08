@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_DLR_DNTT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_DLR_DNTT */ TB_SE_M_DLR_DNTT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DLR_DNTT_DT         /* 출고지시일자         */
+            , DLR_DNTT_SQNO       /* 출고지시일련번호     */
+            , SLP_NML_YN          /* 전표정상여부         */
+            , TRPL_C              /* 거래처코드           */
+            , DLR_DNTT_STS_DSC    /* 출고지시상태구분코드 */
+            , RCPL_C              /* 수령처코드           */
+            , DVY_DT              /* 배송일자             */
+            , DVY_OBJ_DSC         /* 배송대상구분코드     */
+            , DVYAA_INP_DSC       /* 배송지입력구분코드   */
+            , DVYAA_ZIP           /* 배송지우편번호       */
+            , DVYAA_ADR1          /* 배송지주소1          */
+            , DVYAA_ADR2          /* 배송지주소2          */
+            , DVY_CUS_REG_DT      /* 배송고객등록일자     */
+            , DVY_CUS_REG_SQNO    /* 배송고객등록일련번호 */
+            , RVO_DT              /* 수주일자             */
+            , RVO_SQNO            /* 수주일련번호         */
+            , DLR_DT              /* 출고일자             */
+            , DLR_SQNO            /* 출고일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DLR_DNTT_DT}
+            , #{DLR_DNTT_SQNO}
+            , 'Y'
+            , #{TRPL_C}
+            , #{DLR_DNTT_STS_DSC}
+            , #{RCPL_C}
+            , #{DVY_DT}
+            , #{DVY_OBJ_DSC}
+            , #{DVYAA_INP_DSC}
+            , #{DVYAA_ZIP}
+            , #{DVYAA_ADR1}
+            , #{DVYAA_ADR2}
+            , #{DVY_CUS_REG_DT}
+            , #{DVY_CUS_REG_SQNO}
+            , #{RVO_DT}
+            , #{RVO_SQNO}
+            , #{DLR_DT}
+            , #{DLR_SQNO}
+            , #{RMK_CNTN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_DLR_DNTT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_DLR_DNTT */ TB_SE_M_DLR_DNTT
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DLR_DNTT_DT         = #{DLR_DNTT_DT}           /* 출고지시일자         */
+             , DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}         /* 출고지시일련번호     */
+             , SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , TRPL_C              = #{TRPL_C}                /* 거래처코드           */
+             , DLR_DNTT_STS_DSC    = #{DLR_DNTT_STS_DSC}      /* 출고지시상태구분코드 */
+             , RCPL_C              = #{RCPL_C}                /* 수령처코드           */
+             , DVY_DT              = #{DVY_DT}                /* 배송일자             */
+             , DVY_OBJ_DSC         = #{DVY_OBJ_DSC}           /* 배송대상구분코드     */
+             , DVYAA_INP_DSC       = #{DVYAA_INP_DSC}         /* 배송지입력구분코드   */
+             , DVYAA_ZIP           = #{DVYAA_ZIP}             /* 배송지우편번호       */
+             , DVYAA_ADR1          = #{DVYAA_ADR1}            /* 배송지주소1          */
+             , DVYAA_ADR2          = #{DVYAA_ADR2}            /* 배송지주소2          */
+             , DVY_CUS_REG_DT      = #{DVY_CUS_REG_DT}        /* 배송고객등록일자     */
+             , DVY_CUS_REG_SQNO    = DBO.SF_GET_NUMERIC(#{DVY_CUS_REG_SQNO})      /* 배송고객등록일련번호 */
+             , RVO_DT              = #{RVO_DT}                /* 수주일자             */
+             , RVO_SQNO            = DBO.SF_GET_NUMERIC(#{RVO_SQNO})             /* 수주일련번호         */
+             , DLR_DT              = #{DLR_DT}                /* 출고일자             */
+             , DLR_SQNO            = DBO.SF_GET_NUMERIC(#{DLR_SQNO})            /* 출고일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_DNTT_DT         = #{DLR_DNTT_DT}
+           AND DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}
+    </update>
+
+    <delete id="delete_TB_SE_M_DLR_DNTT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_DLR_DNTT */ FROM TB_SE_M_DLR_DNTT
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_DNTT_DT         = #{DLR_DNTT_DT}
+           AND DLR_DNTT_SQNO       = #{DLR_DNTT_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_M_DLR_DNTT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_DLR_DNTT */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_DNTT_DT                                       /* 출고지시일자              */
+             , A.DLR_DNTT_SQNO                                     /* 출고지시일련번호          */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.DLR_DNTT_STS_DSC                                  /* 출고지시상태구분코드      */
+             , A.RCPL_C                                            /* 수령처코드                */
+             , A.DVY_DT                                            /* 배송일자                  */
+             , A.DVY_OBJ_DSC                                       /* 배송대상구분코드          */
+             , A.DVYAA_INP_DSC                                     /* 배송지입력구분코드        */
+             , A.DVYAA_ZIP                                         /* 배송지우편번호            */
+             , A.DVYAA_ADR1                                        /* 배송지주소1               */
+             , A.DVYAA_ADR2                                        /* 배송지주소2               */
+             , A.DVY_CUS_REG_DT                                    /* 배송고객등록일자          */
+             , A.DVY_CUS_REG_SQNO                                  /* 배송고객등록일련번호      */
+             , A.RVO_DT                                            /* 수주일자                  */
+             , A.RVO_SQNO                                          /* 수주일련번호              */
+             , A.DLR_DT                                            /* 출고일자                  */
+             , A.DLR_SQNO                                          /* 출고일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_DLR_DNTT A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DLR_DNTT_DT       = #{DLR_DNTT_DT}
+           AND A.DLR_DNTT_SQNO     = #{DLR_DNTT_SQNO}
+    </select>
+</mapper>

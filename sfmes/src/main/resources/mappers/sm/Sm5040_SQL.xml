@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+ 
+    <!-- 재고실사조정등록 -->
+    <select id="searchSm5040_01" parameterType="LinkedHashMap" resultType="linkedHashMap">
+	        SELECT /*+ searchSm5040_01 */ 
+	               ISNULL(MAX(SSVY_DFN_SQNO), 0) + 1 AS SSVY_DFN_SQNO
+	            ,  #{SSVY_DFN_DT}                    AS SSVY_DFN_DT
+	            ,  #{SSVY_RSV_DT}                    AS SSVY_RSV_DT
+	            ,  #{SSVY_RSV_SQNO}                  AS SSVY_RSV_SQNO
+            FROM   TB_SM_M_SSVY_DFN
+            WHERE  1=1
+            AND    CORP_C       = #{CORP_C}
+            AND    BZPL_C       = #{BZPL_C}
+            AND    SSVY_DFN_DT  = #{SSVY_DFN_DT}
+    </select>    
+    
+    <!-- 재고조사확정등록 화면에서 확정 -->
+    <update id="updateSm5040_01" parameterType="linkedHashMap" >
+            UPDATE /*+ updateSm5040_01 */ TB_SM_M_SSVY_RSV
+            SET     SSVY_STS_DSC    = #{SSVY_STS_DSC}       /* 실사상태구분코드 2 = 재고실사등록*/
+            ,       DFN_YN          = 'Y'                   /* 확정여부          */ 
+            ,       LSCHG_DTM       = GETDATE()             /* 최종변경일시     */
+            ,       LSCHG_ID        = #{GUSRID}             /* 최종변경자ID  */  
+            WHERE   1=1
+            AND     CORP_C          = #{CORP_C}
+            AND     BZPL_C          = #{BZPL_C}
+            AND     SSVY_RSV_DT     = #{SSVY_RSV_DT}
+            AND     SSVY_RSV_SQNO   = #{SSVY_RSV_SQNO}
+            AND     DEL_YN          = 'N'
+    </update>
+    
+    <!-- 재고조사확정등록 기본 -->
+    <insert id="insertSm5040_TB_SM_M_SSVY_DFN" parameterType="linkedHashMap">
+			INSERT INTO /*+ insertSm5040_TB_SM_M_SSVY_DFN */ TB_SM_M_SSVY_DFN
+			   ( CORP_C
+			   , BZPL_C
+			   , SSVY_DFN_DT
+			   , SSVY_DFN_SQNO
+			   , SSVY_RSV_DT
+			   , SSVY_RSV_SQNO
+			   , SLP_NML_YN
+			   , RLTR_DT
+			   , ACG_DT
+			   , WRS_ACD_NCLS_AM
+			   , MFS_ACD_NCLS_AM
+			   , SWRS_ACD_NCLS_AM
+			   , ETC_ACD_NCLS_AM
+			   , OPTFT
+			   , SSVV_OVR_PRC_DSC
+			   , RMK_CNTN
+			   , TR_BSN_DSC
+			   , TR_SQNO
+			   , FSRG_DTM
+			   , FSRG_ID
+			   , LSCHG_DTM
+			   , LSCHG_ID
+			   )
+			   VALUES
+			   ( #{CORP_C}
+			   , #{BZPL_C}
+			   , #{SSVY_DFN_DT}
+			   , #{SSVY_DFN_SQNO}
+			   , #{SSVY_RSV_DT}
+			   , #{SSVY_RSV_SQNO}
+			   , 'Y'
+			   , #{RLTR_DT}
+			   , #{ACG_DT}
+			   , 0
+			   , 0
+			   , 0
+			   , 0
+			   , 0
+			   , ''
+			   , #{RMK_CNTN}
+			   , #{TR_BSN_DSC}
+			   , #{TR_SQNO}
+			   , GETDATE()
+			   , #{GUSRID}
+			   , GETDATE()
+			   , #{GUSRID}
+			   )
+    </insert>
+    
+    <!-- 재고조사확정등록 상세 -->
+    <insert id="insertSm5040_TB_SM_D_SSVY_DFN" parameterType="linkedHashMap">
+            INSERT INTO TB_SM_D_SSVY_DFN
+			SELECT /*+ insertSm5040_TB_SM_D_SSVY_DFN */
+			       A.CORP_C                         AS CORP_C              /* 회사코드          */     
+			     , A.BZPL_C                         AS BZPL_C              /* 사업장코드        */
+			     , #{SSVY_DFN_DT}                   AS SSVY_RSV_DT         /* 실사확정일자      */
+			     , #{SSVY_DFN_SQNO}                 AS SSVY_RSV_SQNO       /* 실사확정일련번호 */
+			     , A.GDS_C                          AS GDS_C               /* 물품코드           */
+			     , A.STPL_QT                        AS STPL_QT             /* 재고수량           */
+			     , A.STPL_WT                        AS STPL_WT             /* 재고중량           */
+			     , A.STPL_AM                        AS STPL_AM             /* 재고금액           */
+			     , A.SSVY_QT                        AS SSVY_QT             /* 실사수량           */
+			     , A.SSVY_WT                        AS SSVY_WT             /* 실사중량           */
+			     , A.SSVY_AM                        AS SSVY_AM             /* 실사금액           */
+			     , A.AJ_QT                          AS AJ_QT               /* 조정수량           */
+			     , A.AJ_WT                          AS AJ_WT               /* 조정중량           */
+			     , A.AJ_AM                          AS AJ_AM               /* 조정금액           */     
+			     , A.AJ_QT                          AS DFN_QT              /* 확정수량           */ 
+			     , A.AJ_WT                          AS DFN_WT              /* 확정중량           */ 
+			     , A.AJ_AM                          AS DFN_AM              /* 확정금액           */ 
+			     , A.DIF_QT                         AS DIF_QT              /* 차이수량           */
+			     , A.DIF_WT                         AS DIF_WT              /* 차이중량           */
+			     , A.DIF_AM                         AS DIF_AM              /* 차이금액           */
+			     , A.GDS_ADT_YN                     AS GDS_ADT_YN          /* 물품추가여부       */
+			     , GETDATE()                        AS FSRG_DTM            /* 최초등록일시       */
+			     , #{GUSRID}                        AS FSRG_ID             /* 최초등록자ID   */
+			     , GETDATE()                        AS LSCHG_DTM           /* 최종변경일시       */
+			     , #{GUSRID}                        AS LSCHG_ID            /* 최종변경자ID   */
+			  FROM TB_SM_D_SSVY_AJ A
+			 WHERE 1=1
+			   AND A.CORP_C         = #{CORP_C}
+			   AND A.BZPL_C         = #{BZPL_C}
+			   AND A.SSVY_RSV_DT    = #{SSVY_RSV_DT}
+			   AND A.SSVY_RSV_SQNO  = #{SSVY_RSV_SQNO}
+    </insert>
+    
+    <!-- 재고조사확정등록 창고상세 -->
+    <insert id="insertSm5040_TB_SM_D_SSVY_DFN_WHSE" parameterType="linkedHashMap">
+			INSERT INTO TB_SM_D_SSVY_DFN_WHSE
+			SELECT /*+ insertSm5040_TB_SM_D_SSVY_DFN_WHSE */
+			       A.CORP_C                            AS CORP_C              /* 회사코드          */
+			     , A.BZPL_C                            AS BZPL_C              /* 사업장코드        */
+                 , #{SSVY_DFN_DT}                      AS SSVY_RSV_DT         /* 실사확정일자      */
+                 , #{SSVY_DFN_SQNO}                    AS SSVY_RSV_SQNO       /* 실사확정일련번호 */
+			     , A.GDS_C                             AS GDS_C               /* 물품코드  */
+			     , A.WHSE_C                            AS WHSE_C              /* 창고코드  */
+			     , A.STPL_QT                           AS STPL_QT             /* 재고수량  */
+			     , A.STPL_WT                           AS STPL_WT             /* 재고중량  */
+			     , A.STPL_AM                           AS STPL_AM             /* 재고금액  */
+			     , A.SSVY_QT                           AS SSVY_QT             /* 실사수량  */
+			     , A.SSVY_WT                           AS SSVY_WT             /* 실사중량  */
+			     , A.SSVY_AM                           AS SSVY_AM             /* 실사금액  */
+			     , A.AJ_QT                             AS AJ_QT               /* 조정수량  */
+			     , A.AJ_WT                             AS AJ_WT               /* 조정중량  */
+			     , A.AJ_AM                             AS AJ_AM               /* 조정금액  */
+			     , A.AJ_QT                             AS DFN_QT              /* 확정수량  */
+			     , A.AJ_WT                             AS DFN_WT              /* 확정중량  */
+			     , A.AJ_AM                             AS DFN_AM              /* 확정금액  */
+			     , A.DIF_QT                            AS DIF_QT              /* 차이수량  */
+			     , A.DIF_WT                            AS DIF_WT              /* 차이중량  */
+			     , A.DIF_AM                            AS DIF_AM              /* 차이금액  */
+			     , A.GDS_ADT_YN                        AS GDS_ADT_YN          /* 물품추가여부    */
+			     , A.RMK_CNTN                          AS RMK_CNTN            /* 비고내용         */
+			     , GETDATE()                           AS FSRG_DTM            /* 최초등록일시    */
+			     , #{GUSRID}                           AS FSRG_ID             /* 최초등록자ID  */
+			     , GETDATE()                           AS LSCHG_DTM           /* 최종변경일시    */
+			     , #{GUSRID}                           AS LSCHG_ID            /* 최종변경자ID  */
+			  FROM TB_SM_D_SSVY_AJ_WHSE A
+			 WHERE 1=1
+			   AND A.CORP_C         = #{CORP_C}
+			   AND A.BZPL_C         = #{BZPL_C}
+			   AND A.SSVY_RSV_DT   = #{SSVY_RSV_DT}
+			   AND A.SSVY_RSV_SQNO   = #{SSVY_RSV_SQNO}
+    </insert>
+</mapper>

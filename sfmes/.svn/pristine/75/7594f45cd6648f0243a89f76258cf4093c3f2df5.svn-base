@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <select id="sy2010selectMenu" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		WITH MENU_TREE AS( /*+ sy2010selectMenu */
+            SELECT A.CORP_C
+			     , A.MENU_ID                                         
+                 , A.MENU_DSC                                        
+                 , A.MENU_NM                                                 
+                 , A.MENU_LVL_DSC                                    
+                 , A.UP_MENU_ID                                      
+                 , (SELECT X2.MENU_NM                                
+                      FROM TB_SY_M_MENU X2
+                     WHERE 1 = 1
+                       AND X2.CORP_C  = A.CORP_C
+                       AND X2.MENU_ID = A.UP_MENU_ID) AS UP_MENU_NM
+                 , A.MENU_SEQ                                          
+                 , A.PGM_ID
+                 , A.DG_PGM_ID
+                 , (SELECT X1.PGM_NM 
+                      FROM TB_SY_M_PGID X1 
+                     WHERE 1 = 1
+                       AND X1.CORP_C = A.CORP_C
+                       AND X1.PGM_ID = A.PGM_ID) AS PGM_NM               
+                 , A.PGM_EXE_PATH                                      
+                 , A.PGM_EXPL                                          
+                 , A.USE_YN                                            
+                 , CONVERT(CHAR(23), A.FSRG_DTM) AS FSRG_DTM   
+                 , A.FSRG_ID                                   
+                 , CONVERT(CHAR(23), A.LSCHG_DTM) AS LSCHG_DTM 
+                 , A.LSCHG_ID                                            
+                 , CONVERT(NVARCHAR(1000), A.MENU_ID + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), A.MENU_SEQ))) AS SORT  
+              FROM TB_SY_M_MENU A
+             WHERE (A.MENU_DSC = '1' or A.MENU_DSC = '2')
+               AND A.UP_MENU_ID = ''
+               AND A.CORP_C = #{CORP_C}
+            
+             UNION ALL
+            
+            SELECT B.CORP_C
+			     , B.MENU_ID                                            
+                 , B.MENU_DSC                                           
+                 , B.MENU_NM                                                
+                 , B.MENU_LVL_DSC                                       
+                 , B.UP_MENU_ID                                         
+                 , (SELECT X2.MENU_NM                                   
+                      FROM TB_SY_M_MENU X2
+                     WHERE 1 = 1
+                       AND X2.CORP_C  = B.CORP_C
+                       AND X2.MENU_ID = B.UP_MENU_ID) AS UP_MENU_NM
+                 , B.MENU_SEQ                                           
+                 , B.PGM_ID
+                 , B.DG_PGM_ID
+                 , (SELECT X1.PGM_NM 
+                      FROM TB_SY_M_PGID X1 
+                    WHERE 1 = 1
+                      AND X1.CORP_C = B.CORP_C
+                      AND X1.PGM_ID = B.PGM_ID) AS PGM_NM                
+                 , B.PGM_EXE_PATH                                       
+                 , B.PGM_EXPL                                           
+                 , B.USE_YN                                             
+                 , CONVERT(CHAR(23), B.FSRG_DTM) AS FSRG_DTM    
+                 , B.FSRG_ID                                    
+                 , CONVERT(CHAR(23), B.LSCHG_DTM) AS LSCHG_DTM  
+                 , B.LSCHG_ID                                            
+                 , CONVERT(NVARCHAR(1000), C.SORT + ' / ' + REPLICATE('0', 3-LEN(RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))))+RTRIM(CONVERT(NVARCHAR(3), B.MENU_SEQ))) AS SORT  
+              FROM TB_SY_M_MENU B, MENU_TREE C
+             WHERE 1=1
+               AND B.UP_MENU_ID = C.MENU_ID
+               AND B.CORP_C = #{CORP_C}
+        )
+        SELECT MENU_TREE.* FROM MENU_TREE 
+         WHERE 1=1 
+           AND CORP_C     = #{CORP_C}
+      <if test = "S_MENU_ID != null and S_MENU_ID != ''">
+           AND MENU_ID LIKE #{S_MENU_ID} + '%'
+      </if>
+         ORDER BY SORT
+	</select>
+	
+	<select id="sy2010validCheck_01" parameterType="LinkedHashMap" resultType="Int">
+		SELECT /*+ sy2010validCheck_01 */
+		       COUNT(*) AS CNT   
+		  FROM TB_SY_M_MENU 
+         WHERE 1=1 
+           AND CORP_C             = #{CORP_C}
+           AND MENU_ID            = #{MENU_ID}
+	</select>
+	
+    <update id="update_TB_SY_M_MENU_BOM" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_MENU */ TB_SY_M_MENU
+           SET 
+               USE_YN              = #{USE_YN_BOM}            /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID     */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MENU_ID            IN ('PD001001', 'PD001002', 'PD002001', 'PD002003', 'PD003001', 'PD003003')
+	</update>
+	
+    <update id="update_TB_SY_M_MENU_PRW" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_MENU */ TB_SY_M_MENU
+           SET 
+               USE_YN              = #{USE_YN_PRW}            /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID     */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND MENU_ID            IN ('PD001003', 'PD001004', 'PD001005', 'PD002006', 'PD002007', 'PD003013', 'PD003014')
+    </update>
+	
+</mapper>

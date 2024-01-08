@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_DOC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_DOC */ TB_CO_M_DOC
+        (
+              CORP_C              /* 회사코드             */
+            , DOC_SQNO            /* 문서일련번호         */
+            , DOC_DSC             /* 문서구분코드         */
+            , DOC_DT              /* 문서일자             */
+            , DOC_DURMN_ID        /* 문서작성자아이디     */
+            , TIT                 /* 문서제목             */
+            , CNTN                /* 문서내용             */
+            , INQCN               /* 조회수               */ 
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호     */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{DOC_SQNO}
+            , #{DOC_DSC}
+            , #{DOC_DT}
+            , #{GUSRID}
+            , #{TIT}
+            , #{CNTN}
+            , 0 
+            , #{APD_FILE_AMN_NO}
+            , #{DEL_YN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_DOC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_DOC */ TB_CO_M_DOC
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , DOC_SQNO            = #{DOC_SQNO}              /* 문서일련번호         */
+             , DOC_DSC             = #{DOC_DSC}               /* 문서구분코드         */
+             , DOC_DT              = #{DOC_DT}                /* 문서일자             */
+             , DOC_DURMN_ID        = #{DOC_DURMN_ID}          /* 문서작성자아이디     */
+             , TIT                 = #{TIT}                   /* 문서제목             */
+             , CNTN                = #{CNTN}                  /* 문서내용             */             
+             , APD_FILE_AMN_NO     = #{APD_FILE_AMN_NO}       /* 첨부파일관리번호     */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND DOC_SQNO            = #{DOC_SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_M_DOC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_DOC */ FROM TB_CO_M_DOC
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND DOC_SQNO            = #{DOC_SQNO}
+    </delete>
+
+    <select id="select_TB_CO_M_DOC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_DOC */
+               A.CORP_C                                            /* 회사코드             */
+             , A.DOC_SQNO                                          /* 문서일련번호         */
+             , A.DOC_DSC                                           /* 문서구분코드         */
+             , A.DOC_DT                                            /* 문서일자             */
+             , A.DOC_DURMN_ID                                      /* 문서작성자아이디     */
+             , A.DOC_DURMN_ID                     AS  DOC_DURMN_NM /* 문서작성자아이디     */
+             , A.TIT                                               /* 문서제목             */
+             , A.CNTN                                              /* 문서내용             */
+             , A.INQCN                                             /* 조회수               */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호     */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , A.FSRG_ID                          AS   FSRG_NM     /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , A.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자ID         */
+          FROM TB_CO_M_DOC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DOC_SQNO          = #{DOC_SQNO}
+    </select>
+</mapper>

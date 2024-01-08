@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 공통코드내역 조회 -->
+    <select id="selectSy2030_Comnc" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+       SELECT /*+ selectSy2030_Comnc */
+              COMN_GRP_C                /* 공통그룹코드  */
+            , COMN_C                    /* 공통코드      */
+            , COMN_CNM                  /* 공통코드명    */
+            , AMN_HCNT1                 /* 관리항목내용1 */
+            , AMN_HCNT2                 /* 관리항목내용2 */
+            , AMN_HCNT3                 /* 관리항목내용3 */
+            , AMN_HCNT4                 /* 관리항목내용4 */
+            , AMN_HCNT5                 /* 관리항목내용5 */
+            , SORT_SEQ                  /* 정렬순서      */
+            , USE_YN                    /* 사용여부      */
+            , RMK_CNTN                  /* 비고내용      */
+            , CONVERT(CHAR(23), FSRG_DTM) AS FSRG_DTM
+            , FSRG_ID
+            , CONVERT(CHAR(23), LSCHG_DTM) AS LSCHG_DTM
+            , LSCHG_ID
+        FROM
+              TB_SY_D_COMNC
+        WHERE 1=1
+          AND CORP_C      = #{CORP_C}
+          AND COMN_GRP_C  = 'EMP_ROL_DSC'
+          AND USE_YN      = 'Y'    
+    </select>
+    
+    <!-- 역할별 프로그램 권한 내역 조회 -->
+    <select id="selectSy2030_Auth" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+       SELECT /*+ selectSy2030 */
+              A.PGM_ID                                                             /* 프로그램ID                    */
+            , A.BSN_DSC                                                            /* 업무구분코드                  */
+            , A.PGM_NM                                                             /* 프로그램명                    */
+            , A.PGM_WK_DSC                                                         /* 프로그램작업구분코드          */
+            , A.USE_YN                                                             /* 사용여부                      */
+            , A.DEL_YN                                                             /* 삭제여부                      */
+            , B.PGM_AUTH                                                           /* 권한여부(읽기:R/쓰기:W)       */
+            , CONVERT(CHAR(23), FSRG_DTM)  AS FSRG_DTM                             /* 최초등록일시                  */
+            , FSRG_ID                                                              /* 최초등록자ID                  */
+            , CONVERT(CHAR(23), LSCHG_DTM) AS LSCHG_DTM                            /* 최종변경일시                  */
+            , LSCHG_ID                                                             /* 최종변경자ID                  */
+        FROM
+              TB_SY_M_PGID A LEFT OUTER JOIN 
+             (SELECT  CORP_C
+                    , PGM_ID
+                    , PGM_AUTH
+                 FROM
+                      TB_SY_D_ROLE_PGM
+                WHERE 1 = 1
+                  AND EMP_ROL_DSC = #{EMP_ROL_DSC}) B ON (A.PGM_ID = B.PGM_ID AND A.CORP_C = B.CORP_C)
+       WHERE 1=1
+         AND A.USE_YN = 'Y'
+         AND A.DEL_YN = 'N'
+         AND A.CORP_C = #{CORP_C}
+         <if test = "F_BSN_DSC != null and F_BSN_DSC != ''">        /* 업무구분코드 유무확인         */
+            AND A.BSN_DSC = #{F_BSN_DSC}
+         </if>
+         <if test = "F_PGM_WK_DSC != null and F_PGM_WK_DSC != ''">  /* 프로그램작업구분코드 유무확인 */
+            AND A.PGM_WK_DSC = #{F_PGM_WK_DSC}
+         </if>         
+         <if test = "searchKeyword != null and searchKeyword != ''"> /* 검색어 유무확인               */
+            <choose>
+                <when test="searchCondition == ''"> /* 검색조건이 전체인 경우 */
+                    AND (A.PGM_ID LIKE '%' + #{searchKeyword} + '%' OR A.PGM_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> /* 검색조건이 프로그램ID인 경우 */
+                    AND A.PGM_ID LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> /* 검색조건이 프로그램명인 경우 */
+                    AND A.PGM_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>                
+            </choose>
+         </if>
+    </select>
+    
+    <!-- 역할별 프로그램 권한 내역 저장 -->
+    <insert id="insertSy2030_Auth" parameterType="LinkedHashMap">
+        MERGE TB_SY_D_ROLE_PGM AS A 
+        USING (SELECT  #{CORP_C}      AS CORP_C
+                     , #{EMP_ROL_DSC} AS EMP_ROL_DSC
+                     , #{PGM_ID}      AS PGM_ID
+                     , #{PGM_AUTH}    AS PGM_AUTH
+                     , #{DEL_YN}      AS DEL_YN
+                 FROM  DUAL) AS B ON (A.CORP_C = B.CORP_C AND A.EMP_ROL_DSC = B.EMP_ROL_DSC AND A.PGM_ID = B.PGM_ID)
+         WHEN MATCHED THEN
+        UPDATE 
+           SET  PGM_AUTH  = B.PGM_AUTH
+              , LSCHG_DTM = GETDATE()
+              , LSCHG_ID  = #{GUSRID}
+         WHEN NOT MATCHED THEN
+        INSERT (
+                CORP_C
+              , EMP_ROL_DSC
+              , PGM_ID
+              , PGM_AUTH
+              , DEL_YN
+              , FSRG_DTM
+              , FSRG_ID
+              , LSCHG_DTM
+              , LSCHG_ID
+               )
+        VALUES (
+                B.CORP_C
+              , B.EMP_ROL_DSC
+              , B.PGM_ID
+              , B.PGM_AUTH
+              , B.DEL_YN
+              , GETDATE()
+              , #{GUSRID}
+              , GETDATE()
+              , #{GUSRID}
+        );
+    </insert>    
+
+    <!-- 역할별 프로그램 권한 내역 이력 저장 -->
+    <insert id="insertSy2030_Log" parameterType="LinkedHashMap">
+		INSERT 
+		  INTO TB_SY_L_ROLE_PGM 
+		  (
+		       CORP_C
+		     , HST_SQNO
+		     , EMP_ROL_DSC
+		     , PGM_ID
+		     , PGM_AUTH
+		     , DEL_YN
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  )
+		SELECT 
+		       CORP_C
+		     , (SELECT ISNULL(MAX(HST_SQNO), 0) + 1 AS HST_SQNO FROM TB_SY_L_ROLE_PGM)
+		     , EMP_ROL_DSC
+		     , PGM_ID
+		     , PGM_AUTH
+		     , DEL_YN
+		     , FSRG_DTM
+		     , FSRG_ID
+		     , LSCHG_DTM
+		     , LSCHG_ID
+		  FROM TB_SY_D_ROLE_PGM
+		 WHERE 1=1
+		   AND CORP_C      = #{CORP_C}
+		   AND EMP_ROL_DSC = #{EMP_ROL_DSC}
+		   AND PGM_ID      = #{PGM_ID}
+    </insert>  
+
+</mapper>

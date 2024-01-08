@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_D_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_D_SRA_HST_BNDNO */ TB_CO_D_SRA_HST_BNDNO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , CRT_DT              /* 생성일자             */
+            , BUDL_NO             /* 묶음번호             */
+            , SQNO                /* 일련번호             */
+            , SRS_DSC             /* 축종구분             */
+            , SRA_HST_NO          /* 축산물이력번호       */
+            , STR_DT              /* 입고일자              */
+            , STR_SQNO            /* 입고일련번호       */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{CRT_DT}
+            , #{BUDL_NO}
+            , ( SELECT ISNULL(MAX(SQNO)+1, 1)
+			      FROM TB_CO_D_SRA_HST_BNDNO
+			     WHERE CORP_C  = #{CORP_C}
+			       AND BZPL_C  = #{BZPL_C}
+			       AND CRT_DT  = #{CRT_DT}
+			       AND BUDL_NO = #{BUDL_NO})
+            , #{SRS_DSC}
+            , #{SRA_HST_NO}
+            , #{STR_DT}
+            , #{STR_SQNO}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_D_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_D_SRA_HST_BNDNO */ TB_CO_D_SRA_HST_BNDNO
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , CRT_DT              = #{CRT_DT}                /* 생성일자             */
+             , BUDL_NO             = #{BUDL_NO}               /* 묶음번호             */
+             , SQNO                = #{SQNO}                  /* 일련번호             */
+             , SRS_DSC             = #{SRS_DSC}               /* 축종구분             */
+             , SRA_HST_NO          = #{SRA_HST_NO}            /* 축산물이력번호       */
+             , STR_DT              = #{STR_DT}                /* 입고일자             */
+             , STR_SQNO            = #{STR_SQNO}              /* 입고일련번호         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BUDL_NO             = #{BUDL_NO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND CRT_DT              = #{CRT_DT}
+           AND SQNO                = #{SQNO}
+    </update>
+
+    <delete id="delete_TB_CO_D_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_D_SRA_HST_BNDNO */ FROM TB_CO_D_SRA_HST_BNDNO
+         WHERE 1=1 
+           AND BUDL_NO             = #{BUDL_NO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND CRT_DT              = #{CRT_DT}
+           AND SQNO                = #{SQNO}
+    </delete>
+
+    <select id="select_TB_CO_D_SRA_HST_BNDNO" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_D_SRA_HST_BNDNO */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.CRT_DT                                            /* 생성일자                  */
+             , A.BUDL_NO                                           /* 묶음번호                  */
+             , A.SQNO                                              /* 일련번호                  */
+             , A.SRS_DSC                                           /* 축종구분                  */
+             , A.SRA_HST_NO                                        /* 축산묾이력번호            */
+             , A.STR_DT                                            /* 입고일자                  */
+             , A.STR_SQNO                                          /* 입고일련번호             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_D_SRA_HST_BNDNO A
+         WHERE 1=1 
+           AND A.BUDL_NO           = #{BUDL_NO}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.CRT_DT            = #{CRT_DT}
+           AND A.SQNO              = #{SQNO}
+    </select>
+</mapper>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_TOTECD_STDV" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_TOTECD_STDV */ TB_PD_D_TOTECD_STDV
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , TOTE_CODE           /* TOTE_CODE            */
+            , STDV_DSC            /* 입출고구분코드       */
+            , STDV_DT             /* 입출고일자           */
+            , STDV_SQNO           /* 입출고일련번호       */
+            , SLP_NML_YN          /* 전표정상여부         */
+            , DSTR_TERDT          /* 유통기한일자         */
+            , WHSE_C              /* 창고코드             */
+            , GDS_C               /* 물품코드             */
+            , STDV_QT             /* 입출고수량           */
+            , STDV_BOX_QT         /* 입출고박스수량       */
+            , ACG_DT              /* 회계일자             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{TOTE_CODE}
+            , #{STDV_DSC}
+            , #{STDV_DT}
+            , #{STDV_SQNO}
+            , #{SLP_NML_YN}
+            , #{DSTR_TERDT}
+            , #{WHSE_C}
+            , #{GDS_C}
+            , #{STDV_QT}
+            , #{STDV_BOX_QT}
+            , #{ACG_DT}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_TOTECD_STDV" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_TOTECD_STDV */ TB_PD_D_TOTECD_STDV
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , TOTE_CODE           = #{TOTE_CODE}             /* TOTE_CODE            */
+             , STDV_DSC            = #{STDV_DSC}              /* 입출고구분코드       */
+             , STDV_DT             = #{STDV_DT}               /* 입출고일자           */
+             , STDV_SQNO           = #{STDV_SQNO}             /* 입출고일련번호       */
+             , SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , DSTR_TERDT          = #{DSTR_TERDT}            /* 유통기한일자         */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , STDV_QT             = #{STDV_QT}               /* 입출고수량           */
+             , STDV_BOX_QT         = #{STDV_BOX_QT}           /* 입출고박스수량       */
+             , ACG_DT              = #{ACG_DT}                /* 회계일자             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+           AND STDV_DT             = #{STDV_DT}
+           AND STDV_SQNO           = #{STDV_SQNO}
+           AND STDV_DSC            = #{STDV_DSC}
+    </update>
+
+    <delete id="delete_TB_PD_D_TOTECD_STDV" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_TOTECD_STDV */ FROM TB_PD_D_TOTECD_STDV
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+           AND STDV_DT             = #{STDV_DT}
+           AND STDV_SQNO           = #{STDV_SQNO}
+           AND STDV_DSC            = #{STDV_DSC}
+    </delete>
+
+    <delete id="delete_TB_PD_D_TOTECD_STDV_SLP_NML" parameterType="LinkedHashMap">
+        UPDATE /*+ delete_TB_PD_D_TOTECD_STDV_SLP_NML */ TB_PD_D_TOTECD_STDV
+           SET 
+               SLP_NML_YN          = 'N'            /* 전표정상여부         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND TOTE_CODE           = #{TOTE_CODE}
+           AND STDV_DT             = #{STDV_DT}
+           AND STDV_SQNO           = #{STDV_SQNO}
+           AND STDV_DSC            = #{STDV_DSC}
+    </delete>
+
+    <select id="select_TB_PD_D_TOTECD_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_TOTECD_STDV */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TOTE_CODE                                         /* TOTE_CODE                 */
+             , A.STDV_DSC                                          /* 입출고구분코드            */
+             , A.STDV_DT                                           /* 입출고일자                */
+             , A.STDV_SQNO                                         /* 입출고일련번호            */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.DSTR_TERDT                                        /* 유통기한일자              */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.STDV_QT                                           /* 입출고수량                */
+             , A.STDV_BOX_QT                                       /* 입출고박스수량            */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_TOTECD_STDV A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.TOTE_CODE         = #{TOTE_CODE}
+           AND A.STDV_DT           = #{STDV_DT}
+           AND A.STDV_SQNO         = #{STDV_SQNO}
+           AND A.STDV_DSC          = #{STDV_DSC}
+    </select>
+
+
+    <select id="select_DLR_TOTECD_STDV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_DLR_TOTECD_STDV */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.TOTE_CODE                                         /* TOTE_CODE       */
+             , A.LOT_NO                                            /* LOT_NO          */
+             , A.GDS_TP_DSC                                        /* 물품구분코드              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.LBL_CNT                                           /* 라벨COUNT        */
+             , A.BOX_IN_QT                                         /* 박스내수량                */
+             , A.BOX_IN_WT                                         /* 박수내중량                */
+             , A.PD_DT                                             /* 생산일자                  */
+             , A.DSTR_TERDT                                        /* 유통기한일자              */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.BAR_CODE                                          /* BAR_CODE        */
+             , A.TRACE_NO                                          /* TRACE_NO        */
+             , A.TOT_DLR_QT                                        /* 총출고수량               */
+             , A.LS_DLR_DT                                         /* 최종출고일자            */
+             , A.BOX_IN_QT - A.TOT_DLR_QT         AS   LS_STDV_QT  /* 잔존수량                 */               
+             , B.DSTR_TERDT                                        /* 유통기한일자              */
+             , B.WHSE_C                                            /* 창고코드                  */
+             , B.STDV_QT                                           /* 입출고수량                */
+             , B.STDV_BOX_QT                                       /* 입출고박스수량            */
+             , B.ACG_DT                                            /* 회계일자                  */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , B.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , B.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_TOTECD      A
+             , TB_PD_D_TOTECD_STDV B
+         WHERE 1=1 
+           AND A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.TOTE_CODE         = B.TOTE_CODE
+           AND B.CORP_C            = #{CORP_C}
+           AND B.BZPL_C            = #{BZPL_C}
+           AND B.TOTE_CODE         = #{TOTE_CODE}
+           AND B.STDV_DT+CAST(B.STDV_SQNO AS varchar(5))+'I' = (SELECT MAX(STDV_DT+CAST(STDV_SQNO AS varchar(5)))+'I'
+	                                                              FROM TB_PD_D_TOTECD_STDV
+	                                                             WHERE 1 = 1
+	                                                               AND CORP_C              = B.CORP_C
+	                                                               AND BZPL_C              = B.BZPL_C
+	                                                               AND TOTE_CODE           = B.TOTE_CODE
+	                                                               AND STDV_DSC            = 'I' 
+	                                                               AND SLP_NML_YN          = 'Y'     )
+           AND B.SLP_NML_YN               = 'Y'
+           AND A.BOX_IN_QT - A.TOT_DLR_QT > 0       /* BOX IN QT 가 모두 출고되지 않은것에 한해서 */                                    
+    </select>
+</mapper>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_DL_D_DAY_DDL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_DL_D_DAY_DDL */ TB_DL_D_DAY_DDL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DDL_DT              /* 마감일자             */
+            , DDL_SQNO            /* 마감일련번호         */
+            , DDL_DSC             /* 마감구분코드         */
+            , REF_01              /* 마감항목명01         */
+            , VAL_01              /* 마감항목값01         */
+            , REF_02              /* 마감항목명02         */
+            , VAL_02              /* 마감항목값02         */
+            , REF_03              /* 마감항목명03         */
+            , VAL_03              /* 마감항목값03         */
+            , REF_04              /* 마감항목명04         */
+            , VAL_04              /* 마감항목값04         */
+            , REF_05              /* 마감항목명05         */
+            , VAL_05              /* 마감항목값05         */
+            , REF_06              /* 마감항목명06         */
+            , VAL_06              /* 마감항목값06         */
+            , REF_07              /* 마감항목명07         */
+            , VAL_07              /* 마감항목값07         */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DDL_DT}
+            , #{DDL_SQNO}
+            , #{DDL_DSC}
+            , #{REF_01}
+            , #{VAL_01}
+            , #{REF_02}
+            , #{VAL_02}
+            , #{REF_03}
+            , #{VAL_03}
+            , #{REF_04}
+            , #{VAL_04}
+            , #{REF_05}
+            , #{VAL_05}
+            , #{REF_06}
+            , #{VAL_06}
+            , #{REF_07}
+            , #{VAL_07}
+            , #{RMK_CNTN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_DL_D_DAY_DDL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_DL_D_DAY_DDL */ TB_DL_D_DAY_DDL
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DDL_DT              = #{DDL_DT}                /* 마감일자             */
+             , DDL_SQNO            = #{DDL_SQNO}              /* 마감일련번호         */
+             , DDL_DSC             = #{DDL_DSC}               /* 마감구분코드         */
+             , REF_01              = #{REF_01}                /* 마감항목명01         */
+             , VAL_01              = #{VAL_01}                /* 마감항목값01         */
+             , REF_02              = #{REF_02}                /* 마감항목명02         */
+             , VAL_02              = #{VAL_02}                /* 마감항목값02         */
+             , REF_03              = #{REF_03}                /* 마감항목명03         */
+             , VAL_03              = #{VAL_03}                /* 마감항목값03         */
+             , REF_04              = #{REF_04}                /* 마감항목명04         */
+             , VAL_04              = #{VAL_04}                /* 마감항목값04         */
+             , REF_05              = #{REF_05}                /* 마감항목명05         */
+             , VAL_05              = #{VAL_05}                /* 마감항목값05         */
+             , REF_06              = #{REF_06}                /* 마감항목명06         */
+             , VAL_06              = #{VAL_06}                /* 마감항목값06         */
+             , REF_07              = #{REF_07}                /* 마감항목명07         */
+             , VAL_07              = #{VAL_07}                /* 마감항목값07         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DDL_DT              = #{DDL_DT}
+           AND DDL_SQNO            = #{DDL_SQNO}
+    </update>
+
+    <delete id="delete_TB_DL_D_DAY_DDL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_DL_D_DAY_DDL */ FROM TB_DL_D_DAY_DDL
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DDL_DT              = #{DDL_DT}
+           AND DDL_SQNO            = #{DDL_SQNO}
+    </delete>
+
+    <select id="select_TB_DL_D_DAY_DDL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_DL_D_DAY_DDL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DDL_DT                                            /* 마감일자                  */
+             , A.DDL_SQNO                                          /* 마감일련번호              */
+             , A.DDL_DSC                                           /* 마감구분코드              */
+             , A.REF_01                                            /* 마감항목명01              */
+             , A.VAL_01                                            /* 마감항목값01              */
+             , A.REF_02                                            /* 마감항목명02              */
+             , A.VAL_02                                            /* 마감항목값02              */
+             , A.REF_03                                            /* 마감항목명03              */
+             , A.VAL_03                                            /* 마감항목값03              */
+             , A.REF_04                                            /* 마감항목명04              */
+             , A.VAL_04                                            /* 마감항목값04              */
+             , A.REF_05                                            /* 마감항목명05              */
+             , A.VAL_05                                            /* 마감항목값05              */
+             , A.REF_06                                            /* 마감항목명06              */
+             , A.VAL_06                                            /* 마감항목값06              */
+             , A.REF_07                                            /* 마감항목명07              */
+             , A.VAL_07                                            /* 마감항목값07              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_DL_D_DAY_DDL A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DDL_DT            = #{DDL_DT}
+           AND A.DDL_SQNO          = #{DDL_SQNO}
+    </select>
+</mapper>

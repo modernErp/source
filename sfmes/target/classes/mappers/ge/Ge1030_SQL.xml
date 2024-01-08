@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+
+	<!-- 자료실찾기 팝업 내역조회 -->
+	<select id="selectGe1030ListP01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ selectGe1030ListP01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.DOC_SQNO                                          /* 문서일련번호         */
+             , A.DOC_DSC                                           /* 문서구분코드         */
+             , A.DOC_DT                                            /* 문서일자             */
+             , A.DOC_DURMN_ID                                      /* 문서작성자아이디     */
+             , A.TIT                                               /* 문서제목             */
+             , A.CNTN                                              /* 문서내용             */
+             , A.INQCN                                             /* 조회수               */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호     */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID)      AS   FSRG_NM     /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID)      AS   LSCHG_NM    /* 최종변경자이름       */
+          FROM TB_CO_M_DOC A
+         WHERE 1=1 
+           AND A.CORP_C = #{CORP_C}
+        <if test="DOC_DSC != null and DOC_DSC != ''">
+           AND A.DOC_DSC = #{DOC_DSC}                          /* 문서구분     */
+        </if>
+        <if test="DOC_DRUNM != null and DOC_DRUNM != ''">
+           AND C.USRNM LIKE '%'+ #{DOC_DRUNM} + '%'          /* 문서작성자    */
+        </if>
+        <if test="TIT != null and TIT != ''">
+           AND UPPER(A.TIT) LIKE UPPER('%' + #{TIT} + '%')   /* 제목       */
+        </if>
+        <if test="ST_DOC_DT != null and ST_DOC_DT != ''">
+           AND A.DOC_DT <![CDATA[>=]]> #{ST_DOC_DT}            /* 문서일자     */
+        </if>
+        <if test="ED_DOC_DT != null and ED_DOC_DT != ''">
+           AND A.DOC_DT <![CDATA[<=]]> #{ED_DOC_DT}            /* 문서일자     */
+        </if>
+	</select>
+	
+	<!-- 자료실 상세내역조회 -->
+	<select id="selectGe1030List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT /*+ selectGe1030List01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.DOC_SQNO                                          /* 문서일련번호         */
+             , A.DOC_DSC                                           /* 문서구분코드         */
+             , A.DOC_DT                                            /* 문서일자             */
+             , A.DOC_DURMN_ID                                      /* 문서작성자아이디     */
+             , A.DOC_DURMN_ID                    AS   DOC_DURMN_NM /* 문서작성자아이디     */
+             , A.TIT                                               /* 문서제목             */
+             , A.CNTN                                              /* 문서내용             */
+             , A.INQCN                                             /* 조회수               */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호     */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID)      AS   FSRG_NM     /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID)      AS   LSCHG_NM    /* 최종변경자이름       */
+          FROM TB_CO_M_DOC A
+         WHERE 1=1          
+           AND A.CORP_C            = #{CORP_C}  
+           AND A.DOC_SQNO          = #{DOC_SQNO}
+	</select>
+   
+    <!-- 조회수 UPDATE     -->
+    <update id="updateGe1030_InqCn" parameterType="LinkedHashMap">
+        UPDATE TB_CO_M_DOC /*+ updateGe1030_InqCn */ 
+           SET
+               INQCN    =  INQCN + 1        /* 조회수                 */
+         WHERE 1 = 1
+           AND CORP_C   =  #{CORP_C}
+           AND DOC_SQNO =  #{DOC_SQNO}       /* 문서관리 일련번호      */
+    </update>
+    
+    <!-- 신규 등록 시, DOC_SQNO 리턴 -->
+    <select id="selectGe1030_DOC_SQNO" parameterType="LinkedHashMap" resultType="String">
+        SELECT ISNULL(MAX(DOC_SQNO)+1, 1) AS DOC_SQNO
+          FROM TB_CO_M_DOC
+         WHERE CORP_C = #{CORP_C}
+    </select>
+</mapper>

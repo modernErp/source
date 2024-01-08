@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+    <select id="select_Se4025" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Se4025 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.VHC_NO                                            /* 차량번호                  */
+             , A.VHC_NM                                            /* 차량명                    */
+             , A.DVY_CAFF_NM                                       /* 배송기사명                */
+             , A.DVY_YN                                            /* 배송여부                  */
+             , A.VHC_TPC                                           /* 차량유형코드              */
+             , A.TONNAGE                                           /* 차량톤수                  */
+             , A.LOAD_WT                                           /* 차량적재중량              */
+             , A.CBM                                               /* 차량CBM                   */
+             , A.WDTH_LEN                                          /* 차량가로길이              */
+             , A.LEN_LEN                                           /* 차량세로길이              */
+             , A.HGHT                                              /* 차량높이                  */
+             , A.MFT_BZNM                                          /* 제조사                    */
+             , A.MFT_DT                                            /* 제조일자                  */
+             , A.BUY_BZNM                                          /* 구매사                    */
+             , A.BUY_DT                                            /* 구매일자                  */
+             , A.BUY_AM                                            /* 구매금액                  */
+             , A.ISR_BZNM                                          /* 보험사                    */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명              */
+          FROM TB_SE_M_DVY_VHC A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+    </select>
+
+    <!-- 배송차량등록 밸리데이션 체크(신규등록시 중복건수 체크쿼리) -->
+    <select id= "select_validationSe4020" parameterType="LinkedHashMap" resultType="int">
+        SELECT /*+ validationSe4020 */
+               COUNT(*) AS V_CNT
+          FROM TB_SE_M_DVY_VHC 
+         WHERE 1 = 1
+           AND CORP_C = #{CORP_C}
+           AND BZPL_C = #{BZPL_C}
+           AND VHC_NO = #{VHC_NO}
+    </select> 
+</mapper>

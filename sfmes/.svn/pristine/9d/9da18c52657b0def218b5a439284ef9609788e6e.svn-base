@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <!-- GE1020 // 업무연락 등록 조회 (*사용자가 등록한 업무연락) -->
+    <select id="selectGe1020" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT A.CORP_C                                            /* 회사코드                  */
+		     , A.BSN_CTC_SQNO                                      /* 업무연락일련번호          */
+		     , A.BSN_CTC_DSC                                       /* 업무연락구분코드          */
+		     , A.TIT                                               /* 제목                      */
+		     , A.CNTN                                              /* 내용                      */
+		     , A.RQRMN_ID                                          /* 요청자ID                  */
+		     , A.RQR_DTM                                           /* 요청일시                  */
+		     , A.PZ_C                                              /* 직급코드                  */
+		     , A.PZ_NM                                             /* 직급명                    */
+		     , A.OFT_C                                             /* 직명코드                  */
+		     , A.OFT_NM                                            /* 직명                      */
+		     , CASE WHEN RCST_ID_CNT - 1 = 0 THEN RCST_ID
+		            ELSE CONCAT(RCST_ID, ' 외 ', RCST_ID_CNT - 1 , ' 인')
+		        END RCST_ID_CNT                                    /* 접수인 정보               */
+		     , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+		     , A.DEL_YN                                            /* 삭제여부                  */
+		     , A.ETC_DSC1                                          /* 기타구분1                 */
+		     , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+		     , A.FSRG_ID                                           /* 최초등록자ID              */
+		     , A.FSRG_ID                          AS   FSRG_NM     /* 최초등록자ID              */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+		     , A.LSCHG_ID   
+		     , A.LSCHG_ID                         AS   LSCHG_NM
+		  FROM TB_CO_M_BSN_CTC A
+		     ,(
+		            SELECT CORP_C
+		                 , BSN_CTC_SQNO 
+		                 , MIN(RCST_ID)        AS RCST_ID      
+		                 , COUNT(BSN_CTC_SQNO) AS RCST_ID_CNT
+		              FROM TB_CO_D_BSN_CTC
+		             WHERE 1=1 
+		               AND CORP_C = #{CORP_C}
+		          GROUP BY CORP_C, BSN_CTC_SQNO
+		         ) B
+		 WHERE A.CORP_C       = B.CORP_C
+		   AND A.BSN_CTC_SQNO = B.BSN_CTC_SQNO
+		   AND A.DEL_YN       = 'N'
+		   AND A.CORP_C       = #{CORP_C}
+		   AND A.RQRMN_ID     = #{GUSRID}
+	   <if test='BSN_CTC_DSC != null and BSN_CTC_DSC != ""'>
+           AND A.BSN_CTC_DSC  = #{BSN_CTC_DSC}
+       </if>  	   
+	   <if test="ST_DT != null and ST_DT != ''">
+           AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[>=]]> #{ST_DT}          /* 조회일자 */
+       </if>
+       <if test="ED_DT != null and ED_DT != ''">
+           AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[<=]]> #{ED_DT}          /* 조회일자 */
+       </if> 	   
+    </select>
+    
+    <!-- GE1025 // 업무연락 내역 조회 (*사용자가 수신한 업무연락)-->
+    <select id="selectGe1025" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT A.CORP_C                                         
+		     , A.BSN_CTC_SQNO                                   
+		     , A.BSN_CTC_DSC                                    
+		     , A.TIT                                            
+		     , A.CNTN                                           
+		     , A.RQRMN_ID   
+             , A.RQRMN_ID                         AS   RQRMN_NM  
+		     , (SELECT BZPL_C 
+		          FROM TB_SY_M_USR
+		         WHERE CORP_C = #{CORP_C}
+		           AND USR_ID = A.RQRMN_ID)       AS   RQRMN_ID_BZPL_C
+		     , A.RQR_DTM
+		     , B.RC_STS_C                   /* 접수상태코드  */    
+		     , B.RC_DTM                     /* 접수일시      */               
+		     , A.PZ_C                                           
+		     , A.PZ_NM                                          
+		     , A.OFT_C                                          
+		     , A.OFT_NM                                         
+		     , A.APD_FILE_AMN_NO                                
+		     , A.DEL_YN                                         
+		     , A.ETC_DSC1                                       
+		     , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM 
+		     , A.FSRG_ID                                        
+		     , A.FSRG_ID                          AS   FSRG_NM  
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM
+		     , A.LSCHG_ID   
+		     , A.LSCHG_ID                         AS   LSCHG_NM
+		  FROM TB_CO_M_BSN_CTC  A
+		     , TB_CO_D_BSN_CTC  B
+		 WHERE A.CORP_C       = B.CORP_C
+		   AND A.BSN_CTC_SQNO = B.BSN_CTC_SQNO
+		   AND A.CORP_C   = #{CORP_C}
+		   AND B.RCST_ID  = #{GUSRID}
+		   AND A.DEL_YN   = 'N'
+       <if test='RC_STS_C != null and RC_STS_C != ""'>
+           AND B.RC_STS_C = #{RC_STS_C}
+       </if>  
+       <if test="ST_DT != null and ST_DT != ''">
+           AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[>=]]> #{ST_DT}          /* 조회일자 */
+       </if>
+       <if test="ED_DT != null and ED_DT != ''">
+           AND CONVERT(VARCHAR, A.FSRG_DTM, 112) <![CDATA[<=]]> #{ED_DT}          /* 조회일자 */
+       </if>  
+    </select>
+    
+    <!-- GE1020P01 // 업무연락 등록/내역 상세 조회 -->
+    <select id="selectGe1020P01_01">
+    
+    </select>
+    
+    <!-- GE1020P01 // 업무연락 수신자목록 조회 -->
+    <select id="selectGe1020P01_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_D_BSN_CTC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BSN_CTC_SQNO                                      /* 업무연락일련번호          */
+             , A.RCST_ID                                           /* 접수자ID                  */
+             , A.RCST_ID                          AS   RCST_NM     /* 접수자명                  */
+             , A.RC_STS_C                                          /* 접수상태코드              */
+             , A.RC_DTM                                            /* 접수일시                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최초변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_D_BSN_CTC A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BSN_CTC_SQNO      = #{BSN_CTC_SQNO}
+           AND A.DEL_YN            = 'N'
+    </select>
+    
+    <!-- 업무연락 등록번호 채번 (BSN_CTC_SQNO) -->
+    <select id="selectGe1020P01_BSN_CTC_SQNO" parameterType="LinkedHashMap" resultType="String">
+        SELECT ISNULL(MAX(BSN_CTC_SQNO)+1, 1) AS BSN_CTC_SQNO
+          FROM TB_CO_M_BSN_CTC
+         WHERE CORP_C = #{CORP_C}
+    </select>
+    
+    <!-- 업무연락 수신확인 업데이트 (수신상태, 수신시간 업데이트) -->
+    <update id="updateGe1020_RCST" parameterType="LinkedHashMap">
+        UPDATE TB_CO_D_BSN_CTC 
+           SET
+               RC_STS_C     = '2'                /* 접수상태코드   */
+             , RC_DTM       = GETDATE()          /* 접수일시       */
+             , LSCHG_DTM    = GETDATE()          /* 최종변경일시   */
+             , LSCHG_ID     = #{GUSRID}          /* 최종변경자ID   */
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BSN_CTC_SQNO = #{BSN_CTC_SQNO}
+           AND RCST_ID      = #{GUSRID}
+    </update>
+</mapper>

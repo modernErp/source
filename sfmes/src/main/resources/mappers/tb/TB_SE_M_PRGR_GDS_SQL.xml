@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_PRGR_GDS" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_PRGR_GDS */ TB_SE_M_PRGR_GDS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRGR_C              /* 가격군코드           */
+            , GDS_C               /* 물품코드             */
+            , APL_BAS_UPR         /* 적용기준단가         */
+            , APL_SL_UPR          /* 적용매출단가         */
+            , APL_RT              /* 적용율               */
+            , APL_UPR             /* 적용단가             */
+            , APL_BAS_DT          /* 적용기준일자         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PRGR_C}
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{APL_BAS_UPR})
+            , DBO.SF_GET_FLOAT(#{APL_SL_UPR})
+            , DBO.SF_GET_FLOAT(#{APL_RT})
+            , DBO.SF_GET_FLOAT(#{APL_UPR})
+            , #{APL_BAS_DT}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_PRGR_GDS" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_PRGR_GDS */ TB_SE_M_PRGR_GDS
+           SET 
+               CORP_C              = #{CORP_C}                                  /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                                  /* 사업장코드           */
+             , PRGR_C              = #{PRGR_C}                                  /* 가격군코드           */
+             , GDS_C               = #{GDS_C}                                   /* 물품코드             */
+             , APL_BAS_UPR         = DBO.SF_GET_FLOAT(#{APL_BAS_UPR})           /* 적용기준단가         */
+             , APL_SL_UPR          = DBO.SF_GET_FLOAT(#{APL_SL_UPR})            /* 적용매출단가         */
+             , APL_RT              = DBO.SF_GET_FLOAT(#{APL_RT})                /* 적용율               */
+             , APL_UPR             = DBO.SF_GET_FLOAT(#{APL_UPR})               /* 적용단가             */
+             , APL_BAS_DT          = #{APL_BAS_DT}                              /* 적용기준일자         */
+             , RMK_CNTN            = #{RMK_CNTN}                                /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                                  /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                                  /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                                  /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND PRGR_C              = #{PRGR_C}           
+           AND GDS_C               = #{GDS_C}
+           AND APL_BAS_DT          = #{APL_BAS_DT}
+    </update>
+
+    <delete id="delete_TB_SE_M_PRGR_GDS" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_PRGR_GDS */ FROM TB_SE_M_PRGR_GDS
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}         
+           AND BZPL_C              = #{BZPL_C}
+           AND PRGR_C              = #{PRGR_C}
+           AND GDS_C               = #{GDS_C}           
+           AND APL_BAS_DT          = #{APL_BAS_DT}
+    </delete>
+
+    <select id="select_TB_SE_M_PRGR_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_M_PRGR_GDS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PRGR_C                                            /* 가격군코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , (
+                SELECT GDS_DTL_NM
+                  FROM TB_CO_M_GDS
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND GDS_C  = A.GDS_C
+               ) AS GDS_DTL_NM                                     /* 물품명                    */ 
+             , A.APL_BAS_UPR                                       /* 적용기준단가              */
+             , A.APL_SL_UPR                                        /* 적용매출단가              */
+             , A.APL_RT                                            /* 적용율                    */
+             , A.APL_UPR                                           /* 적용단가                  */
+             , A.APL_BAS_DT                                        /* 적용기준일자              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_M_PRGR_GDS A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PRGR_C            = #{PRGR_C}
+           AND A.DEL_YN            = 'N'
+    </select>
+</mapper>

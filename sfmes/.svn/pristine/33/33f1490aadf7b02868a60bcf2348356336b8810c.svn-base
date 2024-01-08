@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_D_BOM_MTRL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_BOM_MTRL */ TB_PD_D_BOM_MTRL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , GDS_C               /* 물품코드             */
+            , BOM_C               /* BOM코드              */
+            , MTRL_SQNO           /* 자재일련번호         */
+            , MTRL_GDS_C          /* 자재물품코드         */
+            , MTRL_BOM_C          /* 자재BOM코드          */
+            , GDS_UNT_C           /* 물품단위코드         */
+            , PTIN_QT             /* 투입량               */
+            , PTIN_WT             /* 투입중량             */
+            , PTIN_YLD            /* 투입수율             */
+            , LSTR                /* 손실율               */
+            , NED_WT              /* 소요량               */
+            , MXT_RTO             /* 배합비율             */
+            , PD_YLD_OBJ_YN       /* 생산수율대상여부     */
+            , WHSE_C              /* 창고코드             */
+            , ACP_MTR_DSC         /* 인수재료구분코드     */
+            , RMK_CNTN            /* 비고내용(비고)       */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{GDS_C}
+            , #{BOM_C}
+            , #{MTRL_SQNO}
+            , #{MTRL_GDS_C}
+            , #{MTRL_BOM_C}
+            , #{GDS_UNT_C}
+            , DBO.SF_GET_FLOAT(#{PTIN_QT})
+            , DBO.SF_GET_FLOAT(#{PTIN_WT})
+            , DBO.SF_GET_FLOAT(#{PTIN_YLD})
+            , DBO.SF_GET_FLOAT(#{LSTR})
+            , DBO.SF_GET_FLOAT(#{NED_WT})
+            , DBO.SF_GET_FLOAT(#{MXT_RTO})
+            , 'N'
+            , #{WHSE_C}
+            , #{ACP_MTR_DSC}
+            , #{RMK_CNTN}
+            , 'Y'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_D_BOM_MTRL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_D_BOM_MTRL */ TB_PD_D_BOM_MTRL
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , BOM_C               = #{BOM_C}                 /* BOM코드              */
+             , MTRL_SQNO           = #{MTRL_SQNO}             /* 자재일련번호         */
+             , MTRL_GDS_C          = #{MTRL_GDS_C}            /* 자재물품코드         */
+             , MTRL_BOM_C          = #{MTRL_BOM_C}            /* 자재BOM코드          */
+             , GDS_UNT_C           = #{GDS_UNT_C}             /* 물품단위코드         */
+             , PTIN_QT             = #{PTIN_QT}               /* 투입량               */
+             , PTIN_WT             = #{PTIN_WT}               /* 투입중량             */
+             , PTIN_YLD            = #{PTIN_YLD}              /* 투입수율             */
+             , LSTR                = #{LSTR}                  /* 손실율               */
+             , NED_WT              = #{NED_WT}                /* 소요량               */
+             , MXT_RTO             = #{MXT_RTO}               /* 배합비율             */
+             , PD_YLD_OBJ_YN       = #{PD_YLD_OBJ_YN}         /* 생산수율대상여부     */
+             , WHSE_C              = #{WHSE_C}                /* 창고코드             */
+             , ACP_MTR_DSC         = #{ACP_MTR_DSC}           /* 인수재료구분코드     */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용(비고)       */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BOM_C               = #{BOM_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND MTRL_SQNO           = #{MTRL_SQNO}
+    </update>
+
+    <delete id="delete_TB_PD_D_BOM_MTRL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_D_BOM_MTRL */ FROM TB_PD_D_BOM_MTRL
+         WHERE 1=1 
+           AND BOM_C               = #{BOM_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND MTRL_SQNO           = #{MTRL_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_D_BOM_MTRL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_BOM_MTRL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.MTRL_SQNO                                         /* 자재일련번호              */
+             , A.MTRL_GDS_C                                        /* 자재물품코드              */
+             , A.MTRL_BOM_C                                        /* 자재BOM코드               */
+             , A.GDS_UNT_C                                         /* 물품단위코드              */
+             , A.PTIN_QT                                           /* 투입량                    */
+             , A.PTIN_WT                                           /* 투입중량                  */
+             , A.PTIN_YLD                                          /* 투입수율                  */
+             , A.LSTR                                              /* 손실율                    */
+             , A.NED_WT                                            /* 소요량                    */
+             , A.MXT_RTO                                           /* 배합비율                  */
+             , A.PD_YLD_OBJ_YN                                     /* 생산수율대상여부          */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.ACP_MTR_DSC                                       /* 인수재료구분코드          */
+             , A.RMK_CNTN                                          /* 비고내용(비고)            */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_BOM_MTRL A
+         WHERE 1=1 
+           AND A.BOM_C             = #{BOM_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.MTRL_SQNO         = #{MTRL_SQNO}
+    </select>
+</mapper>

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+    <!-- 외상매입금일원장조회 -->
+    <!-- 입력정보
+    #{ST_DT} : 조회조건의 시작일자
+    #{ED_DT} : 조회조건의 종료일자
+    #{CORP_C} : 회사코드
+    #{BZPL_C} : 사업장코드
+    #{ADJPL_C} : 정산처코드
+    #{BF_ACG_MN} : 조회조건의 시작일자의 전월 (예: 시작일자가 '20200817' 이면, '202007')
+    #{ACG_MN_01} : 조회조건의 시작일자의 01월 (예:'시작일자가 20200817' 이면, '202001')
+    #{BF_ST_DT} : 조회조건의 시작일자의 01일 (예: 시작일자가 '20200817' 이면, '20200801')
+    #{BF_ED_DT} : 조회조건의 시작일자의 하루 전일 (예: 시작일자가 '20200817'이면 '20200816')
+    -->
+     <select id="selectCa4120List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa4120List */
+               ACG_DT
+             , ADJPL_C
+             , dbo.SF_GET_TRPL_NM(CORP_C, ADJPL_C)      AS ADJPL_NM    /* 정산처명  */ 
+             , SUBSTANCE                                               /* 적요 */ 
+             , DB_AM                            /* 조회기간 외상매출발생금액 */
+             , CR_AM                            /* 조회기간 외상매출회수금액 */
+             , BAC                              /* 잔액 */ 
+         FROM (      
+		        SELECT 
+		               #{CORP_C}                                            AS CORP_C
+		             , ''                                                   AS ACG_DT 
+		             , #{ADJPL_C}                                           AS ADJPL_C              /* 정산처코드 */
+		             , '전일이월'                                             AS SUBSTANCE 
+		             , 0                                                    AS DB_AM 
+		             , 0                                                    AS CR_AM 
+		             , (SELECT dbo.SF_GET_DT_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8), DATEADD(DD,-1,CONVERT(DATETIME , #{ST_DT})),112)))    AS BAC    /* 이월잔액(시작일전일) */
+		         UNION ALL    
+                 SELECT
+                        CORP_C                                                         AS CORP_C 
+	                  , ACG_DT                                                         AS ACG_DT    
+	                  , ADJPL_C                                                        AS ADJPL_C      /* 정산처코드                */
+		             , ''                                                              AS SUBSTANCE 
+	                  , SUM(CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM ELSE 0 END)         AS DB_AM        /* 차변(외상매출금-발생) */
+		              , SUM(CASE WHEN REG_DSC = 'P' THEN CRE_BY_AM ELSE 0 END)         AS CR_AM        /* 대변(외상매출금-상환) */
+                      , (SELECT dbo.SF_GET_DT_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},ACG_DT))    AS BAC    /* 종료일기준잔액 */ 
+		           FROM TB_DT_M_CBAM   /* 외상매입기본 */
+		          WHERE 1=1
+		            AND CORP_C = #{CORP_C}
+		            AND BZPL_C = #{BZPL_C}
+		            AND ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+		            AND ADJPL_C = #{ADJPL_C}
+		            AND SLP_NML_YN = 'Y'
+			        AND DEL_YN = 'N'
+		         GROUP BY  CORP_C
+		                 , ADJPL_C
+		                 , ACG_DT
+		        UNION ALL             
+		        SELECT 
+		               #{CORP_C}                                            AS CORP_C
+		             , CONVERT(CHAR(8), GETDATE(),112)                      AS ACG_DT 
+		             , #{ADJPL_C}                                           AS ADJPL_C              /* 정산처코드 */
+		             , '현재잔액'                                             AS SUBSTANCE 
+		             , 0                                                    AS DB_AM 
+		             , 0                                                    AS CR_AM 
+		             , (SELECT dbo.SF_GET_DT_BAC(#{CORP_C},#{BZPL_C},#{ADJPL_C},CONVERT(CHAR(8), GETDATE(),112)))   AS  BAC          /* 현재잔액  */
+		       )  A        
+         WHERE 1=1
+     </select>
+     
+     <!-- 일집계 수정 2022.01.07 rchkorea  
+      WITH 
+            BAS_ADJPL AS
+            ( SELECT 
+                     D.CORP_C                              AS CORP_C       /* 회사코드 */
+                   , D.BZPL_C                              AS BZPL_C       /* 사업장코드 */
+                   , D.ADJPL_C                             AS ADJPL_C      /* 정상처코드 */
+                FROM ( SELECT DISTINCT 
+                              CORP_C, BZPL_C, ADJPL_C
+                         FROM TB_DT_S_CBAM_MON B
+                        WHERE 1=1
+                          AND B.CORP_C  = #{CORP_C}
+                          AND B.BZPL_C  = #{BZPL_C}
+                          AND B.ACG_MN BETWEEN #{ACG_MN_01} AND #{BF_ACG_MN}
+                       <if test = "ADJPL_C != null and ADJPL_C != ''">
+                          AND B.ADJPL_C = #{ADJPL_C}
+                       </if>
+                       UNION
+                       SELECT 
+                              CORP_C, BZPL_C, ADJPL_C
+                         FROM TB_DT_M_CBAM C
+                        WHERE 1=1
+                          AND C.CORP_C  = #{CORP_C}
+                          AND C.BZPL_C  = #{BZPL_C}
+                          AND C.ACG_DT BETWEEN #{BF_ST_DT} AND #{ED_DT}
+                       <if test = "ADJPL_C != null and ADJPL_C != ''">
+                          AND C.ADJPL_C = #{ADJPL_C}
+                       </if>
+                     ) D
+               WHERE 1=1
+            )
+            , BF_DAY_FORWARD AS
+            ( SELECT 
+                     CORP_C           AS CORP_C     /* 회사코드 */
+                   , BZPL_C           AS BZPL_C     /* 사업장코드 */
+                   , SUM(DB_AAM_AM)   AS DB_AAM_AM  /* 차변누계금액(전일이월) */
+                   , SUM(CR_AAM_AM)   AS CR_AAM_AM  /* 대변누계금액(전일이월) */
+                   , SUM(BAC)         AS BAC        /* 잔액(전일) */
+                FROM ( 
+                       SELECT 
+                              #{CORP_C}   AS CORP_C      /* 회사코드 */
+                            , #{BZPL_C}   AS BZPL_C      /* 사업장코드 */
+                            , 0           AS DB_AAM_AM   /* 차변누계금액(거래가 없는 경우에 대한 0 생성) */
+                            , 0           AS CR_AAM_AM   /* 대변누계금액(거래가 없는 경우에 대한 0 생성) */
+                            , 0           AS BAC         /* 잔액(거래가 없는 경우에 대한 0 생성) */
+                       UNION ALL
+                       SELECT 
+                              A.CORP_C                   /* 회사코드 */
+                            , A.BZPL_C                   /* 사업장코드 */
+                            , A.DB_AAM_AM                /* 차변누계금액(전월) */
+                            , A.CR_AAM_AM                /* 대변누계금액(전월) */
+                            , A.BAC                      /* 잔액(전월) */
+                         FROM TB_DT_S_CBAM_MON A
+                        WHERE 1=1
+                          AND A.CORP_C  = #{CORP_C}
+                          AND A.BZPL_C  = #{BZPL_C}
+                          AND A.ACG_MN  = #{BF_ACG_MN}
+                       <if test = "ADJPL_C != null and ADJPL_C != ''">
+                          AND A.ADJPL_C = #{ADJPL_C}
+                       </if>
+                       UNION ALL
+                       SELECT 
+                              A.CORP_C                                                                    AS CORP_C    /* 회사코드 */
+                            , A.BZPL_C                                                                    AS BZPL_C    /* 사업장코드 */
+                            , SUM( CASE WHEN A.REG_DSC = 'N' THEN A.CRE_BY_AM ELSE 0 END )                AS DB_AAM_QT /* 차변누계금액(당월01~조회시작_전일까지) */
+                            , SUM( CASE WHEN A.REG_DSC != 'N' THEN A.CRE_BY_AM ELSE 0 END )               AS CR_AAM_QT /* 대변누계금액(당월01~조회시작_전일까지) */
+                            , SUM( CASE WHEN A.REG_DSC = 'N' THEN A.CRE_BY_AM ELSE A.CRE_BY_AM * -1 END ) AS BAC       /* 잔액(당월01~조회시작_전일까지) */
+                         FROM TB_DT_M_CBAM A
+                        WHERE 1=1
+                          AND A.CORP_C = #{CORP_C}
+                          AND A.BZPL_C = #{BZPL_C}
+                       <if test = "ADJPL_C != null and ADJPL_C != ''">
+                          AND A.ADJPL_C = #{ADJPL_C}
+                       </if>
+                          AND A.ACG_DT BETWEEN #{BF_ST_DT} AND #{BF_ED_DT}
+                          AND A.SLP_NML_YN = 'Y'
+                          AND A.DEL_YN = 'N'
+                        GROUP BY 
+                                 A.CORP_C
+                               , A.BZPL_C
+                     ) A
+               GROUP BY 
+                        A.CORP_C
+                      , A.BZPL_C
+            )
+            , BAS_M_CBAM AS 
+            ( SELECT 
+                     A.CORP_C             AS CORP_C         /* 회사코드 */
+                   , A.ADJPL_C            AS ADJPL_C        /* 정상처코드 */
+                   , A.BZPL_C             AS BZPL_C         /* 사업장코드 */
+                   , B.ACG_DT             AS ACG_DT         /* 회계일자 */
+                   , ISNULL(B.DB_AM, 0)   AS DB_AM          /* 차변금액(회계일_매입금) */
+                   , ISNULL(B.CR_AM, 0)   AS CR_AM          /* 대변금액(회계일_지급금) */
+                FROM BAS_ADJPL A 
+                INNER JOIN ( SELECT 
+                                    CORP_C                                                       AS CORP_C   /* 회사코드 */
+                                  , BZPL_C                                                       AS BZPL_C   /* 사업장코드 */
+                                  , ADJPL_C                                                      AS ADJPL_C  /* 정산처코드 */
+                                  , ACG_DT                                                       AS ACG_DT   /* 회계일자 */
+                                  , SUM( CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM ELSE 0 END )     AS DB_AM    /* 차변금액(회계일_매입금) */
+                                  , SUM( CASE WHEN REG_DSC != 'N' THEN CRE_BY_AM ELSE 0 END )    AS CR_AM    /* 대변금액(회계일_지급금) */
+                               FROM TB_DT_M_CBAM 
+                              WHERE 1=1
+                                AND CORP_C     = #{CORP_C}
+                                AND BZPL_C     = #{BZPL_C}
+                                AND ACG_DT     BETWEEN #{ST_DT} AND #{ED_DT}
+                             <if test = "ADJPL_C != null and ADJPL_C != ''">
+                                AND ADJPL_C    = #{ADJPL_C}
+                             </if>
+                                AND SLP_NML_YN = 'Y'
+                                AND DEL_YN = 'N'
+                              GROUP BY 
+                                       CORP_C
+                                     , BZPL_C
+                                     , ADJPL_C
+                                     , ACG_DT
+                           ) B
+                  ON B.CORP_C  = A.CORP_C
+                 AND B.BZPL_C  = A.BZPL_C
+                 AND B.ADJPL_C = A.ADJPL_C
+               WHERE 1=1
+            )
+        SELECT /*+ selectCa4120List */
+               ''                   AS ACG_DT        /* 회계일자 */
+             , ''                   AS ADJPL_C       /* 정산처코드 */
+             , ''                   AS ADJPL_NM      /* 정산처명 */
+             , '전일이월'              AS SUBSTANCE     /* 적요 */
+             , A.DB_AAM_AM          AS DB_AM         /* 차변누계금액(전일이월) */
+             , A.CR_AAM_AM          AS CR_AM         /* 대변누계금액(전일이월) */
+             , A.BAC                AS BAC           /* 잔액(전일) */
+          FROM BF_DAY_FORWARD A
+         WHERE 1=1
+
+        UNION ALL
+        SELECT 
+               E.ACG_DT             AS ACG_DT        /* 회계일자 */
+             , E.ADJPL_C            AS ADJPL_C       /* 정산처코드 */
+             , X.TRPL_NM            AS ADJPL_NM      /* 정산처명 */
+             , ''                   AS SUBSTANCE     /* 적요 */
+             , E.DB_AM              AS DB_AM         /* 차변금액(회계일_매입금) */
+             , E.CR_AM              AS CR_AM         /* 대변금액(회계일_지급금) */
+             , E.BAC + Y.BAC        AS BAC           /* 잔액(회계일) [조회시작일~회계일까지 잔액 + 조회시작_전일 잔액] */
+          FROM ( 
+                 SELECT 
+                        A.CORP_C                                              AS CORP_C       /* 회사코드 */
+                      , A.BZPL_C                                              AS BZPL_C       /* 사업장코드 */
+                      , A.ACG_DT                                              AS ACG_DT       /* 회계일자 */
+                      , A.ADJPL_C                                             AS ADJPL_C      /* 정산처코드 */
+                      , A.DB_AM                                               AS DB_AM        /* 차변금액(회계일_매입금) */
+                      , A.CR_AM                                               AS CR_AM        /* 대변금액(회계일_지급금) */ 
+                      , ISNULL( SUM( CASE WHEN A.ACG_DT <![CDATA[>]]> B.ACG_DT THEN B.DB_AM
+                                          WHEN A.ACG_DT = B.ACG_DT AND A.ADJPL_C <![CDATA[>]]> B.ADJPL_C THEN B.DB_AM 
+                                          ELSE 0 END ) , 0 )
+                      - ISNULL( SUM( CASE WHEN A.ACG_DT <![CDATA[>]]> B.ACG_DT THEN B.CR_AM
+                                          WHEN A.ACG_DT = B.ACG_DT AND A.ADJPL_C <![CDATA[>]]> B.ADJPL_C THEN B.CR_AM 
+                                          ELSE 0 END ), 0 )
+                      + A.DB_AM - A.CR_AM                                     AS BAC          /* 잔액(조회시작일~회계일까지) */
+                   FROM BAS_M_CBAM A
+                   LEFT OUTER JOIN BAS_M_CBAM B
+                     ON A.CORP_C  = B.CORP_C
+                    AND A.BZPL_C  = B.BZPL_C
+                    AND A.ACG_DT  <![CDATA[>=]]> B.ACG_DT
+                  WHERE 1=1
+                  GROUP BY 
+                           A.CORP_C
+                         , A.BZPL_C
+                         , A.ACG_DT
+                         , A.ADJPL_C
+                         , A.DB_AM
+                         , A.CR_AM
+               ) E
+         INNER JOIN TB_CO_M_TRPL X
+            ON X.CORP_C = E.CORP_C
+           AND X.TRPL_C = E.ADJPL_C
+         INNER JOIN BF_DAY_FORWARD Y
+            ON Y.CORP_C = E.CORP_C
+           AND Y.BZPL_C = E.BZPL_C
+         WHERE 1=1
+         ORDER BY 
+                  ACG_DT
+                , ADJPL_C
+        -->
+</mapper>
+   

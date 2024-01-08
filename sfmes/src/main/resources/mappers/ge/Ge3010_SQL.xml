@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <select id="selectGe3010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT /*+ selectGe3010_01 */
+               A.AS_DT
+             , A.AS_SQNO
+             , A.FSRG_ID AS USR_ID
+             , (SELECT USR_NM 
+                  FROM TB_SY_M_USR 
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C 
+                   AND USR_ID = A.FSRG_ID
+               ) AS USR_NM
+             , A.AS_PRC_STS_C
+             , A.AS_DSC
+             , A.PGM_ID
+             , A.RQR_DT
+             , A.RQR_NM
+             , A.USE_DSC
+             , A.PZ_NM
+             , A.AS_CMP_DT
+             , A.AS_TIT
+             , A.AS_CNTN
+             , A.AS_PCR_CNTN
+             , A.RMK_CNTN
+             , A.APD_FILE_AMN_NO
+             , A.DEL_YN
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM
+             , A.FSRG_ID                                 
+             , A.FSRG_ID AS FSRG_NM
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID
+             , A.LSCHG_ID AS LSCHG_NM                                
+          FROM TB_GE_M_AS_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.AS_DT   = #{AS_DT}
+           AND A.AS_SQNO = #{AS_SQNO}         
+    </select>
+    <select id="selectGe3010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ selectGe3010_02 */
+               A.AS_DT
+             , A.AS_SQNO
+             , A.AS_TIT
+             , A.AS_PRC_STS_C
+             , A.AS_DSC
+             , A.PGM_ID
+             , A.RQR_DT 
+             , A.RQR_NM
+             , A.PZ_NM
+             , A.AS_CMP_DT
+             , A.DEL_YN
+             , A.FSRG_ID                                 
+             , A.FSRG_ID AS FSRG_NM
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID
+             , A.LSCHG_ID AS LSCHG_NM                                
+          FROM TB_GE_M_AS_RC AS A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           <if test="DEL_YN != null and DEL_YN != ''">
+               AND A.DEL_YN  = #{DEL_YN}
+           </if>
+           <choose>
+            <when test="DT_GBN == 1">
+               AND A.AS_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+            <when test="DT_GBN == 2">
+               AND A.RQR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+            <when test="DT_GBN == 3">
+               AND A.AS_CMP_DT BETWEEN #{ST_DT} AND #{ED_DT}
+            </when>
+           </choose>
+           <if test="AS_PRC_STS_C != null and AS_PRC_STS_C != ''">
+                AND A.AS_PRC_STS_C       = #{AS_PRC_STS_C}
+           </if>
+            <if test="AS_DSC != null and AS_DSC != ''">
+                AND A.AS_DSC       = #{AS_DSC}
+           </if>
+    </select>
+    <!-- 삭제 할때 중복 체크 -->
+    <select id="selectGe3010Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectGe3010Cnt */
+               COUNT(1)
+          FROM TB_GE_M_AS_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.AS_DT   = #{AS_DT}
+           AND A.AS_SQNO = #{AS_SQNO}   
+    </select>
+    <!-- 등록할때 중복체크 -->
+     <select id="selectGe3010Cnt_1" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectGe3010Cnt */
+               COUNT(1) AS CNT
+          FROM TB_GE_M_AS_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.AS_DT   = #{AS_DT}
+           AND A.AS_SQNO = DBO.SF_GET_NUMERIC(#{AS_SQNO})
+    </select>
+    <!-- 사용자체크 -->
+  
+     <!-- 수주기본내역 사전 정합성 체크 -->
+    <select id="selectGe3010Valid" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectGe3010Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{AS_DT} = '' THEN 'AS접수일자를 확인하십시요.'
+            WHEN #{RQR_ID} = '' THEN '요청인은 필수 입력 사항입니다.'
+            WHEN #{AS_PRC_STS_C} = '' THEN 'A/S처리상태를 확인하십시오.'
+            WHEN #{AS_DSC} = '' THEN 'A/S구분을 확인하십시오.'
+            WHEN #{AS_TIT} = '' THEN 'A/S제목은 필수 입력항목입니다..'
+       ELSE 'OK' END AS RESULT_MSG 
+    ]]>          
+        
+    </select>
+    <!-- 사용자체크 -->
+    <select id="selectGe3010Valid_2" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ selectGe3010Cnt */
+               A.FSRG_ID
+          FROM TB_GE_M_AS_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.AS_DT   = #{AS_DT}
+           AND A.AS_SQNO = #{AS_SQNO}
+
+    </select>
+</mapper>

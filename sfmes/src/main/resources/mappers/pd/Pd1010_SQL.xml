@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+   <select id="select_validCheck_01" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN 1 <= 0 THEN '해당 BOM이 사용된 내역이 있어 수정이 불가합니다.'
+                     ELSE 'OK' END AS RESULT_MSG
+           FROM DUAL
+        ]]>
+
+        <!--  기사용된 BOM이 있는경우 수정불가처리인데 일단 사용 가능하도록 위에처럼 수정함. 업무정의후 다시 원복 필요  20211130 rchkorea 
+        SELECT
+               CASE WHEN 1 <= ( SELECT COUNT(*) AS WK_CNT     
+                                 FROM TB_PD_D_WK_DNTT_MFS A
+                                WHERE EXISTS ( SELECT *
+                                                 FROM TB_PD_M_BOM_MFC B 
+                                                WHERE 1=1
+	                                              AND A.BZPL_C    = B.BZPL_C 
+		                                          AND A.CORP_C    = B.CORP_C 
+		                                          AND A.GDS_C     = B.GDS_C
+				                                  AND A.BOM_C     = B.BOM_C 
+	  	                                          AND A.DEL_YN    = 'N'
+                                                  AND A.BZPL_C    = #{BZPL_C}
+                                                  AND A.CORP_C    = #{CORP_C}
+		                                          AND B.GDS_C     = #{GDS_C}
+		                                          AND B.BOM_C     = #{BOM_C})) THEN '해당 BOM이 사용된 내역이 있어 수정이 불가합니다.'
+                     ELSE 'OK' END AS RESULT_MSG
+           FROM DUAL
+           -->
+
+    </select>
+    
+    <update id="update_D_USEYN" parameterType="LinkedHashMap">
+        UPDATE /*+ update_USEYN */ TB_PD_D_BOM_MTRL
+           SET 
+               USE_YN              = 'N'                      /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BOM_C               = #{BOM_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND MTRL_SQNO           = #{MTRL_SQNO}
+    </update>
+    
+    <update id="update_M_USEYN" parameterType="LinkedHashMap">
+        UPDATE /*+ update_D_USEYN */ TB_PD_M_BOM_MFC
+           SET 
+               USE_YN              = 'N'                      /* 기사용여부           */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BOM_C               = #{BOM_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </update>
+    
+    <update id="update_M_BOMYN" parameterType="LinkedHashMap">
+        UPDATE /*+ update_M_BOMYN */ TB_PD_M_BOM_MFC
+           SET 
+               BSC_BOM_YN          = 'N'                      /* 기본BOM여부          */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+    </update>
+    
+    <update id="update_BAS_BOM" parameterType="LinkedHashMap">
+        UPDATE /*+ update_BAS_BOM */ TB_CO_M_GDS
+           SET 
+               BAS_BOM_C           = #{BOM_C}                  /* 기본BOM코드               */
+             , LSCHG_DTM           = GETDATE()                 /* 최종변경일시              */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND BZPL_C              = #{BZPL_C}
+    </update>
+    
+    <select id="selectseqNo_01" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ selectseqNo_01 */
+               REPLICATE('0', 2 - LEN(ISNULL(MAX(CONVERT(INT, SUBSTRING(BOM_C,1,2))),0)+1)) + 
+                         CONVERT(VARCHAR, ISNULL(MAX(CONVERT(INT, SUBSTRING(BOM_C,1,2))),0)+1) AS seqNo
+          FROM TB_PD_M_BOM_MFC
+         WHERE 1=1
+           AND BZPL_C     = #{BZPL_C}
+           AND CORP_C     = #{CORP_C}
+           AND GDS_C      = #{GDS_C} 
+    </select>
+    
+    <select id="selectseqNo_02" parameterType="LinkedHashMap" resultType="String">
+        SELECT /*+ selectseqNo_02 */
+               ISNULL(MAX(MTRL_SQNO),0)+1
+          FROM TB_PD_D_BOM_MTRL
+         WHERE 1=1
+           AND BZPL_C     = #{BZPL_C}
+           AND CORP_C     = #{CORP_C}
+           AND GDS_C      = #{GDS_C}
+           AND BOM_C      = #{BOM_C}
+    </select>
+    
+    <select id="selectPd1010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd1010_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.QLT_ISP_YN                                        /* 품질검사여부              */
+             , A.BSC_BOM_YN                                        /* 기본BOM여부               */
+             , A.PD_PRW_EXPL                                       /* 생산공정설명              */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , A.BAS_QT                                            /* 기준량                    */
+             , A.GDS_UNT_C                                         /* 물품단위코드              */
+             , A.BAS_WT                                            /* 기준중량                  */
+             , A.PD_YLD                                            /* 생산수율                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B.GDS_ENM                                           /* 물품영문명                */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.GDS_LCLC                                          /* 물품대분류코드            */
+             , B.GDS_MCLC                                          /* 물품중분류코드            */
+             , B.GDS_SCLC                                          /* 물품소분류코드            */
+             , B.TXT_DSC                                           /* 과세구분코드              */
+             , B.PART_C                                            /* 표준부위코드              */
+             , B.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , B.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.WHT_QT                                            /* 기준단량                  */
+             , B.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , B.GDS_WT    AS BAS_WT                               /* 물품중량(Kg)              */
+             , B.BAS_WHSE_C                                        /* 기본창고코드              */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.OPDAA_DSC                                         /* 원산지구분코드            */
+             , B.PDAA_C                                            /* 산지코드                  */
+             , B.MFT_TRPL_NM                                       /* 제조원명                  */
+             , B.SEL_TRPL_NM                                       /* 판매원명                  */
+             , B.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , B.HS_C                                              /* HS코드                    */
+             , B.ERP_GDS_C                                         /* ERP품목코드               */
+             , B.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , B.PD_LINE_C                                         /* 주생산라인코드            */
+             , B.BAS_BOM_C                                         /* 기본BOM코드               */
+             , B.USE_YN                                            /* 사용여부                  */
+             , A.SNS_CNTN                                          /* 적요내용                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분3                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+          FROM TB_PD_M_BOM_MFC A
+             , TB_CO_M_GDS     B
+         WHERE 1=1  
+           AND A.CORP_C            = B.CORP_C  
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.GDS_C             = B.GDS_C 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+        <if test="BOM_C != '' and BOM_C != null" >
+           AND A.BOM_C             = #{BOM_C}
+        </if>
+    </select>
+    
+    <select id="selectPd1010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd1010_02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.BOM_C                                             /* BOM코드                   */
+             , A.MTRL_SQNO                                         /* 자재일련번호              */
+             , A.MTRL_GDS_C                                        /* 자재물품코드              */
+             , (SELECT X.WHSE_NM
+			      FROM TB_CO_M_WHSE X
+				 WHERE X.WHSE_C = B.BAS_WHSE_C
+				   AND X.BZPL_C = A.BZPL_C
+                   AND X.CORP_C = A.CORP_C) AS MTRL_WHSE_NM        /* 자재물품창고이름          */
+             , B.BAS_WHSE_C                                        /* 자재물품창고코드          */
+             , A.GDS_UNT_C                                         /* 물품단위코드              */
+             , B.GDS_DTL_NM  AS MTRL_GDS_NM                        /* 물품명상세(물품+규격)     */
+             , B.GDS_STD_NM                                        /* 규격명                    */
+             , B.GDS_ENM                                           /* 물품영문명                */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , B.BAS_BOM_C AS MTRL_BOM_C                           /* 기본BOM코드               */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.HST_AMN_DSC                                       /* 이력관리대상구분          */
+             , B.QT_WT_DSC                                         /* 수(중)량형구분            */
+             , B.WHT_QT                                            /* 기준단량                  */
+             , B.USE_YN                                            /* 사용여부                  */
+             , A.PTIN_QT                                           /* 투입량                    */
+             , A.PTIN_WT                                           /* 투입중량                  */
+             , A.PTIN_YLD                                          /* 투입수율                  */
+             , A.LSTR                                              /* 손실율                    */
+             , A.NED_WT                                            /* 소요량                    */
+             , A.MXT_RTO                                           /* 배합비율                  */
+             , A.PD_YLD_OBJ_YN                                     /* 생산수율대상여부          */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , A.ACP_MTR_DSC                                       /* 인수재료구분코드          */
+             , A.RMK_CNTN                                          /* 비고내용(비고)            */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+             , ISNULL(DBO.SF_GET_STPL_UPR(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000'),0)    AS PTIN_UPR  /* 현재고단가  */
+          FROM TB_PD_D_BOM_MTRL A
+             , TB_CO_M_GDS      B
+         WHERE 1=1 
+           AND A.CORP_C            = B.CORP_C
+           AND A.BZPL_C            = B.BZPL_C
+           AND A.MTRL_GDS_C        = B.GDS_C 
+           AND A.BOM_C             = #{BOM_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.GDS_C             = #{GDS_C}
+           AND A.USE_YN            = 'Y'
+    </select>
+
+</mapper>

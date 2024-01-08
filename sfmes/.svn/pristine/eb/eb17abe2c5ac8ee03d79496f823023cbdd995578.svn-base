@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <!-- 재고이동 상세 입력 -->
+    <insert id="insert_TB_SM_D_STPL_MVE" parameterType="LinkedHashMap">
+            INSERT INTO /*+ insert_TB_SM_D_STPL_MVE */ TB_SM_D_STPL_MVE
+            (
+                CORP_C          /*   회사코드        */
+			,   BZPL_C          /*   사업장코드       */
+			,   MVE_DT          /*   이동일자        */
+			,   MVE_SQNO        /*   이동일련번호     */
+			,   MVE_DSQNO       /*   이동상세일련번호   */
+			,   GDS_C           /*   물품코드        */
+			,   DLR_WHSE_C      /*   출고창고코드     */
+			,   STR_WHSE_C      /*   입고창고코드     */
+			,   STDV_QT         /*   입출고수량       */
+			,   STDV_WT         /*   입출고중량       */
+			,   RMK_CNTN        /*   비고내용        */
+			,   FSRG_DTM        /*   최초등록일시     */
+			,   FSRG_ID         /*   최초등록자ID     */
+			,   LSCHG_DTM       /*   최종변경일시     */
+			,   LSCHG_ID        /*   최종변경자ID     */
+			,   DSTR_TERDT      /*   유통기한일자     */
+            )
+            VALUES
+            (
+                #{CORP_C}   
+			,	#{BZPL_C}   
+			,	#{MVE_DT}   
+			,	#{MVE_SQNO} 
+			,	#{MVE_DSQNO}
+			,	#{GDS_C}    
+			,	#{DLR_WHSE_C}
+			,	#{STR_WHSE_C}
+			,	DBO.SF_GET_FLOAT(#{STDV_QT})  
+			,	DBO.SF_GET_FLOAT(#{STDV_WT})  
+			,	#{RMK_CNTN} 
+			,   GETDATE()
+			,   #{GUSRID}  
+			,   GETDATE()
+			,   #{GUSRID} 
+			,	#{DSTR_TERDT}
+            )
+    </insert>
+    
+    <!-- 재고이동 상세 수정 -->
+    <update id="update_TB_SM_D_STPL_MVE" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SM_D_STPL_MVE */     TB_SM_D_STPL_MVE
+             SET    GDS_C       = #{GDS_C}                      /*  물품코드       */
+             ,      DLR_WHSE_C  = #{DLR_WHSE_C}                 /*  출고창고코드    */
+             ,      STR_WHSE_C  = #{STR_WHSE_C}                 /*  입고창고코드    */
+             ,      STDV_QT     = DBO.SF_GET_FLOAT(#{STDV_QT})  /*  입출고수량     * /
+             ,      STDV_WT     = DBO.SF_GET_FLOAT(#{STDV_WT})  /*  입출고중량     * /
+             ,      RMK_CNTN    = #{RMK_CNTN}                   /*  비고내용       */
+             ,      LSCHG_DTM   = GETDATE()                     /*  최종변경일시    */
+             ,      LSCHG_ID    = #{GUSRID}                     /*  최종변경자ID   * /
+             ,      DSTR_TERDT  = #{DSTR_TERDT}                 /*  유통기한일자    */
+             WHERE  CORP_C      = #{CORP_C}
+             AND    BZPL_C      = #{BZPL_C}
+             AND    MVE_DT      = #{MVE_DT}
+             AND    MVE_SQNO    = #{MVE_SQNO}
+             AND    MVE_DSQNO   = #{MVE_DSQNO}
+    </update>
+    
+    <!-- 재고이동 상세 삭제  -->
+    <delete id="delete_TB_SM_D_STPL_MVE" parameterType="LinkedHashMap">
+         DELETE /*+ delete_TB_SM_D_STPL_MVE */ FROM TB_SM_D_STPL_MVE  
+         WHERE  1=1
+         AND    CORP_C            = #{CORP_C}
+         AND    BZPL_C            = #{BZPL_C}
+         AND    MVE_DT            = #{MVE_DT}
+         AND    MVE_SQNO          = #{MVE_SQNO}
+         AND    MVE_DSQNO         = #{MVE_DSQNO}
+    </delete>
+    
+    <!-- 재고이동 상세 조회 -->
+    <select id="select_TB_SM_D_STPL_MVE" parameterType="linkedHashMap" resultType="linkedHashMap">
+        SELECT   /*+ select_TB_SM_D_STPL_MVE */
+                A.CORP_C                                             /*  회사코드           */
+			,   A.BZPL_C                                             /*  사업장코드         */
+			,   A.MVE_DT                                             /*  이동일자            */
+			,   A.MVE_SQNO                                           /*  이동일련번호      */
+			,   A.MVE_DSQNO                                          /*  이동상세일련번호 */
+			,   A.GDS_C                                              /*  물품코드            */
+			,   A.DLR_WHSE_C                                         /*  출고창고코드       */
+			,   A.STR_WHSE_C                                         /*  입고창고코드       */
+			,   A.STDV_QT                                            /*  입출고수량           */
+			,   A.STDV_WT                                            /*  입출고중량           */
+			,   A.RMK_CNTN                                           /*  비고내용                */
+			,   CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM     /* 최초등록일시            */
+			,   A.FSRG_ID                                            /*  최초등록자ID     */
+			,   A.FSRG_ID                           AS   FSRG_NM     /*  최초등록자           */
+			,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)  AS   LSCHG_DTM   /*  최종변경일시          */
+			,   A.LSCHG_ID                                           /*  최종변경자ID   */
+			,   A.LSCHG_ID                          AS  LSCHG_NM     /*  최종변경자           */
+			,   A.DSTR_TERDT                                         /*  유통기한일자          */
+        FROM    TB_SM_D_STPL_MVE A
+        WHERE   1=1
+        AND     A.CORP_C            = #{CORP_C}
+         AND    A.BZPL_C            = #{BZPL_C}
+         AND    A.MVE_DT            = #{MVE_DT}
+         AND    A.MVE_SQNO          = #{MVE_SQNO}
+         AND    A.MVE_DSQNO         = #{MVE_DSQNO}
+    </select>
+    
+    
+</mapper>

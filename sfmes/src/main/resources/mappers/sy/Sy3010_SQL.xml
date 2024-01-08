@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+	<!-- 유효성체크 -->
+	<select id="selectSy3010Check" parameterType="LinkedHashMap" resultType="String">
+		<![CDATA[
+        SELECT
+               CASE WHEN 1 <= (SELECT COUNT(1) 
+                                FROM TB_SY_M_INTF
+                               WHERE CORP_C   = #{CORP_C}
+                                 AND INTF_ID  = #{INTF_ID}) THEN '동일한 연계ID가 존재합니다. 확인 후 다시 처리하세요'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+	</select>
+
+    <!-- 연계컬럼내역 조회 -->
+    <select id="selectSy3010List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy3010List */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+             , A.RQR_RSP_DSC                                       /* 요청응답구분코드     */
+             , A.INTF_COL_SQNO                                     /* 연계컬럼일련번호     */
+             , A.TR_SQNO                                           /* 거래일련번호         */
+             , A.INTF_DATA_DSC                                     /* 연계자료구분코드(Hea */
+             , A.INTF_DTL_DSC                                      /* 연계상세구분코드(추  */
+             , A.INTF_COL_ID                                       /* 연계컬럼ID           */
+             , A.INTF_COL_NM                                       /* 연계컬럼명           */
+             , A.INTF_BSC_VAL                                      /* 연계기본값           */
+             , A.INTF_COL_TP_DSC                                   /* 연계컬럼유형구분코드 */
+             , A.INTF_COL_LEN                                      /* 연계컬럼길이         */
+             , A.INTF_COL_ST_LOC                                   /* 연계컬럼시작위치     */
+             , A.INTF_COL_ED_LOC                                   /* 연계컬럼종료위치     */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_D_INTF A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C} 
+           AND A.INTF_ID           = #{INTF_ID}
+           AND A.RQR_RSP_DSC       = #{RQR_RSP_DSC}
+    </select>
+</mapper>

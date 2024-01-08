@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+ <select id="selectCa1011List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa1011List */
+               A.REG_DT                                           
+             , A.REG_SQNO                                         
+             <!-- , A.SLP_NML_YN  -->                                      
+             , A.RLTR_DT                                          
+             , A.ACG_DT                                           
+             , A.WDR_PLA_DT                                       
+             , A.ADJPL_C   
+             , B.TRPL_NM as ADJPL_NM                                       
+             , A.REG_DSC                                          
+             , A.CRE_SL_AM                                        
+             , A.PY_STL_DSC                                       
+             , A.STL_ACNO                                         
+             , A.BNK_C                                            
+             , A.DPR_NM                                           
+             , A.RMK_CNTN                                         
+             , A.TR_BSN_DSC                                       
+             , A.TR_SQNO                                          
+             , A.FSRG_DTM   
+             , A.FSRG_ID                                          
+             , A.LSCHG_DTM  
+             , A.LSCHG_ID                                         
+          FROM TB_BD_M_CLAM A
+          INNER JOIN TB_CO_M_TRPL B
+             ON A.CORP_C    =   B.CORP_C
+            AND A.ADJPL_C   =   B.TRPL_C
+          WHERE 1 = 1 
+            AND A.CORP_C  = #{CORP_C}
+            AND A.BZPL_C  = #{BZPL_C}
+            <if test = "ST_DT != null and ST_DT != '' and ED_DT != null and ED_DT != ''">
+                <choose>
+                    <when test = 'searchCondition = "1"'>
+                       AND A.REG_DT        BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test = 'searchCondition = "2"'>
+                       AND A.ACG_DT        BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test = 'searchCondition = "3"'>
+                       AND A.RLTR_DT       BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test = 'searchCondition = "4"'>
+                       AND A.WDR_PLA_DT    BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                </choose>
+            </if>
+            <if test = "TR_BSN_DSC != null and TR_BSN_DSC != ''">
+               AND A.TR_BSN_DSC            = #{TR_BSN_DSC}
+            </if>
+            <if test = "ADJPL_C != null and ADJPL_C != ''">
+               AND A.ADJPL_C               = #{ADJPL_C}
+            </if>
+    </select>
+</mapper>

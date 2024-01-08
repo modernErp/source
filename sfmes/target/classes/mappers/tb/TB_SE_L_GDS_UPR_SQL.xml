@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_L_GDS_UPR" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_L_GDS_UPR */ TB_SE_L_GDS_UPR
+        (
+              CORP_C                                            /* 회사코드             */
+            , BZPL_C                                            /* 사업장코드           */
+            , GDS_C                                             /* 물품코드             */
+            , HST_SQNO                                          /* 이력일련번호         */
+            , APL_BAS_DT                                        /* 적용기준일자         */
+            , WHSL_SL_UPR                                       /* 도매매출단가         */
+            , RTL_SL_UPR                                        /* 소매매출단가         */
+            , ARCY_SPY_UPR                                      /* 대리점공급단가       */    
+            , RMK_CNTN                                          /* 비고내용             */
+            , DEL_YN                                            /* 삭제여부             */
+            , FSRG_DTM                                          /* 최초등록일시         */
+            , FSRG_ID                                           /* 최초등록자ID         */
+            , LSCHG_DTM                                         /* 최종변경일시         */
+            , LSCHG_ID                                          /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{GDS_C}
+            , (
+               SELECT ISNULL(MAX(HST_SQNO),0)+1
+                 FROM TB_SE_L_GDS_UPR
+                WHERE CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND GDS_C  = #{GDS_C}
+              )
+            , #{APL_BAS_DT}
+            , DBO.SF_GET_FLOAT(#{WHSL_SL_UPR})
+            , DBO.SF_GET_FLOAT(#{RTL_SL_UPR})
+            , DBO.SF_GET_FLOAT(#{ARCY_SPY_UPR})
+            , #{RMK_CNTN}
+            , 'N'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_L_GDS_UPR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_L_GDS_UPR */ TB_SE_L_GDS_UPR
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , HST_SQNO            = #{HST_SQNO}              /* 이력일련번호         */
+             , APL_ST_DT           = #{APL_ST_DT}             /* 적용시작일자         */
+             , APL_ED_DT           = #{APL_ED_DT}             /* 적용종료일자         */
+             , SL_UPR              = #{SL_UPR}                /* 매출단가             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </update>
+
+    <delete id="delete_TB_SE_L_GDS_UPR" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_L_GDS_UPR */ FROM TB_SE_L_GDS_UPR
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_L_GDS_UPR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_L_GDS_UPR */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.HST_SQNO                                          /* 일련번호                  */ 
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_DTL_NM                                        /* 물품명                    */ 
+             , B.GDS_STD_NM                                        /* 물품규격명                */ 
+             , B.UNT_C                                             /* 관리단위                  */ 
+             , A.APL_BAS_DT                                        /* 적용기준일자              */
+             , A.WHSL_SL_UPR                                       /* 도매매출단가              */
+             , A.RTL_SL_UPR                                        /* 소매매출단가              */
+             , A.ARCY_SPY_UPR                                      /* 도매점공급단가            */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_SE_L_GDS_UPR        A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C           
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}         
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.GDS_C             = #{GDS_C}   
+    </select>
+</mapper>

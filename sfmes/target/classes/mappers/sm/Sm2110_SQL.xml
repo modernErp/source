@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 품원장건별입출내역 기본조회 -->
+    <select id="select_Sm2110_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT  /*+ select_Sm2110_01 */
+		      A.STDV_DT                                                                   /* 전표일자            */      
+		    , A.STDV_SQNO                                                                 /* 전표일련번호      */      
+		    , A.ACG_DT                                                                    /* 회계일자               */      
+		    , A.RLTR_DT                                                                   /* 입출고일자            */      
+		    , A.TR_BSN_DSC                                                                /* 거래업무구분         */      
+		    , A.TR_SQNO                                                                   /* 거래일련번호         */      
+		    , A.SLP_NML_YN                                                                /* 전표정상여부         */      
+		    , A.STDV_DSC                                                                  /* 입출고구분            */      
+		    , C.TRPL_C                                                                    /* 거래처코드            */      
+		    , C.TRPL_NM                                                                   /* 거래처명               */      
+		    , D.GDS_TP_DSC                                                                /* 물품유형               */      
+		    , B.GDS_C                                                                     /* 물품코드               */      
+		    , D.GDS_NM                                                                    /* 물품명                  */      
+		    , D.GDS_STD_NM                                                                /* 물품규격               */      
+		    , D.UNT_C                                                                     /* 관리단위               */      
+		    , B.WHSE_C                                                                    /* 창고코드               */      
+		    , E.WHSE_NM                                                                   /* 창고명                  */      
+		    , DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_QT ELSE 0 END)  AS STR_QT             /* 입고-수량             */      
+		    , CASE WHEN B.STDV_DSC = 'I' THEN B.STDV_AM ELSE 0 END  AS STR_AM             /* 입고-금액             */      
+		    , DBO.SF_GET_FLOAT(CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_QT ELSE 0 END)  AS DLR_QT             /* 출고-수량             */      
+		    , CASE WHEN B.STDV_DSC = 'O' THEN B.STDV_AM ELSE 0 END  AS DLR_AM             /* 출고-금액             */      
+		    , B.STDV_AM                                                                   /* 거래금액               */      
+		    , B.SPY_AM                                                                    /* 공급가액               */      
+		    , B.VAT                                                                    /* 부가세                  */      
+		    , B.RMK_CNTN                                                                  /* 비고                     */      
+		    , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM                            /* 최초등록일시          */
+		    , A.FSRG_ID                                                                   /* 최초등록자ID    */
+		    , A.FSRG_ID                          AS   FSRG_NM                             /* 최초등록자이름     */
+		    , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM                           /* 최종변경일시        */
+		    , A.LSCHG_ID                                                                  /* 최종변경자ID    */
+		    , A.LSCHG_ID                         AS   LSCHG_NM                            /* 최종변경자이름     */
+		 FROM TB_SM_M_GDS_RL_STDV A
+		INNER JOIN TB_SM_D_GDS_RL_STDV B 
+		   ON A.CORP_C      = B.CORP_C
+		  AND A.BZPL_C      = B.BZPL_C
+		  AND A.STDV_DT     = B.STDV_DT
+		  AND A.STDV_SQNO   = B.STDV_SQNO
+		  AND A.STDV_DSC    = B.STDV_DSC
+		LEFT OUTER JOIN TB_CO_M_TRPL C 
+		   ON A.CORP_C      = C.CORP_C
+		  AND A.TRPL_C      = C.TRPL_C
+		LEFT OUTER JOIN TB_CO_M_GDS D
+		   ON A.CORP_C      = D.CORP_C
+		  AND A.BZPL_C      = D.BZPL_C
+		  AND B.GDS_C       = D.GDS_C
+		LEFT OUTER JOIN TB_CO_M_WHSE E
+		   ON B.CORP_C      = E.CORP_C
+		  AND B.BZPL_C      = E.BZPL_C
+		  AND B.WHSE_C      = E.WHSE_C
+		WHERE 1=1
+		  AND A.DEL_YN      = 'N'
+		  AND B.DEL_YN      = 'N'
+		  AND A.BZPL_C      = #{BZPL_C}
+		  AND A.CORP_C      = #{CORP_C}  
+        <choose>
+          <when test="DT_GUBUN == 1">            
+             AND A.STDV_DT BETWEEN #{ST_DT} AND #{ED_DT}                   
+          </when>
+           <when  test="DT_GUBUN == 3">
+             AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}         
+          </when>
+          </choose>
+        <if test = "GDS_C != null and GDS_C != ''"> 
+               AND B.GDS_C = #{GDS_C}                         
+        </if>       
+        <if test = "TR_BSN_DSC != null and TR_BSN_DSC != ''"> 
+            AND A.TR_BSN_DSC = #{TR_BSN_DSC}
+        </if>
+        <if test="SLP_NML_YN != null and SLP_NML_YN != ''">   
+            AND A.SLP_NML_YN = #{SLP_NML_YN}
+        </if>
+        <if test="STDV_DSC != null and STDV_DSC != ''">       
+            AND B.STDV_DSC  = #{STDV_DSC}
+        </if>
+		                 
+    </select>    
+    
+</mapper>

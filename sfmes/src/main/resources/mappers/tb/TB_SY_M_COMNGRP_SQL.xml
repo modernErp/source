@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SY_M_COMNGRP" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SY_M_COMNGRP */ TB_SY_M_COMNGRP
+        (
+              CORP_C              /* 회사코드             */
+            , COMN_GRP_C          /* 공통그룹코드         */
+            , COMN_GRPC_NM        /* 공통그룹명           */
+            , AMN_HDNG_EXPL1      /* 관리항목설명1        */
+            , AMN_HDNG_EXPL2      /* 관리항목설명2        */
+            , AMN_HDNG_EXPL3      /* 관리항목설명3        */
+            , AMN_HDNG_EXPL4      /* 관리항목설명4        */
+            , AMN_HDNG_EXPL5      /* 관리항목설명5        */
+            , CODE_CIP            /* 코드자리수           */
+            , AMN_LVL             /* 관리레벨             */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록자ID         */
+            , FSRG_ID             /* 최초등록일시         */
+            , LSCHG_DTM           /* 최종변경자ID         */
+            , LSCHG_ID            /* 최종변경일시         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{COMN_GRP_C}
+            , #{COMN_GRPC_NM}
+            , #{AMN_HDNG_EXPL1}
+            , #{AMN_HDNG_EXPL2}
+            , #{AMN_HDNG_EXPL3}
+            , #{AMN_HDNG_EXPL4}
+            , #{AMN_HDNG_EXPL5}
+            , #{CODE_CIP}
+            , #{AMN_LVL}
+            , #{USE_YN}
+            , #{RMK_CNTN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SY_M_COMNGRP" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SY_M_COMNGRP */ TB_SY_M_COMNGRP
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , COMN_GRP_C          = #{COMN_GRP_C}            /* 공통그룹코드         */
+             , COMN_GRPC_NM        = #{COMN_GRPC_NM}          /* 공통그룹명           */
+             , AMN_HDNG_EXPL1      = #{AMN_HDNG_EXPL1}        /* 관리항목설명1        */
+             , AMN_HDNG_EXPL2      = #{AMN_HDNG_EXPL2}        /* 관리항목설명2        */
+             , AMN_HDNG_EXPL3      = #{AMN_HDNG_EXPL3}        /* 관리항목설명3        */
+             , AMN_HDNG_EXPL4      = #{AMN_HDNG_EXPL4}        /* 관리항목설명4        */
+             , AMN_HDNG_EXPL5      = #{AMN_HDNG_EXPL5}        /* 관리항목설명5        */
+             , CODE_CIP            = #{CODE_CIP}              /* 코드자리수           */
+             , AMN_LVL             = #{AMN_LVL}               /* 관리레벨             */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경자ID         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경일시         */
+         WHERE 1=1 
+           AND COMN_GRP_C          = #{COMN_GRP_C}
+           AND CORP_C              = #{CORP_C}
+    </update>
+
+    <delete id="delete_TB_SY_M_COMNGRP" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SY_M_COMNGRP */ FROM TB_SY_M_COMNGRP
+         WHERE 1=1 
+           AND COMN_GRP_C          = #{COMN_GRP_C}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_SY_M_COMNGRP" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+         SELECT /*+ select_TB_SY_M_COMNGRP */
+               A.CORP_C                                            /* 회사코드             */
+             , A.COMN_GRP_C                                        /* 공통그룹코드         */
+             , A.COMN_GRPC_NM                                      /* 공통그룹명           */
+             , A.AMN_HDNG_EXPL1                                    /* 관리항목설명1        */
+             , A.AMN_HDNG_EXPL2                                    /* 관리항목설명2        */
+             , A.AMN_HDNG_EXPL3                                    /* 관리항목설명3        */
+             , A.AMN_HDNG_EXPL4                                    /* 관리항목설명4        */
+             , A.AMN_HDNG_EXPL5                                    /* 관리항목설명5        */
+             , A.CODE_CIP                                          /* 코드자리수           */
+             , A.AMN_LVL                                           /* 관리레벨             */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록자ID         */
+             , A.FSRG_ID                                           /* 최초등록일시         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경자ID         */
+             , A.LSCHG_ID                                          /* 최종변경일시         */
+          FROM TB_SY_M_COMNGRP A
+         WHERE 1=1 
+           AND A.CORP_C            = #{X_CORP_C}
+           AND NOT EXISTS 
+           (
+             SELECT 
+               B.CORP_C                                            /* 회사코드             */
+             , B.COMN_GRP_C                                        /* 공통그룹코드         */
+             , B.COMN_GRPC_NM                                      /* 공통그룹명           */
+             , B.AMN_HDNG_EXPL1                                    /* 관리항목설명1        */
+             , B.AMN_HDNG_EXPL2                                    /* 관리항목설명2        */
+             , B.AMN_HDNG_EXPL3                                    /* 관리항목설명3        */
+             , B.AMN_HDNG_EXPL4                                    /* 관리항목설명4        */
+             , B.AMN_HDNG_EXPL5                                    /* 관리항목설명5        */
+             , B.CODE_CIP                                          /* 코드자리수           */
+             , B.AMN_LVL                                           /* 관리레벨             */
+             , B.USE_YN                                            /* 사용여부             */
+             , B.RMK_CNTN                                          /* 비고내용             */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록자ID         */
+             , B.FSRG_ID                                           /* 최초등록일시         */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경자ID         */
+             , B.LSCHG_ID                                          /* 최종변경일시         */
+          FROM TB_SY_M_COMNGRP B
+         WHERE 1=1 
+           AND B.CORP_C            = #{S_CORP_C}
+           AND A.COMN_GRP_C        = B.COMN_GRP_C
+           )
+    </select>
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <!-- 품간대체처리 상세 입력 -->
+    <insert id="insert_TB_SM_D_GDS_TFR" parameterType="LinkedHashMap">
+            INSERT INTO /*+ insert_TB_SM_D_GDS_TFR */ TB_SM_D_GDS_TFR
+            (
+                CORP_C                      /* 회사코드                 */
+			,   BZPL_C                      /* 사업장코드               */
+			,   TFR_PRC_DT                  /* 대체처리일자            */
+			,   TFR_PRC_SQNO                /* 대체처리일련번호       */
+			,   TFR_PRC_DSQNO               /* 대체처리상세일련번호  */
+			,   DLR_GDS_C                   /* 출고물품코드            */ 
+			,   DLR_WHSE_C                  /* 출고창고코드            */
+			,   DLR_QT                      /* 출고수량                 */
+			,   DLR_WT                      /* 출고중량                 */
+			,   DLR_UPR                     /* 출고단가                  */
+			,   DLR_AM                      /* 출고금액                  */
+			,   STR_GDS_C                   /* 입고물품코드            */
+			,   STR_WHSE_C                  /* 입고창고코드            */
+			,   RMK_CNTN                    /* 비고내용                  */
+			,   FSRG_DTM                    /* 최초등록일시            */
+			,   FSRG_ID                     /* 최초등록자ID      */
+			,   LSCHG_DTM                   /* 최종변경일시            */
+			,   LSCHG_ID                    /* 최종변경자ID      */
+            )
+            VALUES
+            (
+                #{CORP_C}
+            ,   #{BZPL_C}
+            ,   #{TFR_PRC_DT}
+            ,   #{TFR_PRC_SQNO}
+            ,   #{TFR_PRC_DSQNO}
+            ,   #{DLR_GDS_C}
+            ,   #{DLR_WHSE_C}
+            ,   DBO.SF_GET_FLOAT(#{DLR_QT})
+            ,   DBO.SF_GET_FLOAT(#{DLR_WT})
+            ,   DBO.SF_GET_FLOAT(#{DLR_UPR})
+            ,   DBO.SF_GET_FLOAT(#{DLR_AM})
+            ,   #{STR_GDS_C}
+            ,   #{STR_WHSE_C}
+            ,   #{RMK_CNTN}
+            ,   GETDATE()
+            ,   #{GUSRID}
+            ,   GETDATE()
+            ,   #{GUSRID}
+            )
+    </insert>
+    
+    <!-- 품간대체처리 상세 수정 -->
+    <update id="update_TB_SM_D_GDS_TFR" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SM_D_GDS_TFR */ TB_SM_D_GDS_TFR
+        SET     
+                DLR_GDS_C           = #{DLR_GDS_C}                 /* 출고물품코드       */
+		,       DLR_WHSE_C          = #{DLR_WHSE_C}                /* 출고창고코드       */
+		,       DLR_QT              = DBO.SF_GET_FLOAT(#{DLR_QT})  /* 출고수량            */
+		,       DLR_WT              = DBO.SF_GET_FLOAT(#{DLR_WT})  /* 출고중량            */
+		,       DLR_UPR             = DBO.SF_GET_FLOAT(#{DLR_UPR}) /* 출고단가           */
+		,       DLR_AM              = DBO.SF_GET_FLOAT(#{DLR_AM})  /* 출고금액           */
+		,       STR_GDS_C           = #{STR_GDS_C}                 /* 입고물품코드       */
+		,       STR_WHSE_C          = #{STR_WHSE_C}                /* 입고창고코드       */
+		,       RMK_CNTN            = #{RMK_CNTN}                  /* 비고내역             */
+        ,       LSCHG_DTM           = GETDATE()                    /* 최종변경일시       */
+        ,       LSCHG_ID            = #{GUSRID}                    /* 최종변경자ID   */
+        WHERE   1=1
+        AND     CORP_C              = #{CORP_C}
+        AND     BZPL_C              = #{BZPL_C}
+        AND     TFR_PRC_DT          = #{TFR_PRC_DT}
+        AND     TFR_PRC_SQNO        = #{TFR_PRC_SQNO}
+        AND     TFR_PRC_DSQNO       = '1'
+    </update>
+    
+    <!-- 품간대체처리 상세 삭제  -->
+    <delete id="delete_TB_SM_D_GDS_TFR" parameterType="LinkedHashMap">
+         DELETE /*+ delete_TB_SM_D_GDS_TFR */ FROM TB_SM_D_GDS_TFR  
+         WHERE  1=1
+         AND    CORP_C              = #{CORP_C}
+         AND    BZPL_C              = #{BZPL_C}
+         AND    TFR_PRC_DT          = #{TFR_PRC_DT}
+         AND    TFR_PRC_SQNO        = #{TFR_PRC_SQNO}
+         AND    TFR_PRC_DSQNO       = '1'
+    </delete>
+    
+    <!-- 품간대체처리 상세 조회 -->
+    <select id="select_TB_SM_D_GDS_TFR" parameterType="linkedHashMap" resultType="linkedHashMap">
+        SELECT   /*+ select_TB_SM_D_GDS_TFR */
+                A.CORP_C                                             /* 회사코드         */
+			,   A.BZPL_C                                             /* 사업장코드      */
+			,   A.TFR_PRC_DT                                         /* 대체처리일자    */
+			,   A.TFR_PRC_SQNO                                       /* 대체처리일련번호    */
+			,   A.TFR_PRC_DSQNO                                      /* 대체처리상세일련번호 */
+			,   A.DLR_GDS_C                                          /* 출고물품코드  */
+			,   A.DLR_WHSE_C                                         /* 출고창고코드   */
+			,   A.DLR_QT                                             /* 출고수량     */
+			,   A.DLR_WT                                             /* 출고중량     */
+			,   A.DLR_UPR                                            /* 출고단가     */
+			,   A.DLR_AM                                             /* 출고금액     */
+			,   A.STR_GDS_C                                          /* 입고물품코드   */
+			,   A.STR_WHSE_C                                         /* 입고창고코드   */
+			,   A.RMK_CNTN                                           /* 비고내용     */
+			,   CONVERT(CHAR(23), A.FSRG_DTM, 20)    AS FSRG_DTM     /* 최초등록일시 */
+			,   A.FSRG_ID                                            /* 최초등록자ID */
+			,   A.FSRG_ID                            AS FSRG_NM      /* 최초등록자 */
+			,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)   AS LSCHG_DTM    /* 최종변경일시  */
+			,   A.LSCHG_ID                                           /* 최종변경자ID */
+			,   A.LSCHG_ID                           AS LSCHG_NM     /* 최종변경자  */
+        FROM    TB_SM_D_GDS_TFR A
+        WHERE   1=1
+        AND     A.CORP_C        = #{CORP_C}
+        AND     A.BZPL_C        = #{BZPL_C}
+        AND     A.TFR_PRC_DT    = #{TFR_PRC_DT}
+        AND     A.TFR_PRC_SQNO  = #{TFR_PRC_SQNO}
+        AND     A.TFR_PRC_DSQNO = '1'
+    </select>
+    
+    
+</mapper>

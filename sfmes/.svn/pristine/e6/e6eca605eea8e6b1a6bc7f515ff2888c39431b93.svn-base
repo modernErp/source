@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.et">
+
+    <!-- 매입기본내역조회 -->
+    <select id="selectEt9970_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectEt9970_01 */
+              *
+              FROM TB_CO_M_GDS T1
+                  ,TB_CO_M_WHSE T2
+              WHERE 1=1
+                and T1.CORP_C = T2.CORP_C
+                and T1.BZPL_C = T2.BZPL_C
+                AND T1.CORP_C = #{CORP_C}        
+    </select>
+
+</mapper>

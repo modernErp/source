@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <select id="selectGe2010Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectGe2010Cnt */
+               COUNT(1)
+          FROM TB_GE_M_CVAP_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.RC_DT   = #{RC_DT}
+           AND A.RC_SQNO = #{RC_SQNO}   
+    </select>
+
+    <select id="selectGe2010_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectGe2010_01 */
+               A.RC_DT
+             , A.RC_SQNO
+             , A.RCST_ID
+             , (SELECT USR_NM 
+                  FROM TB_SY_M_USR 
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C 
+                   AND USR_ID = A.RCST_ID
+               ) AS USR_NM
+             , A.CUS_NM
+             , A.SEX_DSC
+             , A.AG
+             , A.ZIP
+             , A.CUS_ADR1
+             , A.CUS_ADR2
+             , A.CUS_TELNO
+             , A.CUS_MPNO
+             , A.BUY_DT
+             , A.PCH_PATH
+             , A.SMS_RMS_AGR_YN
+             , A.CVAP_MN_TPC
+             , A.CVAP_TPC
+             , A.CVAP_PRC_METHC
+             , A.CVAP_PRC_YN
+             , A.CSLT_CNTN
+             , A.ACT_SJT
+             , A.RMK_CNTN
+             , A.APDFL_AMNNO
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM
+             , A.FSRG_ID                                 
+             , A.FSRG_ID AS FSRG_NM
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+             , A.LSCHG_ID
+             , A.LSCHG_ID AS LSCHG_NM                                
+          FROM TB_GE_M_CVAP_RC A
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+           AND A.RC_DT   = #{RC_DT}
+           AND A.RC_SQNO = #{RC_SQNO}
+           AND A.DEL_YN  = 'N'           
+    </select>
+
+    <select id="selectGe2010_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectGe2010_02 */
+               A.GDS_C
+             , B.GDS_DTL_NM
+             , B.GDS_STD_NM
+             , B.UNT_C
+             , A.STR_QT                                              /* 입고수량         */
+             , A.MFPL_NM                                             /* 제조처명         */
+             , A.DEL_YN
+          FROM TB_GE_D_CVAP_RC A
+          LEFT OUTER JOIN TB_CO_M_GDS B 
+            ON A.CORP_C  = B.CORP_C
+           AND A.BZPL_C  = B.BZPL_C
+           AND A.GDS_C   = B.GDS_C        
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.RC_DT    = #{RC_DT}
+           AND A.RC_SQNO  = #{RC_SQNO}
+           AND A.DEL_YN  = 'N'
+         ORDER BY A.RC_DSQNO           
+    </select>
+    
+    <select id="selectGe2010_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">        
+        SELECT 
+               A.RC_DT
+             , A.RC_SQNO
+             , A.CVAP_TPC
+             , A.CVAP_PRC_METHC
+             , A.CUS_NM
+             , A.SEX_DSC
+             , A.AG
+             , A.RCST_ID
+             , (SELECT USR_NM 
+                 FROM TB_SY_M_USR 
+                WHERE 1 = 1
+                  AND CORP_C = A.CORP_C 
+                  AND USR_ID = A.RCST_ID
+               ) AS RCST_NM
+             , CVAP_PRC_YN
+             , A.FSRG_ID                                           /* 최초등록자ID             */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시             */
+             , A.LSCHG_ID                                          /* 최종변경자ID             */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시             */
+          FROM TB_GE_M_CVAP_RC A
+         WHERE 1 = 1
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+        <![CDATA[               
+           AND A.RC_DT  >= #{ST_DT}
+           AND A.RC_DT  <= #{ED_DT}
+        ]]>             
+           AND A.DEL_YN  = 'N'
+        <if test="CUS_NM != NULL and CUS_NM != ''">
+            AND A.CUS_NM = #{CUS_NM}            
+        </if>
+        <if test="CVAP_TPC != NULL and CVAP_TPC != ''">
+            AND A.CVAP_TPC = #{CVAP_TPC}
+        </if>
+        <if test="CVAP_PRC_METHC != NULL and CVAP_PRC_METHC != ''">
+            AND A.CVAP_PRC_METHC = #{CVAP_PRC_METHC}
+        </if>
+        <if test="CVAP_PRC_YN != NULL and CVAP_PRC_YN != ''">
+            AND A.CVAP_PRC_YN = #{CVAP_PRC_YN}
+        </if>
+        <if test="RCST_ID != NULL and RCST_ID != ''">
+            AND A.RCST_ID = #{RCST_ID}
+        </if>
+    </select>
+
+</mapper>

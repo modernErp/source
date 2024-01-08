@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_SRA_HST_BNDNO */ TB_CO_M_SRA_HST_BNDNO
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , CRT_DT              /* 생성일자             */
+            , BUDL_NO             /* 묶음번호             */
+            , BUDL_NO_GRD_DSC     /* 묶음번호등급구분코드 */
+            , BUDL_NO_GRD_OPNP_YN /* 묶음번호등급구분공개 */
+            , RE_BUDL_YN          /* 재묶음여부           */
+            , RPT_DSC             /* 신고구분코드         */
+            , RPT_YN              /* 신고여부             */
+            , MFC_DSC             /* 가공구분코드         */
+            , IDVD_CN             /* 개체수               */
+            , BUDL_TOT_WT         /* 묶음총중량           */
+            , DLR_TOT_WT          /* 출고총중량           */
+            , USE_YN              /* 사용여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{CRT_DT}
+            , #{BUDL_NO}
+            , #{BUDL_NO_GRD_DSC}
+            , 'Y'
+            , #{RE_BUDL_YN}
+            , #{RPT_DSC}
+          <choose>
+            <when test='RPT_YN == "Y"'>
+            , #{RPT_YN}
+            </when>
+            <when test="RPT_YN == '' or RPT_YN == null">
+            , 'N'
+            </when>
+          </choose>
+            , #{MFC_DSC}
+            , #{IDVD_CN}
+            , #{BUDL_TOT_WT}
+            , 0
+            , 'Y'
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_SRA_HST_BNDNO */ TB_CO_M_SRA_HST_BNDNO
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , CRT_DT              = #{CRT_DT}                /* 생성일자             */
+             , BUDL_NO             = #{BUDL_NO}               /* 묶음번호             */
+             , BUDL_NO_GRD_DSC     = #{BUDL_NO_GRD_DSC}       /* 묶음번호등급구분코드 */
+             , BUDL_NO_GRD_OPNP_YN = #{BUDL_NO_GRD_OPNP_YN}   /* 묶음번호등급구분공개 */
+             , RE_BUDL_YN          = #{RE_BUDL_YN}            /* 재묶음여부           */
+             , RPT_DSC             = #{RPT_DSC}               /* 신고구분코드         */
+             , MFC_DSC             = #{MFC_DSC}               /* 가공구분코드         */
+             , IDVD_CN             = #{IDVD_CN}               /* 개체수               */
+             , BUDL_TOT_WT         = #{BUDL_TOT_WT}           /* 묶음총중량           */
+             , DLR_TOT_WT          = #{DLR_TOT_WT}            /* 출고총중량           */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BUDL_NO             = #{BUDL_NO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND CRT_DT              = #{CRT_DT}
+    </update>
+
+    <delete id="delete_TB_CO_M_SRA_HST_BNDNO" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_SRA_HST_BNDNO */ FROM TB_CO_M_SRA_HST_BNDNO
+         WHERE 1=1 
+           AND BUDL_NO             = #{BUDL_NO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND CRT_DT              = #{CRT_DT}
+    </delete>
+
+    <select id="select_TB_CO_M_SRA_HST_BNDNO" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_SRA_HST_BNDNO */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.CRT_DT                                            /* 생성일자                  */
+             , A.BUDL_NO                                           /* 묶음번호                  */
+             , A.BUDL_NO_GRD_DSC                                   /* 묶음번호등급구분코드      */
+             , A.BUDL_NO_GRD_OPNP_YN                               /* 묶음번호등급구분공개여부  */
+             , A.RE_BUDL_YN                                        /* 재묶음여부                */
+             , A.RPT_DSC                                           /* 신고구분코드              */
+             , A.RPT_YN                                            /* 신고여부                  */
+             , A.MFC_DSC                                           /* 가공구분코드             */
+             , A.IDVD_CN                                           /* 개체수                    */
+             , A.BUDL_TOT_WT                                       /* 묶음총중량                */
+             , A.DLR_TOT_WT                                        /* 출고총중량                */
+             , A.USE_YN                                            /* 사용여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_M_SRA_HST_BNDNO A
+         WHERE 1=1 
+           AND A.BUDL_NO           = #{BUDL_NO}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.CRT_DT            = #{CRT_DT}
+    </select>
+</mapper>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+
+    <!-- 2021.10.27 서광석
+         [PD_LINE_C]생산라인 추가
+         -->
+    <insert id="insert_TB_SM_D_DLR_RQT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SM_D_DLR_RQT */ TB_SM_D_DLR_RQT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DLR_RQT_DT          /* 출고의뢰일자         */
+            , DLR_RQT_SQNO        /* 출고의뢰일련번호     */
+            , DLR_RQT_DSQNO       /* 출고의뢰상세일련번호 */
+            , GDS_C               /* 물품코드             */
+            , DLR_RQT_QT          /* 출고의뢰수량         */
+            , DEPT_C              /* (의뢰)부서코드      */
+            , TR_UNT_C            /* 거래단위코드         */
+            , HST_AMN_DSC         /* 이력관리구분코드     */
+            , GDS_HST_NO          /* 물품이력번호         */
+            , BUDL_NO             /* 묶음번호             */
+            , QT_WT_DSC           /* 수(중)량형구분코드   */
+            , WHT_QT              /* 단량                 */
+            , WHT_UNT_C           /* 단량단위코드         */
+            , STDV_WT             /* 입출고중량           */
+            , TXT_DSC             /* 과세구분코드         */
+            , TR_SQNO             /* 거래일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+            , TR_DLR_RQT_QT       /* 출고의로거래수량 */
+            , UNT_C               /* 관리단위         */
+            , PD_LINE_C           /* 생산라인        */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DLR_RQT_DT}
+            , #{DLR_RQT_SQNO}
+            , (
+               SELECT ISNULL(MAX(DLR_RQT_DSQNO),0)+1
+                 FROM TB_SM_D_DLR_RQT
+                WHERE 1 = 1
+                  AND CORP_C       = #{CORP_C}
+                  AND BZPL_C       = #{BZPL_C}
+                  AND DLR_RQT_DT   = #{DLR_RQT_DT}
+                  AND DLR_RQT_SQNO = #{DLR_RQT_SQNO}
+              ) 
+            , #{GDS_C}
+            , DBO.SF_GET_FLOAT(#{DLR_RQT_QT})
+            , #{DEPT_C}
+            , #{TR_UNT_C}
+            , #{HST_AMN_DSC}
+            , #{GDS_HST_NO}
+            , #{BUDL_NO}
+            , #{QT_WT_DSC}
+            , DBO.SF_GET_NUMERIC(#{WHT_QT})
+            , #{WHT_UNT_C}
+            , DBO.SF_GET_FLOAT(#{STDV_WT})
+            , #{TXT_DSC}
+            , DBO.SF_GET_NUMERIC(#{TR_SQNO})
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+            , DBO.SF_GET_FLOAT(#{TR_DLR_RQT_QT})
+            , #{UNT_C}  
+            , #{PD_LINE_C}            
+        )
+    </insert>
+
+    <update id="update_TB_SM_D_DLR_RQT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SM_D_DLR_RQT */ TB_SM_D_DLR_RQT
+           SET 
+               CORP_C              = #{CORP_C}                       /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                       /* 사업장코드           */
+             , DLR_RQT_DT          = #{DLR_RQT_DT}                   /* 출고의뢰일자         */
+             , DLR_RQT_SQNO        = #{DLR_RQT_SQNO}                 /* 출고의뢰일련번호     */
+             , DLR_RQT_DSQNO       = #{DLR_RQT_DSQNO}                /* 출고의뢰상세일련번호 */
+             , GDS_C               = #{GDS_C}                        /* 물품코드             */
+             , DLR_RQT_QT          = DBO.SF_GET_FLOAT(#{DLR_RQT_QT}) /* 출고의뢰수량         */
+             , TR_UNT_C            = #{TR_UNT_C}                     /* 거래단위코드         */
+             , HST_AMN_DSC         = #{HST_AMN_DSC}                  /* 이력관리구분코드     */
+             , GDS_HST_NO          = #{GDS_HST_NO}                   /* 물품이력번호         */
+             , BUDL_NO             = #{BUDL_NO}                      /* 묶음번호             */
+             , QT_WT_DSC           = #{QT_WT_DSC}                    /* 수(중)량형구분코드   */
+             , WHT_QT              = DBO.SF_GET_NUMERIC(#{WHT_QT})   /* 단량                 */
+             , WHT_UNT_C           = #{WHT_UNT_C}                    /* 단량단위코드         */
+             , STDV_WT             = DBO.SF_GET_FLOAT(#{STDV_WT})    /* 입출고중량           */
+             , TXT_DSC             = #{TXT_DSC}                      /* 과세구분코드         */
+             <if test = "TR_SQNO != null and TR_SQNO != ''">
+             , TR_SQNO             = DBO.SF_GET_NUMERIC(#{TR_SQNO})  /* 거래일련번호         */
+             </if>
+             , RMK_CNTN            = #{RMK_CNTN}                     /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                       /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                       /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                       /* 최종변경자ID         */
+             , TR_DLR_RQT_QT       = DBO.SF_GET_FLOAT(#{TR_DLR_RQT_QT}) /* 출고의로거래수량 */
+             , UNT_C               = #{UNT_C}                           /* 관리단위          */             
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_RQT_DSQNO       = #{DLR_RQT_DSQNO}
+           AND DLR_RQT_DT          = #{DLR_RQT_DT}
+           AND DLR_RQT_SQNO        = #{DLR_RQT_SQNO}
+    </update>
+
+    <delete id="delete_TB_SM_D_DLR_RQT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SM_D_DLR_RQT */ FROM TB_SM_D_DLR_RQT
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_RQT_DSQNO       = #{DLR_RQT_DSQNO}
+           AND DLR_RQT_DT          = #{DLR_RQT_DT}
+           AND DLR_RQT_SQNO        = #{DLR_RQT_SQNO}
+    </delete>
+
+    <!-- 2021.10.27 서광석
+         [PD_LINE_C]생산라인 추가
+         -->
+    <select id="select_TB_SM_D_DLR_RQT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SM_D_DLR_RQT */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , A.DLR_RQT_DSQNO                                     /* 출고의뢰상세일련번호      */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_TP_DSC                                        /* 물품유형구분코드       */
+             , B.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , B.GDS_STD_NM                                        /* 물품규격명                */
+             , ISNULL(A.UNT_C, B.UNT_C) AS UNT_C                   /* 관리단위                  */
+             , A.DLR_RQT_QT                                        /* 출고의뢰수량              */
+             , ISNULL(A.TR_UNT_C  ,B.UNT_C)         AS TR_UNT_C    /* 거래단위코드              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.BAS_WHSE_C                                        /* 기본창고코드           */
+             , A.GDS_HST_NO                                        /* 물품이력번호              */
+             , A.BUDL_NO                                           /* 묶음번호                  */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.STDV_WT                                           /* 입출고중량                */
+             , ISNULL(A.TXT_DSC ,B.TXT_DSC) AS TXT_DSC             /* 과세구분코드           */
+             , TR_SQNO                                             /* 거래일련번호              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID       */
+             , A.TR_DLR_RQT_QT
+             , A.PD_LINE_C
+          FROM TB_SM_D_DLR_RQT A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C        = B.CORP_C
+           AND A.BZPL_C        = B.BZPL_C
+           AND A.GDS_C         = B.GDS_C
+         WHERE 1=1 
+           AND A.BZPL_C        = #{BZPL_C}
+           AND A.CORP_C        = #{CORP_C}
+           AND A.DLR_RQT_DT    = #{DLR_RQT_DT}
+           AND A.DLR_RQT_SQNO  = #{DLR_RQT_SQNO}
+           AND A.DEL_YN        = 'N'
+    </select>
+</mapper>

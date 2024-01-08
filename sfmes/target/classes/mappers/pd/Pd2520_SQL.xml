@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="select2520_List_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT /*+ select2520_List_01 */
+               X.BZPL_C
+        	 , X.CORP_C
+        	 , X.PRW_C
+        	 , X.GDS_C
+        	 , Y.GDS_TP_DSC
+        	 , Y.TXT_DSC       
+        	 , Y.QT_WT_DSC     
+        	 , Y.GDS_NM
+        	 , Y.GDS_STD_NM    
+        	 , Y.HST_AMN_DSC
+        	 , Y.UNT_C
+        	 , Y.BAS_WHSE_C      AS WHSE_C
+        	 , X.PD_LINE_C
+        	 , X.PTIN_GDS_UNT_C
+        	 , X.PRW_PTIN_QT
+        	 , X.PTIN_DNTT_QT
+        	 , X.PD_YLD_OBJ_YN
+        	 , DBO.SF_GET_STPL_QT(X.CORP_C, X.BZPL_C, X.GDS_C,'00000000') AS STPL_QT /* 현재고수량 */
+        FROM (
+              SELECT 
+                     A.CORP_C                                            
+                   , A.BZPL_C                                            
+              	   , A.PRW_C 
+              	   , B.GDS_C
+        		   , A.PD_LINE_C
+              	   , MAX(B.PTIN_GDS_UNT_C) AS PTIN_GDS_UNT_C
+              	   , SUM(B.LSTR)  AS PRW_PTIN_QT
+              	   , SUM(B.LSTR)  AS PTIN_DNTT_QT
+              	   , MAX(B.PD_YLD_OBJ_YN) AS PD_YLD_OBJ_YN
+               FROM(
+                    SELECT 
+                            A.CORP_C                                            /* 회사코드                  */
+                          , A.BZPL_C                                            /* 사업장코드                */
+                          , A.PRW_C                                             /* 공정코드                  */
+                          , A.PRW_NM                                            /* 공정명                    */
+                     	  , B.SQNO                                              /* 일련번호                  */
+                          , B.GDS_C                                             /* 물품코드                  */
+                     	  , B.BAS_PDQT     AS MFS_DNTT_QT                       /* 기준생산량                */
+                          , A.PRW_CLF_C                                         /* 공정분류코드              */
+                          , A.PD_DSC                                            /* 생산구분코드              */
+                          , A.PRE_PRW_C                                         /* 전공정코드                */
+                          , A.PD_LINE_C                                         /* 생산라인코드              */
+                       FROM TB_PD_M_PRW_REC        A
+                          , TB_PD_D_PRW_REC_PD_GDS B
+                      WHERE 1=1 
+                        AND A.BZPL_C            = B.BZPL_C
+                        AND A.CORP_C            = B.CORP_C
+                        AND A.PRW_C             = B.PRW_C 
+                        AND A.USE_YN            = 'Y'
+                        AND B.USE_YN            = 'Y'
+                        AND A.CORP_C            = #{CORP_C}
+                        AND A.BZPL_C            = #{BZPL_C}
+                   <if test="v_PRW_C != '' and v_PRW_C != null" >
+                        AND A.PRW_C            IN (${v_PRW_C})
+                   </if>
+                        
+                    ) A
+                    , TB_PD_D_PRW_REC_PTIN  B
+                WHERE 1=1
+                  AND A.BZPL_C            = B.BZPL_C
+                  AND A.CORP_C            = B.CORP_C
+                  AND A.PRW_C             = B.PRW_C 
+                  AND B.USE_YN            = 'Y'
+                GROUP BY
+                          A.CORP_C                    
+              	        , A.BZPL_C                    
+              	        , A.PRW_C
+              	        , A.PRW_NM   
+              	        , B.GDS_C
+        		        , A.PD_LINE_C
+             ) X
+             , TB_CO_M_GDS Y   
+         WHERE 1=1
+           AND X.CORP_C      = Y.CORP_C
+           AND X.BZPL_C      = Y.BZPL_C
+           AND X.GDS_C       = Y.GDS_C
+    
+    </select>
+    
+    <select id="select2520_List_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	    SELECT /*+ select2520_List_02 */
+               A.CORP_C                                            
+             , A.BZPL_C                                            
+      	     , A.PRW_C 
+        	 , A.GDS_C
+    	     , Y.GDS_TP_DSC
+             , Y.TXT_DSC       
+             , Y.QT_WT_DSC     
+             , Y.GDS_NM
+             , Y.GDS_STD_NM  
+             , Y.BAS_WHSE_C        AS WHSE_C
+             , Y.UNT_C  
+    	     , A.PD_LINE_C
+        	 , SUM(A.PRW_BAS)      AS PRW_BAS
+        	 , SUM(A.MFS_DNTT_QT)  AS MFS_DNTT_QT
+        	 , SUM(A.QMTR_DSP)     AS QMTR_DSP
+         FROM(
+              SELECT 
+                      A.CORP_C                                            /* 회사코드                  */
+                    , A.BZPL_C                                            /* 사업장코드                */
+                    , A.PRW_C                                             /* 공정코드                  */
+                    , A.PRW_NM                                            /* 공정명                    */
+               	    , B.SQNO                                              /* 일련번호                  */
+                    , B.GDS_C                                             /* 물품코드                  */
+                    , B.BAS_PDQT     AS PRW_BAS                           /* 기준생산량                */
+               	    , B.BAS_PDQT     AS MFS_DNTT_QT                       /* 기준생산량                */
+                    , B.QMTR_DSP
+    			    , A.PRW_CLF_C                                         /* 공정분류코드              */
+                    , A.PD_DSC                                            /* 생산구분코드              */
+                    , A.PRE_PRW_C                                         /* 전공정코드                */
+                    , A.PD_LINE_C                                         /* 생산라인코드              */
+                 FROM TB_PD_M_PRW_REC        A
+                    , TB_PD_D_PRW_REC_PD_GDS B
+                WHERE 1=1 
+                  AND A.BZPL_C            = B.BZPL_C
+                  AND A.CORP_C            = B.CORP_C
+                  AND A.PRW_C             = B.PRW_C 
+                  AND A.USE_YN            = 'Y'
+                  AND B.USE_YN            = 'Y'
+                  AND A.CORP_C            = #{CORP_C}
+                  AND A.BZPL_C            = #{BZPL_C}
+            <if test="v_PRW_C != '' and v_PRW_C != null" >
+                  AND A.PRW_C            IN (${v_PRW_C})
+            </if>
+              ) A
+              , TB_CO_M_GDS Y   
+        WHERE 1=1
+          AND A.CORP_C      = Y.CORP_C
+          AND A.BZPL_C      = Y.BZPL_C
+          AND A.GDS_C       = Y.GDS_C
+        GROUP BY
+                 A.CORP_C                                            
+               , A.BZPL_C                                            
+        	   , A.PRW_C 
+        	   , A.GDS_C
+    	       , Y.GDS_TP_DSC
+               , Y.TXT_DSC       
+               , Y.QT_WT_DSC     
+               , Y.GDS_NM
+               , Y.GDS_STD_NM    
+               , Y.BAS_WHSE_C
+               , Y.UNT_C
+    	       , A.PD_LINE_C
+    
+    </select>
+    
+</mapper>

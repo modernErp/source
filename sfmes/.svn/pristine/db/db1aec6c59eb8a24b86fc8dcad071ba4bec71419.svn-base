@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 견적서내역 조회 -->
+    <select id="selectSe5015List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe5015List01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.ESMT_DT                                           /* 견적일자             */
+             , A.ESMT_SQNO                                         /* 견적일련번호         */
+             , A.SLPL_C                                            /* 매출처코드           */
+			 , ( SELECT TRPL_NM 
+			       FROM TB_CO_M_TRPL X
+				  WHERE 1=1
+				    AND A.CORP_C = X.CORP_C
+					AND A.SLPL_C = X.TRPL_C ) AS SLPL_NM           /* 매출처명             */
+             , A.TR_ST_DT                                          /* 거래시작일자         */
+             , A.TR_ED_DT                                          /* 거래종료일자         */
+             , A.FAX_SND_DSC                                       /* FAX송신구분코드      */
+             , A.FAX_SND_DTM                                       /* FAX송신일시          */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명          */                   
+          FROM TB_SE_M_EMT A 
+         WHERE 1=1
+           AND A.CORP_C     = #{CORP_C}
+           AND A.BZPL_C     = #{BZPL_C}
+           AND A.DEL_YN       = 'N'
+       <choose>
+          <when test="DT_DSC == 1">
+           AND A.ESMT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_DSC == 2">
+           AND A.TR_ST_DT BETWEEN #{ST_DT} AND #{ED_DT}
+           </when>
+           <when test="DT_DSC == 3">
+           AND A.TR_ED_DT BETWEEN #{ST_DT} AND #{ED_DT}
+           </when>
+           </choose>
+           <if test = "SLPL_C != null and SLPL_C != ''">
+           AND A.SLPL_C       = #{SLPL_C}
+           </if>
+    </select>
+    
+    <!-- 견적서내역 상세조회 -->
+    <select id="selectSe5015List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">   
+           SELECT /*+ selectSe5015List02 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.ESMT_DT                                           /* 견적일자             */
+             , A.ESMT_SQNO                                         /* 견적일련번호         */
+             , A.ESMT_DSQNO                                        /* 견적상세일련번호     */
+             , A.GDS_C                                             /* 물품코드             */
+             , A.ESMT_UPR                                          /* 견적단가             */
+             , A.ESMT_QT                                           /* 견적수량             */
+             , A.ESMT_WT                                           /* 견적중량             */
+             , A.ESMT_AM                                           /* 견적금액             */
+			 , B.GDS_TP_DSC                                        /* 물품유형             */
+			 , B.GDS_DTL_NM                                        /* 물품명               */
+			 , B.GDS_STD_NM                                        /* 규격명               */
+			 , B.UNT_C                                             /* 단위                 */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SE_D_EMT A
+		     , TB_CO_M_GDS B
+         WHERE 1=1
+		   AND A.CORP_C    = B.CORP_C
+		   AND A.BZPL_C    = B.BZPL_C
+		   AND A.GDS_C     = B.GDS_C
+		   AND A.BZPL_C    = #{BZPL_C}
+           AND A.CORP_C    = #{CORP_C}
+           AND A.ESMT_DT   = #{ESMT_DT}
+           AND A.ESMT_SQNO = #{ESMT_SQNO}   
+           AND A.DEL_YN    = 'N'      
+    </select>
+</mapper>

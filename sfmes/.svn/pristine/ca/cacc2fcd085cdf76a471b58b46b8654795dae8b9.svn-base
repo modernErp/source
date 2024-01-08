@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <select id="selectCo3020List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo3020List */
+               A.SND_DT                                              /* 발신일자                */
+             , A.TMS_KEY                                             /* 전송KEY                */
+             , A.SMS_SND_DSC                                         /* SMS발신구분코드           */
+             , A.BZPL_C                                              /* 사업장코드                */
+             , (SELECT BZPL_NM
+                  FROM TB_CO_M_BZPL X
+                 WHERE 1 = 1
+                   AND X.BZPL_C = A.BZPL_C)      AS BZPL_NM           /* 사업장명                  */
+             , A.DEPT_C                                              /* 부서코드                  */
+             , A.RMS_NM                                              /* 수신자명                  */
+             , A.RMS_MP_NO                                           /* 수신휴대전화번호             */
+             , A.SNDMN_ID                       AS SNDMN_NM          /* 발신자명                  */
+             , A.SND_TEL_NO                                          /* 발신전화번호               */
+             , A.MSG_TIT                                             /* 메시지제목                */
+             , A.MSG_CNTN                                            /* 메시지내용                */
+             , A.SND_PRC_RZT_DSC                                     /* 발신처리결과구분코드          */
+             , A.FSRG_DTM                                            /* 최초등록일시              */
+             , A.FSRG_ID                                             /* 최초등록자ID              */
+             , A.FSRG_ID                        AS FSRG_NM           /* 최초등록자명              */
+             , A.LSCHG_DTM                                           /* 최종변경일시              */
+             , A.LSCHG_ID                                            /* 최종변경자ID              */
+             , A.LSCHG_ID                       AS LSCHG_NM          /* 최종변경자명              */
+          FROM TB_CO_L_MSG_SND A
+           WHERE 1=1 
+           AND A.CORP_C           = #{CORP_C}
+           AND A.BZPL_C           = #{BZPL_C}
+           AND A.SND_DT BETWEEN #{SND_ST_DT} AND #{SND_ED_DT}
+         <if test = "SND_PRC_RZT_DSC != null and SND_PRC_RZT_DSC != ''">
+           AND A.SND_PRC_RZT_DSC   = #{SND_PRC_RZT_DSC}
+         </if>
+         <if test = "SNDMN_ID != null and SNDMN_ID != ''">
+           AND A.SNDMN_ID          = #{SNDMN_ID} 
+         </if>
+         <if test = "RMS_NM != null and RMS_NM != ''">
+           AND A.RMS_NM            = #{RMS_NM}
+         </if>
+         <if test = "RMS_MP_NO != null and RMS_MP_NO != ''">
+           AND A.RMS_MP_NO         = #{RMS_MP_NO}
+         </if>
+         <if test = "MSG_TIT != null and MSG_TIT != ''">
+           AND A.MSG_TIT           = #{MSG_TIT}
+         </if>
+    </select>
+</mapper>

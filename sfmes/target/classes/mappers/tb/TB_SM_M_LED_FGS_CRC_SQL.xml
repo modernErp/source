@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <!-- 재고_원장계수정정기본 입력 -->
+    <insert id="insert_TB_SM_M_LED_FGS_CRC" parameterType="LinkedHashMap">
+            INSERT INTO /*+ insert_TB_SM_M_LED_FGS_CRC */ TB_SM_M_LED_FGS_CRC
+            (
+                CORP_C              /* 회사코드 */
+            ,   BZPL_C              /* 사업장코드 */
+            ,   CRC_DT              /* 정정일자 */
+            ,   CRC_SQNO            /* 정정일련번호 */
+            ,   STDV_DSC            /* 입출고구분코드 */
+            ,   SLP_NML_YN          /* 전표정상여부 */
+            ,   RLTR_DT             /* 실거래일자 */
+            ,   ACG_DT              /* 회계일자 */
+            ,   TRPL_C              /* 거래처코드 */
+            ,   MVE_RSN_CNTN        /* 이동사유내용 */
+            ,   RMK_CNTN            /* 비고내용 */
+            ,   TR_BSN_DSC          /* 거래업무구분코드 */
+            ,   TR_SQNO             /* 거래일련번호 */
+            ,   FSRG_DTM            /* 최초등록일시 */
+            ,   FSRG_ID             /* 최초등록자ID */
+            ,   LSCHG_DTM           /* 최종변경일시 */
+            ,   LSCHG_ID            /* 최종변경자ID */
+            )
+            VALUES
+            (
+                #{CORP_C}
+            ,   #{BZPL_C}
+            ,   #{CRC_DT}
+            ,   #{CRC_SQNO}
+            ,   #{STDV_DSC}
+            ,   #{SLP_NML_YN}
+            ,   #{RLTR_DT}
+            ,   #{ACG_DT}
+            ,   #{TRPL_C}
+            ,   #{MVE_RSN_CNTN}
+            ,   #{RMK_CNTN}
+            ,   #{TR_BSN_DSC}
+            ,   #{TR_SQNO}
+            ,   GETDATE()
+            ,   #{GUSRID}
+            ,   GETDATE()
+            ,   #{GUSRID}
+            )
+    </insert>
+    
+    <!-- 재고_원장계수정정기본 수정 -->
+    <update id="update_TB_SM_M_LED_FGS_CRC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SM_M_LED_FGS_CRC */ TB_SM_M_LED_FGS_CRC
+        SET     
+                STDV_DSC            = #{STDV_DSC}            /* 입출고구분코드 */
+        ,       SLP_NML_YN          = #{SLP_NML_YN}          /* 전표정상여부 */
+        ,       RLTR_DT             = #{RLTR_DT}             /* 실거래일자 */
+        ,       ACG_DT              = #{ACG_DT}              /* 회계일자 */
+        ,       TRPL_C              = #{TRPL_C}              /* 거래처코드 */
+        ,       MVE_RSN_CNTN        = #{MVE_RSN_CNTN}        /* 이동사유내용 */
+        ,       RMK_CNTN            = #{RMK_CNTN}            /* 비고내용 */
+        ,       TR_BSN_DSC          = #{TR_BSN_DSC}          /* 거래업무구분코드 */
+        ,       TR_SQNO             = #{TR_SQNO}             /* 거래일련번호 */
+        ,       LSCHG_DTM           = GETDATE()              /* 최종변경일시       */
+        ,       LSCHG_ID            = #{GUSRID}              /* 최종변경자ID   */
+        WHERE   1=1
+        AND     CORP_C              = #{CORP_C}
+        AND     BZPL_C              = #{BZPL_C}
+        AND     CRC_DT              = #{CRC_DT}
+        AND     CRC_SQNO            = #{CRC_SQNO}
+    </update>
+    
+    <!-- 재고_원장계수정정기본 삭제  -->
+    <delete id="delete_TB_SM_M_LED_FGS_CRC" parameterType="LinkedHashMap">
+         DELETE /*+ delete_TB_SM_M_LED_FGS_CRC */ FROM TB_SM_M_LED_FGS_CRC  
+         WHERE  1=1
+         AND    CORP_C              = #{CORP_C}
+         AND    BZPL_C              = #{BZPL_C}
+         AND    CRC_DT              = #{CRC_DT}
+         AND    CRC_SQNO            = #{CRC_SQNO}
+    </delete>
+    
+    <!-- 재고_원장계수정정기본 조회 -->
+    <select id="select_TB_SM_M_LED_FGS_CRC" parameterType="linkedHashMap" resultType="linkedHashMap">
+        SELECT   /*+ select_TB_SM_M_LED_FGS_CRC */
+                A.CORP_C                                             /* 회사코드 */
+            ,   A.BZPL_C                                             /* 사업장코드 */
+            ,   A.CRC_DT                                             /* 정정일자 */
+            ,   A.CRC_SQNO                                           /* 정정일련번호 */
+            ,   A.STDV_DSC                                           /* 입출고구분코드 */
+            ,   A.SLP_NML_YN                                         /* 전표정상여부 */
+            ,   A.RLTR_DT                                            /* 실거래일자 */
+            ,   A.ACG_DT                                             /* 회계일자 */
+            ,   A.TRPL_C                                             /* 거래처코드 */
+            ,   A.MVE_RSN_CNTN                                       /* 이동사유내용 */
+            ,   A.RMK_CNTN                                           /* 비고내용 */
+            ,   A.TR_BSN_DSC                                         /* 거래업무구분코드 */
+            ,   A.TR_SQNO                                            /* 거래일련번호 */
+            ,   CONVERT(CHAR(23), A.FSRG_DTM, 20)       AS FSRG_DTM  /*  최초등록일시     */
+            ,   A.FSRG_ID                                            /*  최초등록자ID  */
+            ,   A.FSRG_ID                               AS FSRG_NM   /*  최초등록자      */
+            ,   CONVERT(CHAR(23), A.LSCHG_DTM, 20)      AS LSCHG_DTM /*  최종변경일시     */
+            ,   A.LSCHG_ID                                           /*  최종변경자ID    */
+            ,   A.LSCHG_ID                              AS LSCHG_NM  /*  최종변경자       */
+        FROM    TB_SM_M_LED_FGS_CRC A
+        WHERE   1=1
+        AND     A.CORP_C        = #{CORP_C}
+        AND     A.BZPL_C        = #{BZPL_C}
+        AND     A.CRC_DT        = #{CRC_DT}
+        AND     A.CRC_SQNO      = #{CRC_SQNO}
+    </select>
+    
+    
+</mapper>

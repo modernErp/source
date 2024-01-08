@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 생산상세현황 -->
+    <select id="selectPd2160_Rpt_Mfs_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectPd2160_Rpt_Mfs_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RPT_DT                                            /* 일지일자                  */
+             , A.RPT_SQNO                                          /* 일지일련번호              */
+             , A.PRW_C                                             /* BOM(공정)코드(육가공)     */
+             , A.BPRW_PRW_C                                        /* 전공정BOM코드(육가공)     */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.PD_METH_C                                         /* 생산방법코드              */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.DNTT_DNO                                          /* 지시상세번호              */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , A.PD_DT                                             /* 생산일자                  */
+             , A.PCS_CAL_DT                                        /* 원가계산일자              */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , B.GDS_C                                             /* 물품코드                  */
+             , B.GDS_HST_NO                                        /* 축산물이력번호            */
+             , B.MFT_DT                                            /* 제조일자                  */
+             , B.DSTR_TER_DT                                       /* 유통기한일자              */
+             , B.PD_QT                                             /* 생산수량                  */
+             , B.PD_AM                                             /* 생산금액                  */
+             , B.WHSE_C                                            /* 창고코드                  */
+             , D.WHSE_NM                                           /* 창고명                    */
+             , C.GDS_DTL_NM                                        /* 물품상세명(물품명 + 규격) */
+             , C.GDS_STD_NM                                        /* 물품규격코드              */
+             , C.UNT_C                                             /* 단위코드                  */
+             , C.GDS_TP_DSC                                        /* 물품유형코드              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_WK_RPT                 A
+               INNER JOIN TB_PD_D_WK_RPT_MFS  B
+               ON  A.BZPL_C            = B.BZPL_C
+               AND A.CORP_C            = B.CORP_C
+               AND A.RPT_DT            = B.RPT_DT
+               AND A.RPT_SQNO          = B.RPT_SQNO
+               INNER JOIN TB_CO_M_GDS         C            /* 공통_물품기본         */
+               ON  C.CORP_C          = B.CORP_C
+               AND C.BZPL_C          = B.BZPL_C
+               AND C.GDS_C           = B.GDS_C
+               AND C.USE_YN          = 'Y'
+               LEFT OUTER JOIN TB_CO_M_WHSE   D            /* 공통_창고기본         */
+               ON  D.CORP_C          = B.CORP_C
+               AND D.BZPL_C          = B.BZPL_C
+               AND D.WHSE_C          = B.WHSE_C
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           <if test='DATE_CHK != "1"'>
+             AND A.RPT_DT      BETWEEN #{ST_DT} AND #{ED_DT}
+           </if>
+           <if test='DATE_CHK != "2"'>
+             AND A.ACG_DT      BETWEEN #{ST_DT} AND #{ED_DT}
+           </if>
+           <if test="GDS_C != ''">
+             AND B.GDS_C           = #{GDS_C}
+           </if>
+           <if test="MFC_DSC != ''">
+             AND A.MFC_DSC         = #{MFC_DSC}
+           </if>
+           AND A.DEL_YN            = #{DEL_YN}
+        ORDER BY B.GDS_C
+               , C.GDS_TP_DSC
+    </select>
+
+
+    <!-- 생산상세현황 투입물품 조회 -->
+    <select id="selectPd2160_Rpt_Mfs_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_D_WK_RPT_MTRL */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.RPT_DT                                            /* 일지일자                  */
+             , A.RPT_SQNO                                          /* 일지일련번호              */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_DTL_NM                                        /* 물품상세명(물품명 + 규격) */
+             , B.GDS_STD_NM                                        /* 물품규격코드              */
+             , B.UNT_C                                             /* 단위코드                  */
+             , B.GDS_TP_DSC                                        /* 물품유형코드              */
+             , A.GDS_HST_NO                                        /* 물품이력추적번호          */
+             , A.PTIN_DNTT_QT                                      /* 투입지시량                */
+             , A.PTIN_GDS_UNT_C                                    /* 투입물품단위코드          */
+             , A.MTRL_PTIN_QT                                      /* 자재투입량                */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , C.WHSE_NM                                           /* 창고명                    */
+             , A.PTIN_UPR                                          /* 투입단가                  */
+             , A.PTIN_AM                                           /* 투입금액                  */
+             , A.ACP_MTR_DSC                                       /* 인수재료구분코드          */
+             , A.MTRL_YLD                                          /* 자재수율                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_D_WK_RPT_MTRL A
+               INNER JOIN TB_CO_M_GDS         B            /* 공통_물품기본         */
+               ON  B.CORP_C          = A.CORP_C
+               AND B.BZPL_C          = A.BZPL_C
+               AND B.GDS_C           = A.GDS_C
+               AND B.USE_YN          = 'Y'
+               LEFT OUTER JOIN TB_CO_M_WHSE   C            /* 공통_창고기본         */
+               ON  C.CORP_C          = A.CORP_C
+               AND C.BZPL_C          = A.BZPL_C
+               AND C.WHSE_C          = A.WHSE_C
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.RPT_DT            = #{RPT_DT}
+           AND A.RPT_SQNO          = #{RPT_SQNO}
+    </select>
+
+</mapper>

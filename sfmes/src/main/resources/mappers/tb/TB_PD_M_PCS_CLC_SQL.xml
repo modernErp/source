@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_PCS_CLC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_PCS_CLC */ TB_PD_M_PCS_CLC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_YM          /* 원가_계산_년월       */
+            , PCS_CLC_SQNO        /* 원가_계산_일련번호   */
+            , PCS_CLC_ST_DT       /* 원가_계산_시작일자   */
+            , PCS_CLC_ED_DT       /* 원가_계산_종료일자   */
+            , PCSTP_YN            /* 원가_원가성여부      */
+            , WKIP_UG_METH_DSC    /* 재공품사용방법구분코 */
+            , LBRCS_DSBN_DAM_BASCD/* 노무비배부차액기준코 */
+            , MFT_XPN_DSBN_DAM_BASCD /* 제조경비배부차액기준코드  */
+            , PRC_CN              /* 처리건수             */
+            , MTRCS               /* 재료비               */
+            , LBRCS               /* 노무비               */
+            , MFT_XPN             /* 제조경비             */
+            , BASE_WKIP_AM        /* 기초재공품금액       */
+            , ETRM_WKIP_AM        /* 기말재공품금액       */
+            , OORD_MFCS           /* 외주가공비           */
+            , TOT_LBR_CST_AM      /* 총_노무_비용_금액    */
+            , TOT_MFT_XPN_AM      /* 총_제조_경비_금액    */
+            , TOT_LBR_WK_HR       /* 총_노무_작업_시간    */
+            , T0T_PTIN_AM         /* 총_투입_금액         */
+            , TOT_PD_AM           /* 총_생산_금액         */
+            , TOT_LBRCS_DSBN_CAM  /* 총노무비배부적수     */
+            , TOT_MFT_XPN_DSBN_CAM/* 총제조경비배부적수   */
+            , DSBN_DAM_ARG_YN     /* 배부_차액_정리_여부  */
+            , RMK_CNTN            /* 비고내용             */
+            , ARG_DT              /* 정리일자             */
+            , ARG_SQNO            /* 정리일련번호         */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PCS_CLC_YM}
+            , #{PCS_CLC_SQNO}
+            , #{PCS_CLC_ST_DT}
+            , #{PCS_CLC_ED_DT}
+            , #{PCSTP_YN}
+            , #{WKIP_UG_METH_DSC}
+            , #{LBRCS_DSBN_DAM_BASCD}
+            , #{MFT_XPN_DSBN_DAM_BASCD}
+            , #{PRC_CN}
+            , #{MTRCS}
+            , #{LBRCS}
+            , #{MFT_XPN}
+            , #{BASE_WKIP_AM}
+            , #{ETRM_WKIP_AM}
+            , #{OORD_MFCS}
+            , #{TOT_LBR_CST_AM}
+            , #{TOT_MFT_XPN_AM}
+            , #{TOT_LBR_WK_HR}
+            , #{T0T_PTIN_AM}
+            , #{TOT_PD_AM}
+            , #{TOT_LBRCS_DSBN_CAM}
+            , #{TOT_MFT_XPN_DSBN_CAM}
+            , #{DSBN_DAM_ARG_YN}
+            , #{RMK_CNTN}
+            , #{ARG_DT}
+            , #{ARG_SQNO}
+            , #{TR_BSN_DSC}
+            , #{TR_SQNO}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_PCS_CLC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_PCS_CLC */ TB_PD_M_PCS_CLC
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PCS_CLC_YM          = #{PCS_CLC_YM}            /* 원가_계산_년월       */
+             , PCS_CLC_SQNO        = #{PCS_CLC_SQNO}          /* 원가_계산_일련번호   */
+             , PCS_CLC_ST_DT       = #{PCS_CLC_ST_DT}         /* 원가_계산_시작일자   */
+             , PCS_CLC_ED_DT       = #{PCS_CLC_ED_DT}         /* 원가_계산_종료일자   */
+             , PCSTP_YN            = #{PCSTP_YN}              /* 원가_원가성여부      */
+             , WKIP_UG_METH_DSC    = #{WKIP_UG_METH_DSC}      /* 재공품사용방법구분코 */
+             , LBRCS_DSBN_DAM_BASCD= #{LBRCS_DSBN_DAM_BASCD}  /* 노무비배부차액기준코 */
+             , MFT_XPN_DSBN_DAM_BASCD = #{MFT_XPN_DSBN_DAM_BASCD}    /* 제조경비배부차액기준코드  */
+             , PRC_CN              = #{PRC_CN}                /* 처리건수             */
+             , MTRCS               = #{MTRCS}                 /* 재료비               */
+             , LBRCS               = #{LBRCS}                 /* 노무비               */
+             , MFT_XPN             = #{MFT_XPN}               /* 제조경비             */
+             , BASE_WKIP_AM        = #{BASE_WKIP_AM}          /* 기초재공품금액       */
+             , ETRM_WKIP_AM        = #{ETRM_WKIP_AM}          /* 기말재공품금액       */
+             , OORD_MFCS           = #{OORD_MFCS}             /* 외주가공비           */
+             , TOT_LBR_CST_AM      = #{TOT_LBR_CST_AM}        /* 총_노무_비용_금액    */
+             , TOT_MFT_XPN_AM      = #{TOT_MFT_XPN_AM}        /* 총_제조_경비_금액    */
+             , TOT_LBR_WK_HR       = #{TOT_LBR_WK_HR}         /* 총_노무_작업_시간    */
+             , T0T_PTIN_AM         = #{T0T_PTIN_AM}           /* 총_투입_금액         */
+             , TOT_PD_AM           = #{TOT_PD_AM}             /* 총_생산_금액         */
+             , TOT_LBRCS_DSBN_CAM  = #{TOT_LBRCS_DSBN_CAM}    /* 총노무비배부적수     */
+             , TOT_MFT_XPN_DSBN_CAM= #{TOT_MFT_XPN_DSBN_CAM}  /* 총제조경비배부적수   */
+             , DSBN_DAM_ARG_YN     = #{DSBN_DAM_ARG_YN}       /* 배부_차액_정리_여부  */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ARG_DT              = #{ARG_DT}                /* 정리일자             */
+             , ARG_SQNO            = #{ARG_SQNO}              /* 정리일련번호         */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND PCS_CLC_YM          = #{PCS_CLC_YM}
+    </update>
+
+    <delete id="delete_TB_PD_M_PCS_CLC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_PCS_CLC */ FROM TB_PD_M_PCS_CLC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+           AND PCS_CLC_YM          = #{PCS_CLC_YM}
+    </delete>
+
+    <select id="select_TB_PD_M_PCS_CLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_PCS_CLC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_YM                                        /* 원가_계산_년월            */
+             , A.PCS_CLC_SQNO                                      /* 원가_계산_일련번호        */
+             , A.PCS_CLC_ST_DT                                     /* 원가_계산_시작일자        */
+             , A.PCS_CLC_ED_DT                                     /* 원가_계산_종료일자        */
+             , A.PCSTP_YN                                          /* 원가_원가성여부           */
+             , A.WKIP_UG_METH_DSC                                  /* 재공품사용방법구분코드    */
+             , A.LBRCS_DSBN_DAM_BASCD                              /* 노무비배부차액기준코드    */
+             , A.MFT_XPN_DSBN_DAM_BASCD                            /* 제조경비배부차액기준코드  */
+             , A.PRC_CN                                            /* 처리건수                  */
+             , A.MTRCS                                             /* 재료비                    */
+             , A.LBRCS                                             /* 노무비                    */
+             , A.MFT_XPN                                           /* 제조경비                  */
+             , A.BASE_WKIP_AM                                      /* 기초재공품금액            */
+             , A.ETRM_WKIP_AM                                      /* 기말재공품금액            */
+             , A.OORD_MFCS                                         /* 외주가공비                */
+             , A.TOT_LBR_CST_AM                                    /* 총_노무_비용_금액         */
+             , A.TOT_MFT_XPN_AM                                    /* 총_제조_경비_금액         */
+             , A.TOT_LBR_WK_HR                                     /* 총_노무_작업_시간         */
+             , A.T0T_PTIN_AM                                       /* 총_투입_금액              */
+             , A.TOT_PD_AM                                         /* 총_생산_금액              */
+             , A.TOT_LBRCS_DSBN_CAM                                /* 총노무비배부적수          */
+             , A.TOT_MFT_XPN_DSBN_CAM                              /* 총제조경비배부적수        */
+             , A.DSBN_DAM_ARG_YN                                   /* 배부_차액_정리_여부       */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ARG_DT                                            /* 정리일자                  */
+             , A.ARG_SQNO                                          /* 정리일련번호              */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+			 , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+			 , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+          FROM TB_PD_M_PCS_CLC A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}
+           AND A.PCS_CLC_YM        = #{PCS_CLC_YM}
+    </select>
+</mapper>

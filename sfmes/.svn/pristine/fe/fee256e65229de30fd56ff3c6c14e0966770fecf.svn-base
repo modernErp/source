@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_CO_M_APDFL" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_CO_M_APDFL */ TB_CO_M_APDFL
+        (
+              CORP_C              /* 회사코드             */
+            , APD_FILE_AMN_NO     /* 첨부파일관리번호     */
+            , APD_FILE_SQNO       /* 첨부파일일련번호     */
+            , APD_FILE_DSC        /* 첨부파일구분코드     */
+            , STOG_PATH           /* 저장경로             */
+            , STOG_FILE_NM        /* 저장파일명           */
+            , OTXT_FILE_NM        /* 원본파일명           */
+            , XTN_NM              /* 확장자명             */
+            , FILE_SZE            /* 파일크기             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{APD_FILE_AMN_NO}
+            , #{APD_FILE_SQNO}
+            , #{APD_FILE_DSC}
+            , #{STOG_PATH}
+            , #{STOG_FILE_NM}
+            , #{OTXT_FILE_NM}
+            , #{XTN_NM}
+            , #{FILE_SZE}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_CO_M_APDFL" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_CO_M_APDFL */ TB_CO_M_APDFL
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , APD_FILE_SQNO       = #{APD_FILE_SQNO}         /* 첨부파일일련번호     */
+             , APD_FILE_AMN_NO     = #{APD_FILE_AMN_NO}       /* 첨부파일관리번호     */
+             , APD_FILE_DSC        = #{APD_FILE_DSC}          /* 첨부파일구분코드     */
+             , STOG_PATH           = #{STOG_PATH}             /* 저장경로             */
+             , STOG_FILE_NM        = #{STOG_FILE_NM}          /* 저장파일명           */
+             , OTXT_FILE_NM        = #{OTXT_FILE_NM}          /* 원본파일명           */
+             , XTN_NM              = #{XTN_NM}                /* 확장자명             */
+             , FILE_SZE            = #{FILE_SZE}              /* 파일크기             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND APD_FILE_SQNO       = #{APD_FILE_SQNO}
+           AND CORP_C              = #{CORP_C}
+    </update>
+
+    <delete id="delete_TB_CO_M_APDFL" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_CO_M_APDFL */ FROM TB_CO_M_APDFL
+         WHERE 1=1 
+           AND APD_FILE_SQNO       = #{APD_FILE_SQNO}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_CO_M_APDFL" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_APDFL */
+               A.CORP_C                                            /* 회사코드             */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호     */
+             , A.APD_FILE_SQNO                                     /* 첨부파일일련번호     */
+             , A.APD_FILE_DSC                                      /* 첨부파일구분코드     */
+             , A.STOG_PATH                                         /* 저장경로             */
+             , A.STOG_FILE_NM                                      /* 저장파일명           */
+             , A.OTXT_FILE_NM                                      /* 원본파일명           */
+             , A.XTN_NM                                            /* 확장자명             */
+             , A.FILE_SZE                                          /* 파일크기             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_CO_M_APDFL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.APD_FILE_AMN_NO   = #{APD_FILE_AMN_NO}
+    </select>
+</mapper>

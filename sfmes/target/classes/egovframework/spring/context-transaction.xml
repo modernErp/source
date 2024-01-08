@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+    <!-- 트랜잭션 처리를 위한 접두어를 반드시 선언해야 정상 처리됨 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+            <tx:method name="select*" rollback-for="Exception"/>
+            <tx:method name="update*" rollback-for="Exception"/>
+            <tx:method name="insert*" rollback-for="Exception"/>
+            <tx:method name="delete*" rollback-for="Exception"/>
+            <tx:method name="save*"   rollback-for="Exception"/>
+            <tx:method name="getGvno*" propagation="REQUIRES_NEW"/>         <!-- 채번생성(독립트랜잭션 커넥션 적용) -->
+            <tx:method name="getTrSqno*" propagation="REQUIRES_NEW"/>       <!-- 거래일련번호 생성(독립트랜잭션 커넥션 적용) -->
+            <tx:method name="tran*" propagation="REQUIRES_NEW"/>            <!-- 독립트랜잭션 커넥션 적용 -->
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+        <aop:pointcut id="requiredTx" expression="execution(* com.sfmes..impl.*Impl.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="requiredTx" />
+	</aop:config>
+
+</beans>

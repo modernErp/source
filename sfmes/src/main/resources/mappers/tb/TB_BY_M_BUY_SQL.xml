@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_BY_M_BUY" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_BY_M_BUY */ TB_BY_M_BUY
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , BY_DT               /* 매입일자             */
+            , BY_SQNO             /* 매입일련번호         */
+            , SLP_NML_YN          /* 전표정상여부         */
+            , RLTR_DT             /* 실거래일자           */
+            , ACG_DT              /* 회계일자             */
+            , PY_PLA_DT           /* 지급예정일자         */
+            , BY_REF_DSC          /* 매입참조구분코드     */
+            , TRPL_C              /* 거래처코드           */
+            , ADJPL_C             /* 정산처코드           */
+            , BY_AM               /* 매입금액             */
+            , SPY_AM              /* 공급금액             */
+            , VAT                 /* 부가세               */
+            , BY_CST              /* 매입비용             */
+            , CSH_AM              /* 현금금액             */
+            , CRE_AM              /* 외상금액             */
+            , TFR_AM              /* 대체금액             */
+            , FTR_AM              /* 이체금액             */
+            , PRY_AM              /* 선급금액             */
+            , RGD_RSN_DSC         /* 반품사유구분코드     */
+            , OGN_BY_DT           /* 원매입일자           */
+            , OGN_BY_SQNO         /* 원매입일련번호       */
+            , STR_DT              /* 입고일자             */
+            , STR_SQNO            /* 입고일련번호         */
+            , RMK_CNTN            /* 비고내용             */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+            , OEM_YN              /* OEM여부  추가 20220104 rchkorea  */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{BY_DT}
+            , #{BY_SQNO}
+            , #{SLP_NML_YN}
+            , #{RLTR_DT}
+            , #{ACG_DT}
+            , #{PY_PLA_DT}
+            , #{BY_REF_DSC}
+            , #{TRPL_C}
+            , #{ADJPL_C}
+            , DBO.SF_GET_NUMERIC(#{BY_AM})
+            , DBO.SF_GET_NUMERIC(#{SPY_AM})
+            , DBO.SF_GET_NUMERIC(#{VAT})
+            , DBO.SF_GET_NUMERIC(#{BY_CST})
+            , DBO.SF_GET_NUMERIC(#{CSH_AM})
+            , DBO.SF_GET_NUMERIC(#{CRE_AM})
+            , DBO.SF_GET_NUMERIC(#{TFR_AM})
+            , DBO.SF_GET_NUMERIC(#{FTR_AM})
+            , DBO.SF_GET_NUMERIC(#{PRY_AM})
+            , #{RGD_RSN_DSC}
+            , #{OGN_BY_DT}
+            , DBO.SF_GET_NUMERIC(#{OGN_BY_SQNO})
+            , #{STR_DT}
+            , DBO.SF_GET_NUMERIC(#{STR_SQNO})
+            , #{RMK_CNTN}
+            , #{TR_BSN_DSC}
+            , DBO.SF_GET_NUMERIC(#{TR_SQNO})
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+            , #{OEM_YN}
+        )
+    </insert>
+
+    <update id="update_TB_BY_M_BUY" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_BY_M_BUY */ TB_BY_M_BUY
+           SET 
+               CORP_C              = #{CORP_C}                              /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                              /* 사업장코드           */
+             , BY_DT               = #{BY_DT}                               /* 매입일자             */
+             , BY_SQNO             = #{BY_SQNO}                             /* 매입일련번호         */
+             , SLP_NML_YN          = #{SLP_NML_YN}                          /* 전표정상여부         */
+             , RLTR_DT             = #{RLTR_DT}                             /* 실거래일자           */
+             , ACG_DT              = #{ACG_DT}                              /* 회계일자             */
+             , PY_PLA_DT           = #{PY_PLA_DT}                           /* 지급예정일자         */
+             , BY_REF_DSC          = #{BY_REF_DSC}                          /* 매입참조구분코드     */
+             , TRPL_C              = #{TRPL_C}                              /* 거래처코드           */
+             , ADJPL_C             = #{ADJPL_C}                             /* 정산처코드           */
+             , BY_AM               = DBO.SF_GET_NUMERIC(#{BY_AM})           /* 매입금액             */
+             , SPY_AM              = DBO.SF_GET_NUMERIC(#{SPY_AM})          /* 공급금액             */
+             , VAT                 = DBO.SF_GET_NUMERIC(#{VAT})             /* 부가세               */
+             , BY_CST              = DBO.SF_GET_NUMERIC(#{BY_CST})          /* 매입비용             */
+             , CSH_AM              = DBO.SF_GET_NUMERIC(#{CSH_AM})          /* 현금금액             */
+             , CRE_AM              = DBO.SF_GET_NUMERIC(#{CRE_AM})          /* 외상금액             */
+             , TFR_AM              = DBO.SF_GET_NUMERIC(#{TFR_AM})          /* 대체금액             */
+             , FTR_AM              = DBO.SF_GET_NUMERIC(#{FTR_AM})          /* 이체금액             */
+             , PRY_AM              = DBO.SF_GET_NUMERIC(#{PRY_AM})          /* 선급금액             */
+             , RGD_RSN_DSC         = #{RGD_RSN_DSC}                         /* 반품사유구분코드     */
+             , OGN_BY_DT           = #{OGN_BY_DT}                           /* 원매입일자           */
+             , OGN_BY_SQNO         = DBO.SF_GET_NUMERIC(#{OGN_BY_SQNO})     /* 원매입일련번호       */
+             , STR_DT              = #{STR_DT}                              /* 입고일자             */
+             , STR_SQNO            = DBO.SF_GET_NUMERIC(#{STR_SQNO})        /* 입고일련번호         */
+             , RMK_CNTN            = #{RMK_CNTN}                            /* 비고내용             */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}                          /* 거래업무구분코드     */
+             , TR_SQNO             = DBO.SF_GET_NUMERIC(#{TR_SQNO})         /* 거래일련번호         */
+             , LSCHG_DTM           = GETDATE()                              /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                              /* 최종변경자ID         */
+             , OEM_YN              = #{OEM_YN}                              /* OEM여부  추가 20220104 rchkorea  */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C} 
+           AND BZPL_C              = #{BZPL_C}                   
+           AND BY_DT               = #{BY_DT}
+           AND BY_SQNO             = #{BY_SQNO}
+    </update>
+
+    <delete id="delete_TB_BY_M_BUY" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_BY_M_BUY */ FROM TB_BY_M_BUY
+         WHERE 1=1 
+           AND BY_DT               = #{BY_DT}
+           AND BY_SQNO             = #{BY_SQNO}
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+    </delete>
+
+    <select id="select_TB_BY_M_BUY" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_BY_M_BUY */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.BY_DT                                             /* 매입일자                  */
+             , A.BY_SQNO                                           /* 매입일련번호              */
+             , A.SLP_NML_YN                                        /* 전표정상여부              */
+             , A.RLTR_DT                                           /* 실거래일자                */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.PY_PLA_DT                                         /* 지급예정일자              */
+             , A.BY_REF_DSC                                        /* 매입참조구분코드          */
+             , A.TRPL_C                                            /* 거래처코드                */
+             , A.ADJPL_C                                           /* 정산처코드                */
+             , A.BY_AM                                             /* 매입금액                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.BY_CST                                            /* 매입비용                  */
+             , A.CSH_AM                                            /* 현금금액                  */
+             , A.CRE_AM                                            /* 외상금액                  */
+             , A.TFR_AM                                            /* 대체금액                  */
+             , A.FTR_AM                                            /* 이체금액                  */
+             , A.PRY_AM                                            /* 선급금액                  */
+             , A.RGD_RSN_DSC                                       /* 반품사유구분코드          */
+             , A.OGN_BY_DT                                         /* 원매입일자                */
+             , A.OGN_BY_SQNO                                       /* 원매입일련번호            */
+             , A.STR_DT                                            /* 입고일자                  */ 
+             , A.STR_SQNO                                          /* 입고일련번호              */ 
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.OEM_YN                                            /* OEM여부  추가 20220104 rchkorea  */
+          FROM TB_BY_M_BUY A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.BY_DT             = #{BY_DT}
+           AND A.BY_SQNO           = #{BY_SQNO}
+    </select>
+</mapper>

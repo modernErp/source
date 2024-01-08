@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <select id="pd3030_ValidChk" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN 1 <= (SELECT COUNT(1) 
+                                 FROM TB_PD_M_PCS_CLC_ACC_BAC 
+                                WHERE 1=1 
+                                  AND CORP_C             = #{CORP_C}
+                                  AND BZPL_C             = #{BZPL_C}
+                                  AND PCS_CLC_YM         = #{PCS_CLC_YM}) THEN '해당년월에 이미 등록된 노무비/제조경비 내역이 있습니다. 조회 후 등록하십시오.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>
+
+    <select id="select_pd3030List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CP_D_MM_ACC_BAC */
+               A.CORP_C                                            /* 회사코드                  */
+             , B.BZPL_C                                            /* 사업장코드                */
+             , B.PCS_CLC_YM                                        /* 원가_계산_년월            */
+             , A.ACG_ACC_C                                         /* 회계계정코드              */
+             , A.ACG_ACC_NM                                        /* 회계계정명                */
+             , A.PCS_FCTR_C                                        /* 원가요소코드              */
+             , ISNULL(B.ACG_ACC_BAC ,0)          AS   ACG_ACC_BAC  /* 회계계정잔액              */
+             , A.MFC_ACC_DSC                                       /* 제조계정구분코드          */
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), B.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , B.FSRG_ID                                           /* 최초등록자ID              */
+             , B.FSRG_ID                          AS   FSRG_NM     /* 최초등록자이름            */
+             , CONVERT(CHAR(23), B.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , B.LSCHG_ID                                          /* 최종변경자ID              */
+             , B.LSCHG_ID                         AS   LSCHG_NM    /* 최종변경자이름            */
+          FROM TB_DL_M_ACG             A
+               LEFT OUTER JOIN
+               TB_CP_D_MM_ACC_BAC      B
+               ON  B.CORP_C              = A.CORP_C
+               AND B.ACG_ACC_C           = A.ACG_ACC_C
+               AND B.CORP_C              = #{CORP_C}
+	           AND B.BZPL_C              = #{BZPL_C}
+	           AND B.PCS_CLC_YM          = #{PCS_CLC_YM}
+         WHERE 1=1
+           AND A.CORP_C              = #{CORP_C}
+           AND A.MFC_ACC_DSC    IN('1','2')
+           AND A.FILP_ACC_YN         = 'Y'
+    </select>
+    
+    <!-- 2022.04.05 원가상태체크 나명우추가 -->
+    <select id="select_pd3030PCS_CHK" parameterType="LinkedHashMap" resultType="Integer">
+      SELECT /*+ select_pd3040List04 */
+             COUNT(A.PCS_CLC_STSC)                                      /* 원가계산상태코드      */
+        FROM TB_CP_M_PCS   A    /* 원가계산기본 */
+       WHERE 1=1
+         AND A.CORP_C              = #{CORP_C}
+         AND A.BZPL_C              = #{BZPL_C}
+         AND A.PCS_CLC_ST_DT LIKE CONCAT(#{PCS_CLC_YM}, '01')+'%'
+         AND DEL_YN                = 'N'
+    </select>
+</mapper>

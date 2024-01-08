@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <!-- CO1040P02_표준부위코드 대분류 조회 -->
+    <select id="selectCo1040P02_LATC_LCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT DISTINCT 
+		       LATC_LCLC
+		     , LATC_LCLC_NM 
+		  FROM TB_CO_M_LATC_CLF_STD
+		 WHERE 1=1
+    <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 1">
+           AND LATC_LCLC_NM LIKE '%${searchKeyword}%'
+        </when>
+        <when test="searchCondition == 2">
+           AND LATC_LCLC_NM IN (SELECT LATC_LCLC_NM
+                                  FROM TB_CO_M_LATC_CLF_STD
+                                 WHERE LATC_MCLC_NM LIKE '%${searchKeyword}%')
+        </when>
+        <when test="searchCondition == 3">
+           AND LATC_LCLC_NM IN (SELECT LATC_LCLC_NM
+                                  FROM TB_CO_M_LATC_CLF_STD
+                                 WHERE LATC_SCLC_NM LIKE '%${searchKeyword}%')
+        </when>
+        </choose>
+    </if>
+    </select>
+    
+    <!-- CO1040P02_표준부위코드 중분류 조회 -->
+    <select id="selectCo1040P02_LATC_MCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT DISTINCT
+		       LATC_MCLC
+		     , LATC_MCLC_NM 
+		  FROM TB_CO_M_LATC_CLF_STD
+		 WHERE 1=1
+		   AND LATC_MCLC LIKE '${LATC_LCLC}%'
+    <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 2">
+           AND LATC_MCLC_NM LIKE '%${searchKeyword}%'
+        </when>
+        <when test="searchCondition == 3">
+           AND LATC_MCLC_NM IN (SELECT LATC_MCLC_NM
+                                  FROM TB_CO_M_LATC_CLF_STD
+                                 WHERE LATC_SCLC_NM LIKE '%${searchKeyword}%')
+        </when>
+        </choose>
+    </if>
+    </select>
+    
+    <!-- CO1040P02_표준부위코드 소분류 조회 -->
+    <select id="selectCo1040P02_LATC_SCLC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		SELECT DISTINCT
+		       LATC_SCLC
+		     , LATC_SCLC_NM 
+		  FROM TB_CO_M_LATC_CLF_STD
+		 WHERE 1=1
+		   AND LATC_MCLC = '${LATC_MCLC}'
+    <if test="searchKeyword != null and searchKeyword != ''">
+        <choose>
+        <when test="searchCondition == 3">
+           AND LATC_SCLC_NM LIKE '%${searchKeyword}%'
+        </when>
+        </choose>
+    </if>
+    </select>
+    
+    <!-- CO1040 물품분류 전체조회 -->
+    <select id="select_ALL_GDS_CLF" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_GDS_CLF */
+               A.CORP_C                                            /* 회사코드               */
+             , A.GDS_CLF_DSC                                       /* 물품분류구분코드       */
+             , A.GDS_LCLC                                          /* 물품대분류코드         */
+             , A.GDS_MCLC                                          /* 물품중분류코드         */
+             , A.GDS_SCLC                                          /* 물품소분류코드         */
+             , A.GDS_LCLC_NM                                       /* 물품대분류명           */
+             , A.GDS_MCLC_NM                                       /* 물품중분류명           */
+             , A.GDS_SCLC_NM                                       /* 물품소분류명           */
+             , A.GDS_CLF_LVL                                       /* 물품분류레벨           */
+             , A.GDS_CLF_C                                         /* 물품분류코드(대+중+소) */
+             , A.ERP_GDS_C                                         /* ERP물품코드            */ 
+             , A.USE_YN                                            /* 사용여부               */
+             , A.ETC_DSC1                                          /* 기타구분1              */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시           */
+             , A.FSRG_ID                                           /* 최초등록자ID           */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시           */
+             , A.LSCHG_ID                                          /* 최종변경자ID           */
+          FROM TB_CO_M_GDS_CLF A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.USE_YN            = 'Y'
+    </select>    
+    
+    <!-- CO1040P01 물품조회(팝업) -->
+    <select id="select_GDS_List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+   	    SELECT /*+ select_TB_CO_M_GDS */
+		       A.CORP_C                                            /* 회사코드                  */
+		     , A.GDS_C                                             /* 물품코드                  */
+		     , A.REP_GDS_C                                         /* 대표물품코드              */
+		     , A.GDS_NM                                            /* 물품명                    */
+		     , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+		     , A.GDS_ENM                                           /* 물품영문명                */
+		     , A.GDS_STD_NM                                        /* 물품규격명                */
+		     , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+		     , A.GDS_LCLC                                          /* 물품대분류코드            */
+		     , (SELECT DISTINCT GDS_LCLC_NM                        /* 물품대분류명              */
+		         FROM TB_CO_M_GDS_CLF
+		        WHERE CORP_C   = A.CORP_C
+		          AND GDS_LCLC = A.GDS_LCLC
+		      ) AS GDS_LCLC_NM
+		     , A.GDS_MCLC                                          /* 물품중분류코드            */
+		     , (SELECT DISTINCT GDS_MCLC_NM                        /* 물품중분류명              */
+		          FROM TB_CO_M_GDS_CLF
+		         WHERE CORP_C   = A.CORP_C
+		           AND GDS_LCLC = A.GDS_LCLC 
+		           AND GDS_MCLC = A.GDS_MCLC
+		      ) AS GDS_MCLC_NM
+		     , A.GDS_SCLC                                          /* 물품소분류코드            */
+		     , (SELECT DISTINCT GDS_SCLC_NM                        /* 물품소분류명              */
+		          FROM TB_CO_M_GDS_CLF
+		         WHERE CORP_C   = A.CORP_c
+		           AND GDS_LCLC = A.GDS_LCLC  
+		           AND GDS_MCLC = A.GDS_MCLC
+		           AND GDS_SCLC = A.GDS_SCLC
+		       ) AS GDS_SCLC_NM                        
+		     , A.DEPT_C                                            /* 주관부서                  */           
+		     , A.TXT_DSC                                           /* 과세구분코드              */
+		     , A.PART_C                                            /* 표준부위코드              */
+		     , A.GRD_C                                             /* 축산물등급코드            */
+		     , A.UZ_DSC                                            /* 용도                      */
+		    /* , (SELECT LATC_SCLC_NM              */
+		    /*      FROM TB_CO_M_LATC_CLF_STD      */
+		    /*     WHERE LATC_SCLC = A.PART_C      */
+		    /*   ) AS PART_NM                      */
+		     , A.DIGI_GDS_C                                        /* 디지장비물품코드          */
+		     , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+		     , A.UNT_C                                             /* 단위코드                  */
+		     , A.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+		     , A.GDS_WT                                            /* 물품중량(Kg)              */
+		     , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , dbo.SF_GET_WHSE_NM(A.CORP_C, A.BZPL_C, A.BAS_WHSE_C) AS BAS_WHSE_NM             /* 기본창고명                */                  
+		     , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+		     , A.OPDAA_DSC                                         /* 원산지구분코드            */
+		     , A.PDAA_C                                            /* 산지코드                  */
+		     , A.CSTD_METH_C                                       /* 보관방식코드              */
+		     , A.PAK_METH_C                                        /* 진공포장방법코드          */
+		     , A.MFT_TRPL_NM                                       /* 제조원명                  */
+		     , A.SEL_TRPL_NM                                       /* 판매원명                  */
+		     , A.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , A.TOTE_QT                                           /* 토트수량(작업박스수량)    */
+		     , A.PAK_STP_DSC                                       /* 포장단계구분코드          */
+		     , A.WHT_QT                                            /* 단량                      */
+		     , A.WHT_UNT_C                                         /* 단량단위코드              */
+		     , A.WHT_PAK_C                                         /* 단량포장코드              */
+		     , A.WHT_BAR_C                                         /* 단량바코드                */
+		     , A.IN_QT                                             /* 입수량(내포장)            */
+		     , A.IN_UNT_C                                          /* 입수량단위코드(내포장)    */
+		     , A.IN_PAK_C                                          /* 입수량포장코드(내포장)    */
+		     , A.IN_BAR_C                                          /* 입수량물품바코드(내포장)  */
+		     , A.OUT_QT                                            /* 포장수량(외포장)          */
+		     , A.OUT_UNT_C                                         /* 포장단위코드(외포장)      */
+		     , A.OUT_PAK_C                                         /* 포장코드(외포장)          */
+		     , A.OUT_BAR_C                                         /* 포장바코드(외포장)        */
+		     , A.PAK_NEWT                                          /* 포장순중량(N.W)           */
+		     , A.PAK_GRWT                                          /* 포장총중량(G.W)           */
+		     , A.PKMTR_C                                           /* 포장재질코드              */
+		     , A.GDS_HGHT                                          /* 물품높이                  */
+		     , A.GDS_LEN_LEN                                       /* 물품세로길이              */
+		     , A.GDS_WDTH_LEN                                      /* 물품가로길이              */
+		     , A.GDS_CBM                                           /* 물품부피CBM(㎥)           */
+		     , A.GDS_RPT_NO                                        /* 물품보고번호              */
+		     , A.GDS_DTL_EXPL                                      /* 물품상세설명              */
+		     , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+		     , A.HS_C                                              /* HS코드                    */
+		     , A.ERP_GDS_C                                         /* ERP품목코드               */
+		     , A.RVO_YN                                            /* 수주여부                  */
+		     , A.RVO_TR_STOP_DT                                    /* 수주거래중지일자          */
+		     , A.RVO_TR_STOP_RSNC                                  /* 수주거래중지사유코드      */
+		     , A.RVO_MIN_QT                                        /* 판매(수주)최소수량        */
+		     , A.ODR_YN                                            /* 발주여부                  */
+		     , A.ODR_TR_STOP_DT                                    /* 발주거래중지일자          */
+		     , A.ODR_TR_STOP_RSNC                                  /* 발주거래중지사유코드      */
+		     , A.ODR_BAS_QT                                        /* 발주기준수량              */
+		     , A.GDS_STR_BAS_DDS                                   /* 물품입고기준일수          */
+		     , A.SL_YN                                             /* 판매여부                  */
+		     , A.SL_TR_STOP_RSNC                                   /* 판매거래중지사유          */
+		     , A.GDS_PROENV_DSC                                    /* 물품친환경구분코드        */
+		     , A.DSTR_TER_AMN_YN                                   /* 유통기한관리여부          */
+		     , A.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드      */
+		     , A.DSTR_PRD_CN                                       /* 유통기한수                */
+		     , A.PD_GDS_DSC                                        /* 생산물품구분코드          */
+		     , A.PD_LINE_C                                         /* 주생산라인코드            */
+		     , A.BAS_BOM_C                                         /* 기본BOM코드               */
+		     , A.OEM_YN                                            /* OEM여부                   */
+		     , A.STPL_AMN_YN                                       /* 재고관리여부              */
+		     , A.XPO_GDS_YN                                        /* 수출물품여부              */
+		     , A.IPO_GDS_YN                                        /* 수입물품여부              */
+		     , A.USE_YN                                            /* 사용여부                  */
+		     , A.RMK_CNTN                                          /* 비고내용                  */
+		     , A.ETC_DSC1                                          /* 기타구분1                 */
+		     , A.ETC_DSC2                                          /* 기타구분2                 */
+		     , A.ETC_DSC3                                          /* 기타구분3                 */
+		     , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+		     , A.FSRG_ID                                           /* 최초등록자ID              */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+		     , A.LSCHG_ID                                          /* 최종변경자ID              */
+		  FROM TB_CO_M_GDS A
+		 WHERE 1=1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+        <if test="GDS_LCLC != '' and GDS_LCLC != null" >
+           AND A.GDS_LCLC   = #{GDS_LCLC}
+        </if>
+        <if test="GDS_MCLC != '' and GDS_MCLC != null" >
+           AND A.GDS_MCLC   = #{GDS_MCLC}
+        </if>
+        <if test="GDS_SCLC != '' and GDS_SCLC != null" >
+           AND A.GDS_SCLC   = #{GDS_SCLC}
+        </if>
+        <if test="USE_YN !='' and USE_YN != null">
+           AND A.USE_YN     = #{USE_YN}
+        </if>
+        <if test="GDS_TP_DSC !='' and GDS_TP_DSC != null">
+           AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+        </if>        
+        <if test="searchKeyword != null and searchKeyword != ''">
+          <choose>
+            <when test="searchCondition == ''">
+                AND (A.GDS_C LIKE '%${searchKeyword}%' OR A.GDS_DTL_NM LIKE '%${searchKeyword}%')
+            </when>
+            <when test="searchCondition == 1">
+                AND A.GDS_C LIKE '%${searchKeyword}%'
+            </when>
+            <when test="searchCondition == 2">
+                AND A.GDS_DTL_NM LIKE '%${searchKeyword}%'
+            </when>
+          </choose>
+        </if>
+    </select>     
+
+<!-- CO1040P01 물품이력(팝업) -->
+    <select id="select_GDS_List1" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+     SELECT /*+ select_TB_CO_L_GDS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REP_GDS_C                                         /* 대표물품코드              */
+             , A.GDS_NM                                            /* 물품명                    */
+             , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , A.GDS_ENM                                           /* 물품영문명                */
+             , A.GDS_STD_NM                                        /* 물품규격명                */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.GDS_LCLC                                          /* 물품대분류코드            */
+             , (SELECT DISTINCT GDS_LCLC_NM                        /* 물품대분류명              */
+                 FROM TB_CO_M_GDS_CLF
+                WHERE CORP_C   = A.CORP_C
+                  AND GDS_LCLC = A.GDS_LCLC
+              ) AS GDS_LCLC_NM
+             , A.GDS_MCLC                                          /* 물품중분류코드            */
+             , (SELECT DISTINCT GDS_MCLC_NM                        /* 물품중분류명              */
+                  FROM TB_CO_M_GDS_CLF
+                 WHERE CORP_C   = A.CORP_C
+                   AND GDS_LCLC = A.GDS_LCLC 
+                   AND GDS_MCLC = A.GDS_MCLC
+              ) AS GDS_MCLC_NM
+             , A.GDS_SCLC                                          /* 물품소분류코드            */
+             , (SELECT DISTINCT GDS_SCLC_NM                        /* 물품소분류명              */
+                  FROM TB_CO_M_GDS_CLF
+                 WHERE CORP_C   = A.CORP_c
+                   AND GDS_LCLC = A.GDS_LCLC  
+                   AND GDS_MCLC = A.GDS_MCLC
+                   AND GDS_SCLC = A.GDS_SCLC
+               ) AS GDS_SCLC_NM                        
+             , A.DEPT_C                                            /* 주관부서                  */           
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.PART_C                                            /* 표준부위코드              */
+             , A.GRD_C                                             /* 축산물등급코드            */
+             , A.UZ_DSC                                            /* 용도                      */
+            /* , (SELECT LATC_SCLC_NM              */
+            /*      FROM TB_CO_M_LATC_CLF_STD      */
+            /*     WHERE LATC_SCLC = A.PART_C      */
+            /*   ) AS PART_NM                      */
+             , A.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.UNT_C                                             /* 단위코드                  */
+             , A.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , A.GDS_WT                                            /* 물품중량(Kg)              */
+             , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , dbo.SF_GET_WHSE_NM(A.CORP_C, A.BZPL_C, A.BAS_WHSE_C) AS BAS_WHSE_NM             /* 기본창고명                */                  
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.OPDAA_DSC                                         /* 원산지구분코드            */
+             , A.PDAA_C                                            /* 산지코드                  */
+             , A.CSTD_METH_C                                       /* 보관방식코드              */
+             , A.PAK_METH_C                                        /* 진공포장방법코드          */
+             , A.MFT_TRPL_NM                                       /* 제조원명                  */
+             , A.SEL_TRPL_NM                                       /* 판매원명                  */
+             , A.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , A.TOTE_QT                                           /* 토트수량(작업박스수량)    */
+             , A.PAK_STP_DSC                                       /* 포장단계구분코드          */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.WHT_PAK_C                                         /* 단량포장코드              */
+             , A.WHT_BAR_C                                         /* 단량바코드                */
+             , A.IN_QT                                             /* 입수량(내포장)            */
+             , A.IN_UNT_C                                          /* 입수량단위코드(내포장)    */
+             , A.IN_PAK_C                                          /* 입수량포장코드(내포장)    */
+             , A.IN_BAR_C                                          /* 입수량물품바코드(내포장)  */
+             , A.OUT_QT                                            /* 포장수량(외포장)          */
+             , A.OUT_UNT_C                                         /* 포장단위코드(외포장)      */
+             , A.OUT_PAK_C                                         /* 포장코드(외포장)          */
+             , A.OUT_BAR_C                                         /* 포장바코드(외포장)        */
+             , A.PAK_NEWT                                          /* 포장순중량(N.W)           */
+             , A.PAK_GRWT                                          /* 포장총중량(G.W)           */
+             , A.PKMTR_C                                           /* 포장재질코드              */
+             , A.GDS_HGHT                                          /* 물품높이                  */
+             , A.GDS_LEN_LEN                                       /* 물품세로길이              */
+             , A.GDS_WDTH_LEN                                      /* 물품가로길이              */
+             , A.GDS_CBM                                           /* 물품부피CBM(㎥)           */
+             , A.GDS_RPT_NO                                        /* 물품보고번호              */
+             , A.GDS_DTL_EXPL                                      /* 물품상세설명              */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+             , A.HS_C                                              /* HS코드                    */
+             , A.ERP_GDS_C                                         /* ERP품목코드               */
+             , A.RVO_YN                                            /* 수주여부                  */
+             , A.RVO_TR_STOP_DT                                    /* 수주거래중지일자          */
+             , A.RVO_TR_STOP_RSNC                                  /* 수주거래중지사유코드      */
+             , A.RVO_MIN_QT                                        /* 판매(수주)최소수량        */
+             , A.ODR_YN                                            /* 발주여부                  */
+             , A.ODR_TR_STOP_DT                                    /* 발주거래중지일자          */
+             , A.ODR_TR_STOP_RSNC                                  /* 발주거래중지사유코드      */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.GDS_STR_BAS_DDS                                   /* 물품입고기준일수          */
+             , A.SL_YN                                             /* 판매여부                  */
+             , A.SL_TR_STOP_RSNC                                   /* 판매거래중지사유          */
+             , A.GDS_PROENV_DSC                                    /* 물품친환경구분코드        */
+             , A.DSTR_TER_AMN_YN                                   /* 유통기한관리여부          */
+             , A.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드      */
+             , A.DSTR_PRD_CN                                       /* 유통기한수                */
+             , A.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , A.PD_LINE_C                                         /* 주생산라인코드            */
+             , A.BAS_BOM_C                                         /* 기본BOM코드               */
+             , A.OEM_YN                                            /* OEM여부                   */
+             , A.STPL_AMN_YN                                       /* 재고관리여부              */
+             , A.XPO_GDS_YN                                        /* 수출물품여부              */
+             , A.IPO_GDS_YN                                        /* 수입물품여부              */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CO_L_GDS A
+         WHERE 1=1 
+        <if test="GDS_LCLC != '' and GDS_LCLC != null" >
+           AND A.GDS_LCLC   = #{GDS_LCLC}
+        </if>
+        <if test="GDS_MCLC != '' and GDS_MCLC != null" >
+           AND A.GDS_MCLC   = #{GDS_MCLC}
+        </if>
+        <if test="GDS_SCLC != '' and GDS_SCLC != null" >
+           AND A.GDS_SCLC   = #{GDS_SCLC}
+        </if>
+        <if test="USE_YN !='' and USE_YN != null">
+           AND A.USE_YN     = #{USE_YN}
+        </if>
+        <if test="GDS_TP_DSC !='' and GDS_TP_DSC != null">
+           AND A.GDS_TP_DSC = #{GDS_TP_DSC}
+        </if>        
+        <if test="searchKeyword != null and searchKeyword != ''">
+          <choose>
+            <when test="searchCondition == ''">
+                AND (A.GDS_C LIKE '%${searchKeyword}%' OR A.GDS_DTL_NM LIKE '%${searchKeyword}%')
+            </when>
+            <when test="searchCondition == 1">
+                AND A.GDS_C LIKE '%${searchKeyword}%'
+            </when>
+            <when test="searchCondition == 2">
+                AND A.GDS_DTL_NM LIKE '%${searchKeyword}%'
+            </when>
+          </choose>
+        </if>       
+    </select>
+
+
+    <!-- CO1040P04 물품조회(팝업) -->
+    <select id="select_GDS_List_ForWork" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_GDS_List_ForWork (물품조회 팝업) */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REP_GDS_C                                         /* 대표물품코드              */
+             , A.GDS_NM                                            /* 물품명                    */
+             , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , A.GDS_ENM                                           /* 물품영문명                */
+             , A.GDS_STD_NM                                        /* 물품규격명                */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.GDS_LCLC                                          /* 물품대분류코드            */
+		     , (SELECT DISTINCT GDS_LCLC_NM                        /* 물품대분류명              */
+		         FROM TB_CO_M_GDS_CLF              
+		        WHERE CORP_C   = A.CORP_C           
+		          AND GDS_LCLC = A.GDS_LCLC       
+		       ) AS GDS_LCLC_NM                   
+             , A.GDS_MCLC                                          /* 물품중분류코드            */
+		     , (SELECT DISTINCT GDS_MCLC_NM                        /* 물품중분류명              */
+		           FROM TB_CO_M_GDS_CLF          
+		         WHERE CORP_C   = A.CORP_C       
+		           AND GDS_LCLC = A.GDS_LCLC     
+		           AND GDS_MCLC = A.GDS_MCLC     
+		      ) AS GDS_MCLC_NM                   
+             , A.GDS_SCLC                                          /* 물품소분류코드            */
+		     , (SELECT DISTINCT GDS_SCLC_NM                        /* 물품소분류명              */
+		           FROM TB_CO_M_GDS_CLF           
+		          WHERE CORP_C   = A.CORP_c       
+		            AND GDS_LCLC = A.GDS_LCLC     
+		            AND GDS_MCLC = A.GDS_MCLC     
+		            AND GDS_SCLC = A.GDS_SCLC     
+		        ) AS GDS_SCLC_NM                        
+             , A.DEPT_C                                            /* 주관부서                  */           
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.PART_C                                            /* 표준부위코드              */
+             , A.GRD_C                                             /* 축산물등급코드            */
+             , A.UZ_DSC                                            /* 용도                      */
+		    /* , (SELECT LATC_SCLC_NM              */
+		    /*      FROM TB_CO_M_LATC_CLF_STD      */
+		    /*     WHERE LATC_SCLC = A.PART_C      */
+		    /*   ) AS PART_NM                      */
+             , A.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.UNT_C                                             /* 단위코드                  */
+             , A.GDS_SGRT                                          /* 물품비중(Kg/L)    */
+             , A.GDS_WT                                            /* 물품중량(Kg)      */
+             , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , dbo.SF_GET_WHSE_NM(A.CORP_C, A.BZPL_C, A.BAS_WHSE_C) AS BAS_WHSE_NM             /* 기본창고명                */                  
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.OPDAA_DSC                                         /* 원산지구분코드            */
+             , A.PDAA_C                                            /* 산지코드                  */
+             , A.CSTD_METH_C                                       /* 보관방식코드              */
+             , A.PAK_METH_C                                        /* 진공포장방법코드          */
+             , A.MFT_TRPL_NM                                       /* 제조원명                  */
+             , A.SEL_TRPL_NM                                       /* 판매원명                  */
+             , A.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , A.TOTE_QT                                           /* 토트수량(작업박스수량)    */
+             , A.PAK_STP_DSC                                       /* 포장단계구분코드          */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.WHT_PAK_C                                         /* 단량포장코드              */
+             , A.WHT_BAR_C                                         /* 단량바코드                */
+             , A.IN_QT                                             /* 입수량(내포장)            */
+             , A.IN_UNT_C                                          /* 입수량단위코드(내포장)    */
+             , A.IN_PAK_C                                          /* 입수량포장코드(내포장)    */
+             , A.IN_BAR_C                                          /* 입수량물품바코드(내포장)  */
+             , A.OUT_QT                                            /* 포장수량(외포장)          */
+             , A.OUT_UNT_C                                         /* 포장단위코드(외포장)      */
+             , A.OUT_PAK_C                                         /* 포장코드(외포장)          */
+             , A.OUT_BAR_C                                         /* 포장바코드(외포장)        */
+             , A.PAK_NEWT                                          /* 포장순중량(N.W)           */
+             , A.PAK_GRWT                                          /* 포장총중량(G.W)           */
+             , A.PKMTR_C                                           /* 포장재질코드              */
+             , A.GDS_HGHT                                          /* 물품높이                  */
+             , A.GDS_LEN_LEN                                       /* 물품세로길이              */
+             , A.GDS_WDTH_LEN                                      /* 물품가로길이              */
+             , A.GDS_CBM                                           /* 물품부피CBM(㎥)           */
+             , A.GDS_RPT_NO                                        /* 물품보고번호              */
+             , A.GDS_DTL_EXPL                                      /* 물품상세설명              */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+             , A.HS_C                                              /* HS코드                    */
+             , A.ERP_GDS_C                                         /* ERP품목코드               */
+             , A.RVO_YN                                            /* 수주여부                  */
+             , A.RVO_TR_STOP_DT                                    /* 수주거래중지일자          */
+             , A.RVO_TR_STOP_RSNC                                  /* 수주거래중지사유코드      */
+             , A.RVO_MIN_QT                                        /* 판매(수주)최소수량        */
+             , A.ODR_YN                                            /* 발주여부                  */
+             , A.ODR_TR_STOP_DT                                    /* 발주거래중지일자          */
+             , A.ODR_TR_STOP_RSNC                                  /* 발주거래중지사유코드      */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.GDS_STR_BAS_DDS                                   /* 물품입고기준일수          */
+             , A.SL_YN                                             /* 판매여부                  */
+             , A.SL_TR_STOP_RSNC                                   /* 판매거래중지사유          */
+             , A.GDS_PROENV_DSC                                    /* 물품친환경구분코드        */
+             , A.DSTR_TER_AMN_YN                                   /* 유통기한관리여부          */
+             , A.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드      */
+             , A.DSTR_PRD_CN                                       /* 유통기한수                */
+             , A.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , A.PD_LINE_C                                         /* 주생산라인코드            */
+             , A.BAS_BOM_C                                         /* 기본BOM코드               */
+             , A.OEM_YN                                            /* OEM여부                   */
+             , A.STPL_AMN_YN                                       /* 재고관리여부              */
+             , A.XPO_GDS_YN                                        /* 수출물품여부              */
+             , A.IPO_GDS_YN                                        /* 수입물품여부              */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , ISNULL((SELECT DBO.RTN_CVS_QT(A.WHT_UNT_C, 'kg', A.WHT_QT, 6)), 0) AS PD_GDS_WT  /* 생산용환산중량 */
+          -- , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C, '00000000') AS STPL_QT           /* 현재고수량     */
+          FROM TB_CO_M_GDS A
+         WHERE 1=1 
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.GDS_TP_DSC IN (${v_GDS_TP_DSC})        
+        <if test="USE_YN !='' and USE_YN != null">
+           AND A.USE_YN     = #{USE_YN}
+        </if>
+        <if test="GDS_LCLC !='' and GDS_LCLC != null">
+           AND A.GDS_LCLC     = #{GDS_LCLC}
+        </if>
+        <if test="GDS_MCLC !='' and GDS_MCLC != null">
+           AND A.GDS_MCLC     = #{GDS_MCLC}
+        </if>
+        <if test="GDS_SCLC !='' and GDS_SCLC != null">
+           AND A.GDS_SCLC     = #{GDS_SCLC}
+        </if>
+        <if test="GRD_C !='' and GRD_C != null">
+           AND A.GRD_C     = #{GRD_C}
+        </if>
+        <if test="CSTD_METH_C !='' and CSTD_METH_C != null">
+           AND A.CSTD_METH_C     = #{CSTD_METH_C}
+        </if>
+        <if test="HST_AMN_DSC !='' and HST_AMN_DSC != null">
+           AND A.HST_AMN_DSC     = #{HST_AMN_DSC}
+        </if>
+      
+        <if test="searchKeyword != null and searchKeyword != ''">
+          <choose>
+            <when test="searchCondition == ''">
+                AND (A.GDS_C LIKE '%${searchKeyword}%' OR A.GDS_DTL_NM LIKE '%${searchKeyword}%')
+            </when>
+            <when test="searchCondition == 1">
+                AND A.GDS_C LIKE '%${searchKeyword}%'
+            </when>
+            <when test="searchCondition == 2">
+                AND A.GDS_DTL_NM LIKE '%${searchKeyword}%'
+            </when>
+          </choose>
+        </if>
+    </select>     
+
+
+    <!-- PD2010 물품조회 (제공) -->
+    <select id="select_GDS_inf_List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_CO_M_GDS */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.GDS_C                                             /* 물품코드                  */
+             , A.REP_GDS_C                                         /* 대표물품코드              */
+             , A.GDS_NM                                            /* 물품명                    */
+             , A.GDS_DTL_NM                                        /* 물품명상세(물품+규격)     */
+             , A.GDS_ENM                                           /* 물품영문명                */
+             , A.GDS_STD_NM                                        /* 물품규격명                */
+             , A.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , A.DEPT_C                                            /* 주관부서                  */           
+             , A.TXT_DSC                                           /* 과세구분코드              */
+             , A.PART_C                                            /* 표준부위코드              */
+             , A.GRD_C                                             /* 축산물등급코드            */
+             , A.UZ_DSC                                            /* 용도                      */
+             , A.DIGI_GDS_C                                        /* 디지장비물품코드          */
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.UNT_C                                             /* 단위코드                  */
+             , A.GDS_SGRT                                          /* 물품비중(Kg/L)            */
+             , A.GDS_WT                                            /* 물품중량(Kg)              */
+             , A.BAS_WHSE_C                                        /* 기본창고코드              */
+             , A.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , A.OPDAA_DSC                                         /* 원산지구분코드            */
+             , A.PDAA_C                                            /* 산지코드                  */
+             , A.CSTD_METH_C                                       /* 보관방식코드              */
+             , A.PAK_METH_C                                        /* 진공포장방법코드          */
+             , A.MFT_TRPL_NM                                       /* 제조원명                  */
+             , A.SEL_TRPL_NM                                       /* 판매원명                  */
+             , A.REP_GDS_QT                                        /* 대표물품수량(내품수량)    */
+             , A.TOTE_QT                                           /* 토트수량(작업박스수량)    */
+             , A.PAK_STP_DSC                                       /* 포장단계구분코드          */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.WHT_PAK_C                                         /* 단량포장코드              */
+             , A.WHT_BAR_C                                         /* 단량바코드                */
+             , A.IN_QT                                             /* 입수량(내포장)            */
+             , A.IN_UNT_C                                          /* 입수량단위코드(내포장)    */
+             , A.IN_PAK_C                                          /* 입수량포장코드(내포장)    */
+             , A.IN_BAR_C                                          /* 입수량물품바코드(내포장)  */
+             , A.OUT_QT                                            /* 포장수량(외포장)          */
+             , A.OUT_UNT_C                                         /* 포장단위코드(외포장)      */
+             , A.OUT_PAK_C                                         /* 포장코드(외포장)          */
+             , A.OUT_BAR_C                                         /* 포장바코드(외포장)        */
+             , A.PAK_NEWT                                          /* 포장순중량(N.W)           */
+             , A.PAK_GRWT                                          /* 포장총중량(G.W)           */
+             , A.PKMTR_C                                           /* 포장재질코드              */
+             , A.GDS_HGHT                                          /* 물품높이                  */
+             , A.GDS_LEN_LEN                                       /* 물품세로길이              */
+             , A.GDS_WDTH_LEN                                      /* 물품가로길이              */
+             , A.GDS_CBM                                           /* 물품부피CBM(㎥)           */
+             , A.GDS_RPT_NO                                        /* 물품보고번호              */
+             , A.GDS_DTL_EXPL                                      /* 물품상세설명              */
+             , A.APD_FILE_AMN_NO                                   /* 첨부파일관리번호          */
+             , A.HS_C                                              /* HS코드                    */
+             , A.ERP_GDS_C                                         /* ERP품목코드               */
+             , A.RVO_YN                                            /* 수주여부                  */
+             , A.RVO_TR_STOP_DT                                    /* 수주거래중지일자          */
+             , A.RVO_TR_STOP_RSNC                                  /* 수주거래중지사유코드      */
+             , A.RVO_MIN_QT                                        /* 판매(수주)최소수량        */
+             , A.ODR_YN                                            /* 발주여부                  */
+             , A.ODR_TR_STOP_DT                                    /* 발주거래중지일자          */
+             , A.ODR_TR_STOP_RSNC                                  /* 발주거래중지사유코드      */
+             , A.ODR_BAS_QT                                        /* 발주기준수량              */
+             , A.GDS_STR_BAS_DDS                                   /* 물품입고기준일수          */
+             , A.SL_YN                                             /* 판매여부                  */
+             , A.SL_TR_STOP_RSNC                                   /* 판매거래중지사유          */
+             , A.GDS_PROENV_DSC                                    /* 물품친환경구분코드        */
+             , A.DSTR_TER_AMN_YN                                   /* 유통기한관리여부          */
+             , A.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드      */
+             , A.DSTR_PRD_CN                                       /* 유통기한수                */
+             , A.PD_GDS_DSC                                        /* 생산물품구분코드          */
+             , A.PD_LINE_C                                         /* 주생산라인코드            */
+             , A.BAS_BOM_C                                         /* 기본BOM코드               */
+             , A.OEM_YN                                            /* OEM여부                   */
+             , A.STPL_AMN_YN                                       /* 재고관리여부              */
+             , A.XPO_GDS_YN                                        /* 수출물품여부              */
+             , A.IPO_GDS_YN                                        /* 수입물품여부              */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+          FROM TB_CO_M_GDS A
+         WHERE 1=1 
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}
+           AND A.GDS_TP_DSC  = #{GDS_TP_DSC}        
+           AND A.GDS_C       = #{GDS_C}
+           AND A.USE_YN      = 'Y'
+    </select>     
+
+    
+    <!-- 물품저장 전 Validation Check -->
+    <select id="selectCo1040_Gds_Insert_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE WHEN #{CORP_C}      = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{GDS_TP_DSC}  = '' THEN '물품유형구분은 필수입력 항목입니다.'
+                    WHEN #{GDS_DTL_NM}  = '' THEN '물품명는 필수입력 항목입니다.'
+                    WHEN #{GDS_NM}      = '' THEN '표준물품명은 필수입력 항목입니다.'
+                    WHEN #{GDS_LCLC}    = '' THEN '물품대분류는 필수입력 항목입니다.'
+                    WHEN #{QT_WT_DSC}   = '' THEN '수(중)량형구분은 필수입력 항목입니다.'
+                    WHEN #{UNT_C}       = '' THEN '단위는 필수입력 항목입니다.'
+                    WHEN #{BAS_WHSE_C}  = '' THEN '기본창고코드는 필수입력 항목입니다.'
+                    WHEN #{HST_AMN_DSC} = '' THEN '이력관리대상구분은 필수입력 항목입니다.'
+                    WHEN #{TXT_DSC}     = '' THEN '과세구분은 필수입력 항목입니다.'
+                    WHEN #{DEPT_C}      = '' THEN '주관부서는 필수입력 항목입니다.'
+                    WHEN #{USE_YN}      = '' THEN '사용여부는 필수입력 항목입니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>    
+    
+    <!-- CO1040 물품코드 채번 -->
+<!--2021.10.30 서광석
+     제품코드 물품채번 구성 변경(대표님 요청)
+     물품유형이 제품인 경우 채번을 "0"번부터 시작함
+     미트맵에서 기존에 등록된 제품코드가 0번부터 시작해서 미트맵 기존코드 유지해주기 위함이며, 미트맵에서 자기네 제품코드채번 유지해달라고 요청했다고 함
+     추후에 다른 회사의 물품코드가 다를수도 잇는데 그떄는 무조건 우리 MES 기준으로 컨버전 한다하심.. 근데 다른회사도 자기네 체계 유지해달라고 하면 어떻게 처리하지? .........     
+-->   
+    <select id="select_AutoNum_GDS_C" parameterType="LinkedHashMap" resultType="String">
+        <!-- 
+        SELECT ISNULL(MAX(GDS_C) + 1,  LEFT(#{GDS_TP_DSC}, 1) + '00001') 
+          FROM TB_CO_M_GDS_BAS
+         WHERE CORP_C = #{CORP_C}
+           AND GDS_C LIKE LEFT(#{GDS_TP_DSC}, 1) + '%'
+          -->  
+        SELECT          
+             <!-- 오익환 대표님 수정사항 
+             ISNULL(CONVERT(VARCHAR, MAX(GDS_C) + 1),  CASE WHEN LEFT(#{GDS_TP_DSC}, 1) = '1' THEN '000001' ELSE LEFT(#{GDS_TP_DSC}, 1) + '00001' END) -->
+             FORMAT( ISNULL(MAX(GDS_C) + 1,  CASE WHEN LEFT(#{GDS_TP_DSC}, 1) = '1' THEN 1 ELSE LEFT(#{GDS_TP_DSC}, 1)*100000 + 1 END) * 1, N'000000')
+          FROM TB_CO_M_GDS_BAS
+         WHERE 1 = 1
+           AND CORP_C = #{CORP_C}
+           AND GDS_C LIKE (CASE WHEN LEFT(#{GDS_TP_DSC}, 1) = '1' THEN '0' ELSE LEFT(#{GDS_TP_DSC}, 1) END) + '%'           
+    </select>
+    
+
+
+    <!-- 물품수정 전 Validation Check -->
+    <select id="selectCo1040_Gds_Update_ValidCheck" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT
+               CASE 
+                    WHEN #{CORP_C}      = '' THEN '회사코드는 필수입력 항목입니다.'
+                    WHEN #{GDS_TP_DSC}  = '' THEN '물품유형구분은 필수입력 항목입니다.'
+                    WHEN #{GDS_DTL_NM}  = '' THEN '물품명는 필수입력 항목입니다.'
+                    WHEN #{GDS_NM}      = '' THEN '표준물품명은 필수입력 항목입니다.'
+                    WHEN #{GDS_LCLC}    = '' THEN '물품대분류는 필수입력 항목입니다.'
+                    WHEN #{QT_WT_DSC}   = '' THEN '수(중)량형구분은 필수입력 항목입니다.'
+                    WHEN #{UNT_C}       = '' THEN '단위는 필수입력 항목입니다.'
+                    WHEN #{BAS_WHSE_C}  = '' THEN '기본창고코드는 필수입력 항목입니다.'
+                    WHEN #{HST_AMN_DSC} = '' THEN '이력관리대상구분은 필수입력 항목입니다.'
+                    WHEN #{TXT_DSC}     = '' THEN '과세구분은 필수입력 항목입니다.'
+                    WHEN #{DEPT_C}      = '' THEN '주관부서는 필수입력 항목입니다.'
+                    WHEN #{USE_YN}      = '' THEN '사용여부는 필수입력 항목입니다.'
+                    ELSE 'OK' END AS RESULT_MSG
+          FROM DUAL
+        ]]>
+    </select>  
+</mapper>
+
+
+
+
+
+

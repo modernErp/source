@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SM_M_DLR_RQT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SM_M_DLR_RQT */ TB_SM_M_DLR_RQT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DLR_RQT_DT          /* 출고의뢰일자         */
+            , DLR_RQT_SQNO        /* 출고의뢰일련번호     */
+            , DLR_RQT_STS_DSC     /* 출고의뢰상태구분코드 */
+            , DLR_RQT_REF_DSC     /* 출고의뢰참조구분코드 */
+            , TR_SQNO             /* 거래일련번호      */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DLR_RQT_DT}
+            , #{DLR_RQT_SQNO}
+            , #{DLR_RQT_STS_DSC}
+            , #{DLR_RQT_REF_DSC}
+            , #{TR_SQNO}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SM_M_DLR_RQT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SM_M_DLR_RQT */ TB_SM_M_DLR_RQT
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , DLR_RQT_DT          = #{DLR_RQT_DT}            /* 출고의뢰일자         */
+             , DLR_RQT_SQNO        = #{DLR_RQT_SQNO}          /* 출고의뢰일련번호     */
+             , DLR_RQT_STS_DSC     = #{DLR_RQT_STS_DSC}       /* 출고의뢰상태구분코드 */
+             , DLR_RQT_REF_DSC     = #{DLR_RQT_REF_DSC}       /* 출고의뢰참조구분코드 */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호      */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_RQT_DT          = #{DLR_RQT_DT}
+           AND DLR_RQT_SQNO        = #{DLR_RQT_SQNO}
+    </update>
+
+    <delete id="delete_TB_SM_M_DLR_RQT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SM_M_DLR_RQT */ FROM TB_SM_M_DLR_RQT
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DLR_RQT_DT          = #{DLR_RQT_DT}
+           AND DLR_RQT_SQNO        = #{DLR_RQT_SQNO}
+    </delete>
+
+    <select id="select_TB_SM_M_DLR_RQT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SM_M_DLR_RQT */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DLR_RQT_DT                                        /* 출고의뢰일자              */
+             , A.DLR_RQT_SQNO                                      /* 출고의뢰일련번호          */
+             , A.DLR_RQT_STS_DSC                                   /* 출고의뢰상태구분코드      */
+             , A.DLR_RQT_REF_DSC                                   /* 출고의뢰참조구분코드      */
+             , A.TR_SQNO                                           /* 거래일련번호            */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명              */
+          FROM TB_SM_M_DLR_RQT A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DLR_RQT_DT        = #{DLR_RQT_DT}
+           AND A.DLR_RQT_SQNO      = #{DLR_RQT_SQNO}
+    </select>
+</mapper>

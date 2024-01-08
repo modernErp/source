@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 연계전문내역 조회 -->
+    <select id="selectSy3030List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy3030List */
+               A.CORP_C                                            /* 회사코드             */
+             , A.INTF_ID                                           /* 인터페이스ID         */
+			 , B.INTF_NM                                           /* 인터페이스명         */
+             , A.INTF_CSE_SQNO                                     /* 연계추적일련번호     */
+             , A.RQR_RSP_DSC                                       /* 요청응답구분코드     */
+             , A.TR_SQNO                                           /* 거래일련번호         */
+             , A.CRT_RQR_DT                                        /* 생성요청일자         */
+             , A.CRT_RQR_TM                                        /* 생성요청시간         */
+             , A.CRT_RQR_DT + A.CRT_RQR_TM  AS CRT_RQR_DTM         /* 생성요청일시         */
+             , A.ERR_MSG                                           /* 에러메세지           */
+             , A.ERR_RSP_C                                         /* 에러응답코드         */
+             , A.INTF_DATA                                         /* 연계자료             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID )     AS FSRG_NM       /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+                  FROM TB_SY_M_USR X
+                 WHERE 1=1
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.FSRG_ID = X.USR_ID )     AS LSCHG_NM      /* 최종등록자이름       */
+			 , B.INTF_METH_DSC                                     /* 연계방식구분(1:ERP 2:MCA 5:NICE) */
+          FROM TB_SY_L_INTF_CRT A INNER JOIN TB_SY_M_INTF B ON 
+		        A.CORP_C  = B.CORP_C
+			AND A.INTF_ID = B.INTF_ID
+         WHERE 1=1
+         <if test = "ERR_RSP_C != null and ERR_RSP_C != ''">
+             AND A.ERR_RSP_C = #{ERR_RSP_C}                                    /* 전문오류응답코드 */
+         </if>  	   		  
+         <if test = "CRT_RQR_ST_DT != null and CRT_RQR_ST_DT != ''">
+             AND A.CRT_RQR_DT BETWEEN #{CRT_RQR_ST_DT} AND #{CRT_RQR_ED_DT}    /* 연계일시         */
+         </if>
+         <if test = "BSN_C != null and BSN_C != ''">
+             AND B.INTF_BSN_DSC = #{BSN_C}                                     /* 업무코드         */
+         </if>
+         <if test = "INTF_ID != null and INTF_ID != ''">
+             AND A.INTF_ID LIKE '%' + #{INTF_ID} + '%'                       /* 인터페이스ID  */
+         </if>     
+    </select>
+</mapper>

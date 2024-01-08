@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+
+    <!-- 참조발주상세기본 조회 -->
+    <select id="select_SM0000_PDA_GDS" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_SM0000_PDA_GDS */
+               A.GDS_C                                            /* 물품코드                 */
+             , A.GDS_DTL_NM
+             , A.GDS_STD_NM
+          FROM TB_CO_M_GDS  A
+         WHERE 1                 = 1
+           AND A.CORP_C          = #{CORP_C}       
+           AND A.BZPL_C          = #{BZPL_C} 
+           AND A.GDS_C           = #{GDS_C}
+           AND A.GDS_TP_DSC NOT IN ('10', '20') 
+    </select>
+
+    <!-- 참조발주상세내역 조회 -->
+    <select id="select_Sm0000_ODR" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_Sm0000_ODR */
+               A.CORP_C                                            /* 회사코드                   */
+             , A.BZPL_C                                            /* 사업장코드                 */
+             , A.ODR_DT     AS STDV_REF_DT                         /* 발주일자                   */
+             , A.ODR_SQNO   AS STDV_REF_SQNO                       /* 발주번호                   */
+             , A.GDS_C                                             /* 물품코드                   */
+             , B.GDS_TP_DSC                                        /* 물품구분코드               */
+             , B.GDS_DTL_NM                                        /* 물품명                     */
+             , B.GDS_STD_NM                                        /* 물품규격명                 */
+             , B.UNT_C                                             /* 관리단위                   */             
+             , A.ODR_QT     AS STDV_QT                             /* 발주수량                   */
+             , A.ODR_BOX_QT AS STDV_BOX_QT                         /* 발주박스수량               */
+             , A.TR_UNT_C                                          /* 거래단위코드               */             
+             , A.ODR_UPR    AS STDV_UPR                            /* 입출고단가(단가부가세별도) */
+             , A.SPY_AM                                            /* 공급금액(공급가액)         */
+             , A.VAT                                               /* 부가세(세액)               */
+             , A.ODR_AM     AS STDV_AM                             /* 입출고금액(합계금액)       */             
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드         */
+             , A.WHT_QT                                            /* 단량                       */
+             , A.WHT_UNT_C                                         /* 단량단위코드               */
+             , A.ODR_WT     AS STDV_WT                             /* 발주중량                   */
+             , A.TXT_DSC                                           /* 과세구분코드               */
+             , B.BAS_WHSE_C AS WHSE_C                              /* 창고코드                   */
+             , (SELECT WHSE_NM
+                  FROM TB_CO_M_WHSE
+                WHERE 1 = 1
+                  AND B.CORP_C     = CORP_C
+                  AND B.BZPL_C     = BZPL_C
+                  AND B.BAS_WHSE_C = WHSE_C
+                ) AS WHSE_NM                                       /* 창고명                     */
+             , B.HST_AMN_DSC                                       /* 이력관리구분코드           */  
+             , B.DSTR_TER_AMN_YN                                   /* 유통기한관리여부           */
+             , B.DSTR_TER_MRK_DSC                                  /* 유통기한표기구분코드       */
+             , B.DSTR_PRD_CN                                       /* 유통기한수                 */
+             , A.RMK_CNTN                                          /* 비고내용                   */
+             , A.DEL_YN                                            /* 삭제여부                   */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시               */
+             , A.FSRG_ID                                           /* 최초등록자ID               */
+             , A.FSRG_ID      AS     FSRG_NM                       /* 최초등록자                 */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시               */
+             , A.LSCHG_ID                                          /* 최종변경자ID               */
+             , A.LSCHG_ID     AS LSCHG_NM                          /* 최종변경                   */
+          FROM TB_BY_D_ODR  A
+          LEFT OUTER JOIN TB_CO_M_GDS  B
+            ON A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.GDS_C    = B.GDS_C
+         WHERE 1 = 1
+           AND A.DEL_YN   ='N'
+           AND A.CORP_C   = #{CORP_C}       
+           AND A.BZPL_C   = #{BZPL_C} 
+           AND A.ODR_DT   = #{STDV_REF_DT} 
+           AND A.ODR_SQNO = #{STDV_REF_SQNO} 
+    </select>
+    
+</mapper>

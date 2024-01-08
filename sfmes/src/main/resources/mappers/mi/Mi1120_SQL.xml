@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+    <!-- 기간대비매출현황 -->
+    <select id="selectMi1120_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectMi1120_01 */
+               A.CORP_C                                                                 /* 회사코드           */
+             , A.BZPL_C                                                                 /* 사업장코드         */
+             , B.BZPL_NM                                                                /* 사업장명           */
+             , A.GDS_C                                                                  /* 물품코드           */    
+             , C.GDS_DTL_NM                                                             /* 물품명             */
+             , C.GDS_STD_NM                                                             /* 물품규격           */
+             , C.UNT_C                                                                  /* 관리단위           */
+           <if test='VAT_YN == "Y"'>  
+             , A.Y_SL_AM                                                                /* 기준매출금액       */
+             , A.L_SL_AM                                                                /* 대비매출금액       */
+             , CASE WHEN A.L_SL_AM = 0 THEN 0
+                    ELSE                    ((A.Y_SL_AM-A.L_SL_AM)/A.L_SL_AM)*100
+               END            AS INDRT                                                  /* 부가세포함 증감율  */
+           </if>
+           <if test='VAT_YN == "N"'>  
+             , A.Y_SPY_AM     AS Y_SL_AM
+             , A.L_SPY_AM     AS L_SL_AM
+             , CASE WHEN A.L_SPY_AM = 0 THEN 0
+                    ELSE                     ((A.Y_SPY_AM-A.L_SPY_AM)/A.L_SPY_AM)*100
+               END            AS INDRT                                                  /* 부가세미포함 증감율 */  
+           </if>           
+          FROM (
+                SELECT 
+                       A.CORP_C
+                     , A.BZPL_C
+                     , A.GDS_C
+                     , SUM(A.Y_SL_AM)  AS Y_SL_AM               
+                     , SUM(A.L_SL_AM)  AS L_SL_AM
+                     , SUM(A.Y_SPY_AM) AS Y_SPY_AM
+                     , SUM(A.L_SPY_AM) AS L_SPY_AM
+                  FROM (
+                        SELECT
+                               A.CORP_C
+                             , A.BZPL_C
+                             , B.GDS_C
+                             , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                        ELSE                           -1
+                                   END * B.SL_AM)  AS Y_SL_AM
+                             , 0                   AS L_SL_AM
+                             , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                        ELSE                           -1
+                                   END * B.SPY_AM) AS Y_SPY_AM
+                             , 0                   AS L_SPY_AM
+                          FROM TB_SE_M_SL A
+                             , TB_SE_D_SL B
+                         WHERE 1 = 1
+                           AND A.CORP_C     = B.CORP_C
+                           AND A.BZPL_C     = B.BZPL_C
+                           AND A.SL_DT      = B.SL_DT
+                           AND A.SL_SQNO    = B.SL_SQNO
+                           AND A.CORP_C     = #{CORP_C}
+                           AND A.SLP_NML_YN = 'Y'
+                           AND A.ACG_DT BETWEEN #{Y_ST_DT} AND #{Y_ED_DT}
+                         GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                        UNION
+                        SELECT
+                               A.CORP_C
+                             , A.BZPL_C
+                             , B.GDS_C
+                             , 0                   AS Y_SL_AM
+                             , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                        ELSE                           -1
+                                   END * B.SL_AM)  AS L_SL_AM
+                             , 0                   AS Y_SPY_AM
+                             , SUM(CASE WHEN A.TR_BSN_DSC = 'SE10' THEN 1
+                                        ELSE                           -1
+                                   END * B.SPY_AM) AS L_SPY_AM
+                          FROM TB_SE_M_SL A
+                             , TB_SE_D_SL B
+                         WHERE 1 = 1
+                           AND A.CORP_C     = B.CORP_C
+                           AND A.BZPL_C     = B.BZPL_C
+                           AND A.SL_DT      = B.SL_DT
+                           AND A.SL_SQNO    = B.SL_SQNO
+                           AND A.CORP_C     = #{CORP_C}
+                           AND A.SLP_NML_YN = 'Y'
+                           AND A.ACG_DT BETWEEN #{L_ST_DT} AND #{L_ED_DT}
+                         GROUP BY A.CORP_C, A.BZPL_C, B.GDS_C
+                        ) A
+                 GROUP BY A.CORP_C, A.BZPL_C, A.GDS_C
+                ) A
+          LEFT OUTER JOIN TB_CO_M_BZPL B
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C      
+          LEFT OUTER JOIN TB_CO_M_GDS  C
+            ON A.CORP_C = C.CORP_C
+           AND A.BZPL_C = C.BZPL_C
+           AND A.GDS_C  = C.GDS_C
+         WHERE 1 = 1
+         <if test="searchKeyword != null and searchKeyword != ''">
+           AND A.BZPL_C IN (${searchKeyword})
+         </if> 
+         <if test="GDS_C != null and GDS_C != ''">
+           AND A.GDS_C = #{GDS_C}
+         </if>
+    </select>    
+</mapper>

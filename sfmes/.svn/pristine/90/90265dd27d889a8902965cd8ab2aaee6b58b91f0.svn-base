@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ge">
+    <select id="selectGe2020_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectGe2020_01 */
+               A.RC_DT
+             , A.GDS_C
+             , C.GDS_DTL_NM
+             , C.GDS_STD_NM
+             , C.UNT_C
+             , B.CVAP_TPC
+             , B.CVAP_MN_TPC
+             , B.CVAP_PRC_METHC
+             , COUNT(A.GDS_C) AS RC_CNT
+          FROM TB_GE_D_CVAP_RC A
+          LEFT OUTER JOIN TB_GE_M_CVAP_RC B
+            ON A.CORP_C  = B.CORP_C
+           AND A.BZPL_C  = B.BZPL_C
+           AND A.RC_DT   = B.RC_DT
+           AND A.RC_SQNO = B.RC_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON A.CORP_C = C.CORP_C
+           AND A.BZPL_C = C.BZPL_C
+           AND A.GDS_C  = C.GDS_C
+         WHERE 1 = 1 
+           AND A.CORP_C  = #{CORP_C}
+           AND A.BZPL_C  = #{BZPL_C}
+        <![CDATA[           
+           AND A.RC_DT  >= #{ST_DT}
+           AND A.RC_DT  <= #{ED_DT}
+        ]]>                 
+           AND A.DEL_YN  = 'N'
+         GROUP BY A.RC_DT
+             , A.GDS_C
+             , C.GDS_DTL_NM
+             , C.GDS_STD_NM
+             , C.UNT_C
+             , B.CVAP_TPC
+             , B.CVAP_MN_TPC
+             , B.CVAP_PRC_METHC
+    </select>
+
+</mapper>

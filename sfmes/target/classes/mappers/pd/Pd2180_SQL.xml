@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+        <select id="select_Pd2180list_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+            SELECT /*+ select_Pd2180list_01 */
+                   RPT_DT                                            /* 일지일자                  */
+                 , RPT_SQNO                                          /* 일지일련번호              */
+				 , WK_DSC                                            /* 품목구분값                */
+				 , ACG_DT                                            /* 회계일자                  */
+				 , MFC_DSC                                           /* 가공구분코드              */
+                 , GDS_C                                             /* 물품코드                  */
+                 , GDS_TP_DSC                                        /* 물품유형구분코드          */
+                 , GDS_DTL_NM                                        /* 물품명상세(물품+규격      */
+                 , UNT_C                                             /* 물품유형구분코드          */
+                 , MFC_WK_STS_C                                      /* 가공작업상태코드          */
+                 , GDS_STD_NM                                        /* 규격                      */
+                 , PD_QT                                             /* 생산수량                  */
+                 , PD_UPR                                            /* 생산단가                  */
+                 , PD_AM                                             /* 생산금액                  */
+              FROM (
+			        SELECT
+                           A.RPT_DT                                            /* 일지일자                  */
+                         , A.RPT_SQNO                                          /* 일지일련번호              */
+	        			 , '생산' AS  WK_DSC                                   /* 품목구분값                */
+	        			 , A.ACG_DT                                            /* 회계일자                  */
+	        			 , A.MFC_DSC                                           /* 가공구분코드              */
+                         , B.GDS_C                                             /* 물품코드                  */
+                         , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+                         , C.GDS_DTL_NM                                        /* 물품명상세(물품+규격      */
+                         , C.UNT_C                                             /* 물품유형구분코드          */
+                         , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+                         , C.GDS_STD_NM                                        /* 규격                      */
+	        			 , B.PD_QT                                             /* 생산수량                  */
+                         , B.PD_UPR                                            /* 생산단가                  */
+                         , B.PD_AM                                             /* 생산금액                  */
+	        	     FROM  TB_PD_M_WK_RPT     A
+                         , TB_PD_D_WK_RPT_MFS B
+                         , TB_CO_M_GDS        C
+	        	     WHERE 1=1
+                       AND A.BZPL_C          = B.BZPL_C
+                       AND A.CORP_C          = B.CORP_C
+                       AND A.RPT_SQNO        = B.RPT_SQNO
+                       AND A.RPT_DT          = B.RPT_DT
+                       AND B.BZPL_C          = C.BZPL_C
+                       AND B.CORP_C          = C.CORP_C
+                       AND B.GDS_C           = C.GDS_C
+	        		   AND A.DEL_YN          = 'N'
+                       AND A.BZPL_C          = #{BZPL_C}
+                       AND A.CORP_C          = #{CORP_C}
+                 <choose>
+                    <when test="DT_DSC == 1">
+                       AND A.RPT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test="DT_DSC == 2">
+                       AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                 </choose>
+	        	    <if test="WRS_DSC != null and WRS_DSC != ''">
+                       AND 1 = #{WRS_DSC}   /* 품목구분 전체가 아닐때 1.생산품목이면 조회 */ 
+                    </if>
+	        		<if test="MFC_WK_STS_C == '' " >
+                       AND A.MFC_WK_STS_C IN ('06','07','08')  /* 06작업보고 이후           */ 
+                    </if>
+                    <if test="MFC_WK_STS_C != '' and MFC_WK_STS_C != null" >
+                       AND A.MFC_WK_STS_C = #{MFC_WK_STS_C}  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_DSC != '' and MFC_DSC != null" >
+                       AND A.MFC_DSC         = #{MFC_DSC}
+                    </if>
+	        		<if test="GDS_C != '' and GDS_C != null" >
+                       AND B.GDS_C           = #{GDS_C}
+                    </if>
+	        		
+	        	 UNION ALL
+	        	 
+                    SELECT   /* 생산합계 표시 */
+                           A.RPT_DT                                           
+                         , A.RPT_SQNO                                         
+	        			 , '생산합계'     AS WK_DSC                              
+	        			 , A.ACG_DT                                           
+                         , ''             AS MFC_DSC
+                         , ''             AS GDS_C                
+                         , ''             AS GDS_TP_DSC           
+                         , ''             AS GDS_DTL_NM           
+                         , ''             AS UNT_C  
+                         , ''             AS MFC_WK_STS_C
+                         , ''             AS GDS_STD_NM           
+                         , SUM(B.PD_QT)   AS PD_QT                  
+                         , 0              AS PD_UPR                 
+                         , SUM(B.PD_AM)   AS PD_AM  
+                      FROM TB_PD_M_WK_RPT     A  
+                         , TB_PD_D_WK_RPT_MFS B  
+                     WHERE 1=1
+                       AND A.BZPL_C            = B.BZPL_C
+                       AND A.CORP_C            = B.CORP_C
+                       AND A.RPT_SQNO          = B.RPT_SQNO
+                       AND A.RPT_DT            = B.RPT_DT   
+                       AND A.DEL_YN            = 'N'  
+                       AND A.BZPL_C            = #{BZPL_C}
+                       AND A.CORP_C            = #{CORP_C}
+                       AND 1                   = #{TOT_DSC}    /* 조회조건 합계구분 1.합계표시일때만 */
+	        	<choose>
+                    <when test="DT_DSC == 1">
+                       AND A.RPT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test="DT_DSC == 2">
+                       AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                 </choose>
+	        	    <if test="WRS_DSC != null and WRS_DSC != ''">
+                       AND 1 = #{WRS_DSC}   /* 품목구분 전체가 아닐때 1.생산품목이면 조회 */ 
+                    </if>
+                    <if test="MFC_WK_STS_C == '' " >
+                       AND A.MFC_WK_STS_C IN ('06','07','08')  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_WK_STS_C != '' and MFC_WK_STS_C != null" >
+                       AND A.MFC_WK_STS_C = #{MFC_WK_STS_C}  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_DSC != '' and MFC_DSC != null" >
+                       AND A.MFC_DSC         = #{MFC_DSC}
+                    </if>
+	        		<if test="GDS_C != '' and GDS_C != null" >
+                       AND B.GDS_C           = #{GDS_C}
+                    </if>
+	        		
+	        		 GROUP BY A.RPT_DT
+                            , A.RPT_SQNO
+                            , A.ACG_DT
+                            , A.MFC_DSC
+	        				
+	        	 UNION ALL
+	        		
+	        		SELECT
+                           A.RPT_DT                                            /* 일지일자                  */
+                         , A.RPT_SQNO                                          /* 일지일련번호              */
+	        			 , '투입' AS  WK_DSC                                   /* 품목구분값                */
+	        			 , A.ACG_DT                                            /* 회계일자                  */
+	        			 , A.MFC_DSC                                           /* 가공구분코드              */
+                         , B.GDS_C                                             /* 물품코드                  */
+                         , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+                         , C.GDS_DTL_NM                                        /* 물품명상세(물품+규격      */
+                         , C.UNT_C                                             /* 물품유형구분코드          */
+                         , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+                         , C.GDS_STD_NM                                        /* 규격                      */
+	        			 , B.MTRL_PTIN_QT          AS PD_QT                    /* 투입지시량                */
+	        			 , B.PTIN_UPR              AS PD_UPR                   /* 자재투입량                */
+                         , B.PTIN_AM               AS PD_AM                    /* 투입금액                  */
+	        	     FROM  TB_PD_M_WK_RPT      A
+                         , TB_PD_D_WK_RPT_MTRL B
+                         , TB_CO_M_GDS         C
+	        	     WHERE 1=1
+                       AND A.BZPL_C          = B.BZPL_C
+                       AND A.CORP_C          = B.CORP_C
+                       AND A.RPT_SQNO        = B.RPT_SQNO
+                       AND A.RPT_DT          = B.RPT_DT
+                       AND B.BZPL_C          = C.BZPL_C
+                       AND B.CORP_C          = C.CORP_C
+                       AND B.GDS_C           = C.GDS_C
+	        		   AND A.DEL_YN          = 'N'
+                       AND A.BZPL_C          = #{BZPL_C}
+                       AND A.CORP_C          = #{CORP_C}
+                 <choose>
+                    <when test="DT_DSC == 1">
+                       AND A.RPT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test="DT_DSC == 2">
+                       AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                 </choose>
+	        	    <if test="WRS_DSC != null and WRS_DSC != ''">
+                       AND 2 = #{WRS_DSC}   /* 품목구분 전체가 아닐때 2.투입품목이면 조회 */ 
+                    </if>
+                    <if test="MFC_WK_STS_C == '' " >
+                       AND A.MFC_WK_STS_C IN ('06','07','08')  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_WK_STS_C != '' and MFC_WK_STS_C != null" >
+                       AND A.MFC_WK_STS_C = #{MFC_WK_STS_C}  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_DSC != '' and MFC_DSC != null" >
+                       AND A.MFC_DSC         = #{MFC_DSC}
+                    </if>
+	        		<if test="GDS_C != '' and GDS_C != null" >
+                       AND B.GDS_C           = #{GDS_C}
+                    </if>
+	        		
+	        	 UNION ALL
+	        	 
+                    SELECT   /* 자재합계 표시 */
+                           A.RPT_DT                                           
+                         , A.RPT_SQNO                                         
+	        			 , '투입합계'             AS  WK_DSC                              
+	        			 , A.ACG_DT
+                         , ''                     AS MFC_DSC
+                         , ''                     AS GDS_C                
+                         , ''                     AS GDS_TP_DSC           
+                         , ''                     AS GDS_DTL_NM           
+                         , ''                     AS UNT_C
+                         , ''                     AS MFC_WK_STS_C
+                         , ''                     AS GDS_STD_NM           
+                         , SUM(B.MTRL_PTIN_QT)    AS PD_QT                  
+                         , 0                      AS PD_UPR                 
+                         , SUM(B.PTIN_AM)         AS PD_AM  
+                      FROM TB_PD_M_WK_RPT      A  
+                         , TB_PD_D_WK_RPT_MTRL B  
+                     WHERE 1=1
+                       AND A.BZPL_C            = B.BZPL_C
+                       AND A.CORP_C            = B.CORP_C
+                       AND A.RPT_SQNO          = B.RPT_SQNO
+                       AND A.RPT_DT            = B.RPT_DT   
+                       AND A.DEL_YN            = 'N'  
+                       AND A.BZPL_C            = #{BZPL_C}
+                       AND A.CORP_C            = #{CORP_C}
+                       AND 1                   = #{TOT_DSC}    /* 조회조건 합계구분 1.합계표시일때만 */
+	        	<choose>
+                    <when test="DT_DSC == 1">
+                       AND A.RPT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                    <when test="DT_DSC == 2">
+                       AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+                    </when>
+                 </choose>
+	        	    <if test="WRS_DSC != null and WRS_DSC != ''">
+                       AND 2 = #{WRS_DSC}   /* 품목구분 전체가 아닐때 2.투입품목이면 조회 */ 
+                    </if>
+                    <if test="MFC_WK_STS_C == '' " >
+                       AND A.MFC_WK_STS_C IN ('06','07','08')  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_WK_STS_C != '' and MFC_WK_STS_C != null" >
+                       AND A.MFC_WK_STS_C = #{MFC_WK_STS_C}  /* 06작업보고 이후           */ 
+                    </if>
+	        		<if test="MFC_DSC != '' and MFC_DSC != null" >
+                       AND A.MFC_DSC         = #{MFC_DSC}
+                    </if>
+	        		<if test="GDS_C != '' and GDS_C != null" >
+                       AND B.GDS_C           = #{GDS_C}
+                    </if>
+	        		
+	        		 GROUP BY A.RPT_DT
+                            , A.RPT_SQNO
+                            , A.ACG_DT
+                            , A.MFC_DSC
+     
+				   ) A
+			 ORDER BY RPT_DT
+                    , RPT_SQNO
+                    , WK_DSC
+                    , GDS_TP_DSC
+       </select>
+    
+</mapper>

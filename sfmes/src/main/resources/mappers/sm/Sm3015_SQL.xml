@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sm">   
+ 
+ 
+    <!-- 창고간재고이동기본조회 -->
+    <select id="select_Sm3015_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+       
+      SELECT 
+                A.CORP_C                               /*  회사코드         */
+            ,   A.BZPL_C                               /*  사업장코드       */
+            ,   A.MVE_DT                               /*  이동일자         */
+            ,   A.MVE_SQNO                             /*  이동일련번호     */
+            ,   A.SLP_NML_YN                           /*  전표정상여부     */
+            ,   A.RLTR_DT                              /*  실거래일자       */
+            ,   A.ACG_DT                               /*  회계일자         */
+            ,   A.MVE_RSN_CNTN                         /*  이동사유내역     */
+            ,   A.TR_BSN_DSC                           /*  거래업무구분코드 */
+            ,   A.TR_SQNO                              /*  거래일련번호     */
+            ,   B.GDS_C                                /*  물품코드         */ 
+            ,   D.GDS_NM                               /*  물품명           */
+            ,   D.GDS_STD_NM                           /*  물품규격         */
+            ,   D.UNT_C                                /*  관리단위         */
+            ,   D.TXT_DSC                              /*  과세구분         */
+            ,   B.DSTR_TERDT                           /*  유통기한일자     */
+            ,   B.DLR_WHSE_C                           /*  출구창고코드     */
+            ,   (
+                 SELECT  C.WHSE_NM
+                 FROM    TB_CO_M_WHSE C
+                 WHERE   1=1
+                 AND     C.WHSE_C   = B.DLR_WHSE_C
+                 AND     C.CORP_C  = B.CORP_C
+                 AND     C.BZPL_C  = B.BZPL_C
+                 ) AS DLR_WHSE_NM                      /*  출구창고명       */
+            ,   B.STR_WHSE_C                           /*  입고창고코드     */
+            ,   (
+                 SELECT  C.WHSE_NM
+                 FROM    TB_CO_M_WHSE C
+                 WHERE   1=1
+                 AND     C.WHSE_C   = B.STR_WHSE_C
+                 AND     C.CORP_C  = B.CORP_C
+                 AND     C.BZPL_C  = B.BZPL_C
+                 ) AS STR_WHSE_NM                      /*  입고창고명       */
+            ,   B.STDV_QT                              /*  입출고수량       */
+            ,   B.STDV_WT                              /*  입출고중량       */
+            ,   B.RMK_CNTN                             /*  비고내용상세     */
+            ,   B.FSRG_DTM                             /*  최초등록일시     */
+            ,   B.FSRG_ID                              /*  최초등록자ID  */ 
+            ,   B.FSRG_ID               AS FSRG_NM     /*  최초등록자       */
+            ,   B.LSCHG_DTM                            /*  최종변경일자     */
+            ,   B.LSCHG_ID              AS LSCHG_NM    /*  최종변경자       */
+            ,   B.LSCHG_ID                             /*  최종변경자ID  */
+            FROM TB_SM_M_STPL_MVE       A 
+            INNER JOIN TB_SM_D_STPL_MVE B
+            ON   A.CORP_C    = B.CORP_C
+            AND  A.BZPL_C    = B.BZPL_C
+            AND  A.MVE_DT    = B.MVE_DT
+            AND  A.MVE_SQNO  = B.MVE_SQNO
+            LEFT OUTER JOIN TB_CO_M_GDS D
+            ON   B.CORP_C    = D.CORP_C
+            AND  B.BZPL_C    = D.BZPL_C
+            AND  B.GDS_C     = D.GDS_C
+            WHERE 1=1
+            AND  A.CORP_C    = #{CORP_C}
+            AND  A.BZPL_C    = #{BZPL_C}
+            AND  A.MVE_DT    BETWEEN  #{ST_DT}  AND  #{ED_DT}
+        
+            <if test = "GDS_C != null and GDS_C != ''"> 
+               AND B.GDS_C = #{GDS_C}                         
+            </if>
+            
+            <if test = "DLR_WHSE_C != null and DLR_WHSE_C != ''"> 
+               AND B.DLR_WHSE_C = #{DLR_WHSE_C}                         
+            </if>
+            
+            <if test = "STR_WHSE_C != null and STR_WHSE_C != ''"> 
+               AND B.STR_WHSE_C = #{STR_WHSE_C}                         
+            </if>
+                
+    </select>    
+</mapper>

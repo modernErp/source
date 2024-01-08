@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+    <!-- 기타미지급금잔액장조회 -->
+    <select id="selectCa5130List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa5130List01 */
+               ADJPL_C
+             , ADJPL_NM
+             , BAS_BAC                            /* 시작일 이전일 잔액 */ 
+             , DB_AM                              /* 조회기간 외상매입발생금액 */ 
+             , CR_AM                              /* 조회기간 외상매입지급금액 */
+             , BAS_BAC + DB_AM - CR_AM   AS BAC   /* 종료일기준 잔액 */
+             , NOW_BAC                            /* 현재잔액         */ 
+         FROM (    
+		        SELECT 
+		               A.ADJPL_C                                            AS ADJPL_C              /* 정산처코드 */
+		             , dbo.SF_GET_TRPL_NM(A.CORP_C, A.ADJPL_C)              AS ADJPL_NM             /* 정산처명  */ 
+		             , (SELECT dbo.SF_GET_ETC_UPY_BAC(A.CORP_C,#{BZPL_C},A.ADJPL_C,CONVERT(CHAR(8), DATEADD(DD,-1,CONVERT(DATETIME , #{ST_DT})),112)))    AS BAS_BAC    /* 이월잔액(시작일전일) */
+		             , ISNULL(B.DB_AM,0)                                    AS DB_AM                /* 차변금액   */
+		             , ISNULL(B.CR_AM,0)                                    AS CR_AM                /* 대변금액   */
+		             , (SELECT dbo.SF_GET_ETC_UPY_BAC(A.CORP_C,#{BZPL_C},A.ADJPL_C,CONVERT(CHAR(8), GETDATE(),112)))   AS NOW_BAC          /* 현재잔액  */
+		          FROM (SELECT CORP_C
+		                     , ADJPL_C 
+		                  FROM TB_CO_M_TRPL
+		                 WHERE 1=1
+		                   AND CORP_C = #{CORP_C}
+		                   AND BY_CTR_YN = 'Y'   /* 매입계약여부 */
+		                   AND USE_YN    = 'Y'   
+			               <if test = "ADJPL_C != null and ADJPL_C != ''">
+			                  AND ADJPL_C = #{ADJPL_C}
+			               </if>
+		                GROUP BY CORP_C
+		                       , ADJPL_C      
+		               )      A
+		               LEFT OUTER JOIN  
+		                   ( 
+			               SELECT 
+			                      CORP_C
+			                    , ADJPL_C                                                        AS ADJPL_C      /* 정산처코드                  */
+			                    , SUM(CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM ELSE 0 END)         AS DB_AM        /* 차변(기타미지급금-발생) */
+			                    , SUM(CASE WHEN REG_DSC = 'P' THEN CRE_BY_AM ELSE 0 END)         AS CR_AM        /* 대변(기타미지급금-지급) */
+			                 FROM TB_DT_M_ETC_UPY   /* 기타미지급금기본 */
+			                WHERE 1=1
+			                  AND CORP_C = #{CORP_C}
+			                  AND BZPL_C = #{BZPL_C}
+			                  AND ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+			               <if test = "ADJPL_C != null and ADJPL_C != ''">
+			                  AND ADJPL_C = #{ADJPL_C}
+			               </if>
+			                  AND SLP_NML_YN = 'Y'
+			                  AND DEL_YN = 'N'
+		                   GROUP BY  CORP_C
+		                           , ADJPL_C
+		                   )   B     
+		                   ON A.CORP_C  = B.CORP_C
+		                  AND A.ADJPL_C = B.ADJPL_C
+		       )   A            
+         WHERE 1=1
+           <![CDATA[
+           AND (BAS_BAC + DB_AM + CR_AM + NOW_BAC) <> 0    /* 거래내역이 없는것 제외 */
+           ]]>
+    </select>  
+    
+ <!-- 현재잔액 보여주는 내용없고 이월잔액이 잘못보여줘서 위에 내용으로 수정함. 20220117 rchkorea    
+        SELECT /*+ selectCa5130List01 */
+               ADJPL_C                                              AS ADJPL_C              /* 정산처코드 */
+             , (SELECT X.TRPL_NM
+                  FROM TB_CO_M_TRPL X
+                 WHERE X.CORP_C = #{CORP_C}
+                   AND X.TRPL_C = A.ADJPL_C)                        AS ADJPL_NM             /* 정산처명   */
+             , SUM(BAS_BAC)                                         AS BAS_BAC              /* 기초잔액   */
+             , SUM(DB_AM)                                           AS DB_AM                /* 차변금액   */
+             , SUM(CR_AM)                                           AS CR_AM                /* 대변금액   */
+             , SUM(BAS_BAC) + SUM(DB_AM) - SUM(CR_AM)               AS BAC                  /* 잔액       */
+          FROM (
+               /* 기초잔액 구하기 */
+               SELECT 
+                      ADJPL_C               /* 정산처코드            */
+                    , BAS_BAC               /* 기초잔액              */
+                    , 0 AS DB_AM            /* 차변(기타미지급금-발생) */
+                    , 0 AS CR_AM            /* 대변(기타미지급금-지급) */
+                 FROM TB_DT_S_ETC_UPY_MON
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+               <if test = "ACG_MN != null and ACG_MN != ''">
+                  AND ACG_MN = #{ACG_MN}
+               </if>
+               <if test = "ADJPL_C != null and ADJPL_C != ''">
+                  AND ADJPL_C = #{ADJPL_C}
+               </if>
+
+               UNION ALL
+               SELECT 
+                      ADJPL_C                                                        AS ADJPL_C      /* 정산처코드 */
+                    /* 01일부터 조회시작일 이전까지 거래금액 계산 */
+                    , SUM(CASE WHEN ACG_DT BETWEEN #{BF_ST_DT} AND #{BF_ED_DT} THEN         
+                               CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM
+                                    ELSE CRE_BY_AM * -1
+                               END
+                               ELSE 0
+                          END)                                                       AS BAS_BAC      /* 기초잔액 */
+                    /* 조회시작일 부터 조회종료일까지 거래금액 계산(기타미지급금) */
+                    , SUM(CASE WHEN ACG_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN      
+                               CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM
+                                    ELSE 0
+                               END
+                               ELSE 0
+                          END)                                                       AS DB_AM        /* 차변(기타미지급금-발생) */
+                    /* 조회시작일 부터 조회종료일까지 거래금액 계산(지급금액) */
+                    , SUM(CASE WHEN ACG_DT BETWEEN #{ST_DT} AND #{ED_DT} THEN 
+                               CASE WHEN REG_DSC = 'P' THEN CRE_BY_AM
+                                    ELSE 0
+                               END
+                               ELSE 0
+                          END)                                                       AS CR_AM        /* 대변(기타미지급금-지급) */
+                 FROM TB_DT_M_ETC_UPY
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_DT BETWEEN #{BF_ST_DT} AND #{ED_DT}
+               <if test = "ADJPL_C != null and ADJPL_C != ''">
+                  AND ADJPL_C = #{ADJPL_C}
+               </if>
+                  AND SLP_NML_YN = 'Y'
+                  AND DEL_YN = 'N'
+                GROUP BY 
+                         ADJPL_C
+               ) A
+         WHERE 1=1
+         GROUP BY
+                  A.ADJPL_C
+    -->     
+             
+</mapper>

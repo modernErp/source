@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+    <!-- 사업장내역 조회 -->
+    <select id="selectCo1015List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+              SELECT /*+ selectCo1015List */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.BZPL_NM                                           /* 사업장명             */
+             , A.BZPL_ABR_NM                                       /* 사업장약어명         */             
+             , A.TXBZ_RPT_FORM_C                                   /* 사업장세무신고형태코 */
+             , A.BZMN_NM                                           /* 사업자명             */
+             , A.BZMN_NO                                           /* 사업자번호           */
+             , A.COP_NO                                            /* 법인번호             */
+             , A.REPM_NM                                           /* 대표자명             */             
+             , A.BZC_NM                                            /* 업종명               */
+             , A.BZTP_NM                                           /* 업태명               */             
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.TEL_NO                                            /* 전화번호             */
+             , A.FAX_NO                                            /* 팩스번호             */
+             , A.MBCO_DSC                                          /* 본지사구분코드       */
+             , A.CLSD_DT                                           /* 폐업일자             */
+             , A.ELTTX_RMS_EMAIL                                   /* 전자세금계산서수신이 */
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+      			   AND A.CORP_C   = X.CORP_C
+                   AND A.FSRG_ID  = X.USR_ID)     AS FSRG_NM       /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.LSCHG_ID  = X.USR_ID)    AS LSCHG_NM      /* 최종변경자이름       */
+          FROM TB_CO_M_BZPL A
+         WHERE 1=1
+         AND A.CORP_C = #{CORP_C}
+          <if test='searchKeyword != null and searchKeyword != ""'>
+            <choose>
+                <when test='searchCondition == ""'>
+                    AND UPPER(a.BZPL_C + A.BZPL_NM) LIKE UPPER('%' + #{searchKeyword} + '%')    
+                </when>
+                <when test='searchCondition == "1"'>
+                    AND UPPER(A.BZPL_C) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+                <when test='searchCondition == "2"'>
+                    AND UPPER(A.BZPL_NM) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+            </choose>
+        </if>    
+    </select>
+    
+    <!-- 사업장 변경 이력 조회 -->  
+    <select id="selectCo1015ListP01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCo1015ListP01 */
+               A.CORP_C                                            /* 회사코드             */
+             , A.HST_SQNO                                          /* 이력일련번호         */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.BZPL_NM                                           /* 사업장명             */
+             , A.BZPL_ABR_NM                                       /* 사업장약어명         */             
+             , A.TXBZ_RPT_FORM_C                                   /* 사업장세무신고형태코 */
+             , A.BZMN_NM                                           /* 사업자명             */
+             , A.BZMN_NO                                           /* 사업자번호           */
+             , A.COP_NO                                            /* 법인번호             */
+             , A.REPM_NM                                           /* 대표자명             */             
+             , A.BZC_NM                                            /* 업종명               */
+             , A.BZTP_NM                                           /* 업태명               */             
+             , A.ZIP                                               /* 우편번호             */
+             , A.ADR1                                              /* 주소1                */
+             , A.ADR2                                              /* 주소2                */
+             , A.TEL_NO                                            /* 전화번호             */
+             , A.FAX_NO                                            /* 팩스번호             */
+             , A.MBCO_DSC                                          /* 본지사구분코드       */             
+             , A.CLSD_DT                                           /* 폐업일자             */        
+             , A.USE_YN                                            /* 사용여부             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM      /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+      			   AND A.CORP_C   = X.CORP_C
+                   AND A.FSRG_ID  = X.USR_ID)     AS FSRG_NM       /* 최초등록자이름       */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM     /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+             , (SELECT USR_NM
+     			  FROM TB_SY_M_USR X
+                 WHERE 1=1 
+                   AND A.CORP_C   = X.CORP_C
+                   AND A.LSCHG_ID  = X.USR_ID)    AS LSCHG_NM      /* 최종변경자이름       */
+          FROM TB_CO_L_BZPL A            
+        WHERE 1=1
+        AND A.BZPL_C = #{P_BZPL_C}        
+        <if test='searchKeyword != null and searchKeyword != ""'>
+            <choose>
+                <when test='searchCondition == ""'>
+                    AND UPPER(A.BZPL_C + A.BZPL_NM) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+                <when test='searchCondition == "1"'>
+                    AND UPPER(A.BZPL_C) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+                <when test='searchCondition == "2"'>
+                    AND UPPER(A.BZPL_NM) LIKE UPPER('%' + #{searchKeyword} + '%')
+                </when>
+            </choose>
+        </if>
+        <if test='ST_DT != null and ST_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[>=]]> #{ST_DT}
+        </if>
+        <if test='ED_DT != null and ED_DT != ""'>
+            AND CONVERT(CHAR(8), A.LSCHG_DTM, 112)  <![CDATA[<=]]> #{ED_DT}
+        </if>
+    </select>
+</mapper>

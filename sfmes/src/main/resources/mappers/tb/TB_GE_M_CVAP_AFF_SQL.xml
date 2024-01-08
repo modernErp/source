@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_GE_M_CVAP_AFF" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_GE_M_CVAP_AFF */ TB_GE_M_CVAP_AFF
+        (
+              CORP_C              /* 회사코드         */
+            , BZPL_C              /* 사업장코드       */
+            , PRC_DT              /* 접수일자         */
+            , PRC_SQNO            /* 접수일련번호     */
+            , CVAP_TPC            /* 민원유형         */
+            , CVAP_MN_TPC         /* 민원인유형       */
+            , CVAP_PRC_METHC      /* 민원처리방법     */
+            , CUS_NM              /* 고객이름         */
+            , SEX_DSC             /* 고객성별         */
+            , AG                  /* 고객나이         */
+            , ZIP                 /* 고객우편번호     */
+            , CUS_ADR1            /* 고객주소1        */
+            , CUS_ADR2            /* 고객주소2        */
+            , CUS_TELNO           /* 고객전화번호     */
+            , CUS_MPNO            /* 고객휴대폰번호   */
+            , BUY_DT              /* 구매일자         */
+            , PCH_PATH            /* 구입경로         */
+            , CSLT_CNTN           /* 상담내용         */
+            , RCST_ID             /* 접속자ID         */
+            , ACT_SJT             /* 조치사항         */
+            , RMK_CNTN            /* 비고             */
+            , SMS_RMS_AGR_YN      /* SMS수신동의      */
+            , CVAP_PRC_YN         /* 민원처리여부     */
+            , RC_DT
+            , RC_SQNO
+            , RLTR_DT
+            , DEL_YN              /* 삭제여부         */
+            , FSRG_DTM            /* 최초등록일시     */
+            , FSRG_ID             /* 최초등록자ID     */
+            , LSCHG_DTM           /* 최종변경일시     */
+            , LSCHG_ID            /* 최종변경자ID     */
+        )
+        VALUES
+        (
+              #{CORP_C}        
+            , #{BZPL_C}        
+            , #{PRC_DT}         
+            , #{PRC_SQNO}       
+            , #{CVAP_TPC}      
+            , #{CVAP_MN_TPC}   
+            , #{CVAP_PRC_METHC}
+            , #{CUS_NM}        
+            , #{SEX_DSC}       
+            , DBO.SF_GET_NUMERIC(#{AG})            
+            , #{ZIP}           
+            , #{CUS_ADR1}      
+            , #{CUS_ADR2}      
+            , #{CUS_TELNO}     
+            , #{CUS_MPNO}      
+            , #{BUY_DT}        
+            , #{PCH_PATH}      
+            , #{CSLT_CNTN}     
+            , #{GUSRID}       
+            , #{ACT_SJT}       
+            , #{RMK_CNTN}        
+            , #{SMS_RMS_AGR_YN}
+            , #{CVAP_PRC_YN}
+            , #{RC_DT}
+            , #{RC_SQNO}
+            , #{RLTR_DT}   
+            , 'N'        
+            , GETDATE()       
+            , #{GUSRID}       
+            , GETDATE()       
+            , #{GUSRID}      
+        )
+    </insert>
+    
+    <update id="update_TB_GE_M_CVAP_AFF" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_GE_M_CVAP_AFF */ TB_GE_M_CVAP_AFF
+           SET
+              CORP_C         = #{CORP_C}         /* 회사코드         */   
+            , BZPL_C         = #{BZPL_C}         /* 사업장코드       */   
+            , PRC_DT         = #{PRC_DT}         /* 접수일자         */   
+            , PRC_SQNO       = #{PRC_SQNO}       /* 접수일련번호     */   
+            , CVAP_TPC       = #{CVAP_TPC}       /* 민원유형         */   
+            , CVAP_MN_TPC    = #{CVAP_MN_TPC}    /* 민원인유형       */   
+            , CVAP_PRC_METHC = #{CVAP_PRC_METHC} /* 민원처리방법     */   
+            , CUS_NM         = #{CUS_NM}         /* 고객이름         */   
+            , SEX_DSC        = #{SEX_DSC}        /* 고객성별         */   
+            , AG             = DBO.SF_GET_NUMERIC(#{AG}) /* 고객나이         */   
+            , ZIP            = #{ZIP}            /* 고객우편번호     */   
+            , CUS_ADR1       = #{CUS_ADR1}       /* 고객주소1        */   
+            , CUS_ADR2       = #{CUS_ADR2}       /* 고객주소2        */   
+            , CUS_TELNO      = #{CUS_TELNO}      /* 고객전화번호     */   
+            , CUS_MPNO       = #{CUS_MPNO}       /* 고객휴대폰번호   */   
+            , BUY_DT         = #{BUY_DT}         /* 구매일자         */   
+            , PCH_PATH       = #{PCH_PATH}       /* 구입경로         */   
+            , CSLT_CNTN      = #{CSLT_CNTN}      /* 상담내용         */   
+            , RCST_ID        = #{GUSRID}         /* 접속자ID         */   
+            , ACT_SJT        = #{ACT_SJT}        /* 조치사항         */   
+            , RMK_CNTN       = #{RMK_CNTN}       /* 비고             */    
+            , SMS_RMS_AGR_YN = #{SMS_RMS_AGR_YN} /* SMS수신동의      */   
+            , CVAP_PRC_YN    = #{CVAP_PRC_YN}    /* 민원처리여부     */
+            , RC_DT          = #{RC_DT}
+            , RC_SQNO        = #{RC_SQNO}
+            , RLTR_DT        = #{RLTR_DT}
+            , DEL_YN         = #{DEL_YN}         /* 삭제여부         */     
+            , LSCHG_DTM      = GETDATE()         /* 최종변경일시     */   
+            , LSCHG_ID       = #{GUSRID}         /* 최종변경자ID     */
+        WHERE 1 = 1
+          AND CORP_C   = #{CORP_C}
+          AND BZPL_C   = #{BZPL_C}
+          AND PRC_DT   = #{PRC_DT}
+          AND PRC_SQNO = #{PRC_SQNO}   
+    </update>
+    
+    <delete id="delete_TB_GE_M_CVAP_AFF" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_GE_M_CVAP_AFF */ TB_GE_M_CVAP_AFF
+        WHERE 1 = 1
+          AND CORP_C   = #{CORP_C}
+          AND BZPL_C   = #{BZPL_C}
+          AND PRC_DT   = #{PRC_DT}
+          AND PRC_SQNO = #{PRC_SQNO}       
+    </delete>
+    
+    <select id="select_TB_GE_M_CVAP_AFF" parameterType="LinkedHashMap">
+        SELECT /*+ select_TB_GE_M_CVAP_AFF */
+               A.PRC_DT
+             , A.PRC_SQNO
+             , A.RCST_ID
+             , (SELECT USR_NM 
+                  FROM TB_SY_M_USR 
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C 
+                   AND USR_ID = A.RCST_ID
+               ) AS USR_NM
+             , A.CUS_NM
+             , A.SEX_DSC
+             , A.AG
+             , A.ZIP
+             , A.CUS_ADR1
+             , A.CUS_ADR2
+             , A.CUS_TELNO
+             , A.CUS_MPNO
+             , A.SMS_RMS_AGR_YN
+             , A.CVAP_MN_TPC
+             , A.CVAP_TPC
+             , A.CVAP_PRC_METHC
+             , A.CVAP_PRC_YN
+             , A.CSLT_CNTN
+             , A.ACT_SJT
+             , A.RMK_CNTN
+             , A.RC_DT
+             , A.RC_SQNO
+             , A.RLTR_DT
+             , A.FSRG_ID
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20) AS FSRG_DTM             
+             , A.LSCHG_ID
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM
+          FROM TB_GE_M_CVAP_RC A
+         WHERE 1 = 1
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.PRC_DT   = #{PRC_DT}
+           AND A.PRC_SQNO = #{PRC_SQNO}
+           AND A.DEL_YN   = 'N'    
+    </select>
+</mapper>

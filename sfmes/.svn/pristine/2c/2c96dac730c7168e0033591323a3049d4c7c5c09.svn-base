@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.dl">
+
+    <!-- 마감등록조회 -->
+    <select id="selectDl1050List" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1050List */
+               A.CORP_C                                             /* 회사코드         */
+             , A.BZPL_C                                             /* 사업장코드       */        
+             , A.BAS_DT                                             /* 기준일자         */
+             , A.BAS_YY                                             /* 기준년도         */
+             , A.BAS_MM                                             /* 기준월           */
+             , A.BAS_DD                                             /* 기준일           */
+             , A.BIZ_WEEK_BAS_YY                                    /* 영업주차기준년도 */
+             , A.BIZ_WEEK                                           /* 영업주차         */
+             , A.CDR_WEEK                                           /* 달력주차         */
+             , A.DOW_C                                              /* 요일코드         */
+             , A.DOW_NM                                             /* 요일명           */
+             , A.BY_DDL_YN                                          /* 매입마감여부     */
+             , A.SL_DDL_YN                                          /* 매출마감여부     */
+             , A.PD_DDL_YN                                          /* 생산마감여부     */
+             , A.BD_DT_DDL_YN                                       /* 채권채무마감여부 */
+             , A.ALL_DDL_YN                                         /* 전체마감여부     */
+             , A.HLDY_YN                                            /* 공휴일여부       */
+             , A.HLDY_NM                                            /* 공휴일명         */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS FSRG_DTM       /* 최초등록일시     */
+             , A.FSRG_ID                                            /* 최초등록자ID   */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS LSCHG_DTM      /* 최종변경일시     */
+             , A.LSCHG_ID                                           /* 최종변경자ID   */
+          FROM TB_SY_B_DDL A
+         WHERE 1 = 1
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.BAS_DT BETWEEN #{ST_DT} AND #{ED_DT} 
+    </select>
+    
+    <!-- 마감일보조회 -->
+    <select id="selectDl1050List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectDl1050List02 */
+               *
+          FROM TB_DL_D_DAY_DDL A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DDL_DT            = #{DDL_DT}     
+    </select>
+    
+    <!-- 마감등록변경 -->
+    <update id="updateDl1050List" parameterType="LinkedHashMap">
+        UPDATE /*+ updateDl1050List */
+               TB_SY_B_DDL
+           SET 
+               BY_DDL_YN    = #{BY_DDL_YN}                          /* 매입마감여부     */
+             , SL_DDL_YN    = #{SL_DDL_YN}                          /* 매출마감여부     */
+             , PD_DDL_YN    = #{PD_DDL_YN}                          /* 생산마감여부     */
+             , BD_DT_DDL_YN = #{BD_DT_DDL_YN}                       /* 채권채무마감여부 */
+             , ALL_DDL_YN   = #{ALL_DDL_YN}                         /* 전체마감여부     */
+             , HLDY_YN      = #{HLDY_YN}                            /* 공휴일여부       */
+             , HLDY_NM      = #{HLDY_NM}                            /* 공휴일명         */
+             , FSRG_DTM     = CASE WHEN FSRG_ID = 'system' then GETDATE() ELSE FSRG_DTM END    /* 최초등록일시    */
+             , FSRG_ID      = CASE WHEN FSRG_ID = 'system' then #{GUSRID} ELSE FSRG_ID END    /* 최초등록자ID  */
+             , LSCHG_DTM    = GETDATE()                             /* 최종변경일시      */
+             , LSCHG_ID     = #{GUSRID}                             /* 최종변경자ID   */
+         WHERE 1 = 1
+           AND CORP_C       = #{CORP_C}
+           AND BZPL_C       = #{BZPL_C}
+           AND BAS_DT       = #{BAS_DT}
+    </update>
+    
+</mapper>

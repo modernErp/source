@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 작업지시제품상세 조회 -->
+<!--
+2021.11.08 서광석
+수주마감된 수주내역중 작업지시완료된 수주마감내역은 제외  
+
+2021.12.09 여다혜
+수주일자, 일련번호, 상세일련번호 추가
+-->
+    <select id="selectPd2021_Mfs" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+WITH DNTT_MFS AS /*+ selectPd2021_Mfs */
+    (    /* 생산_작업지시제품TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , A.GDS_C                         AS GDS_C                /* 제품물품코드             */
+              , A.GDS_C                         AS BPRW_GDS_C           /* 전공정물품코드           */
+              , A.GDS_C                         AS MTRL_GDS_C           /* 자재물품코드             */
+              , B.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , B.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+              , D.BOM_C                         AS BPRW_BOM_C           /* 전공정BOM코드            */
+              , D.BOM_C                         AS BAS_BOM_C            /* 기본BOM코드              */
+              , 1                               AS STP_DSC              /* 단계구분코드             */
+              , C.GDS_TP_DSC                    AS GDS_TP_DSC           /* 물품유형구분             */
+              , SUM(A.RVO_QT)                   AS RVO_QT               /* 수주수량                 */
+              , SUM(A.RVO_QT)                   AS MFS_DNTT_QT          /* 제품지시수량             */
+              , MAX(D.BAS_QT)                   AS BAS_QT               /* BOM기준수량           */
+              , COUNT(1)                        AS RV_SLP_CN            /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                 */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호             */
+              , A.RVO_DSQNO                     AS RVO_DSQNO            /* 수주상세일련번호         */
+              ------------------------*/
+              , C.HST_AMN_DSC                   AS HST_AMN_DSC          /* 이력관리구분코드 */ 
+              , CONVERT(FLOAT ,(SUM(A.RVO_QT) / MAX(D.BAS_QT))) AS PQT  /* BOM기준수량대비 증감 수량 */ 
+			  , A.GDS_C                         AS ORDER_SEQ  /* 정렬순서 */
+           FROM TB_SE_D_RVO      A                                      /* 매출_수주상세            */
+           INNER JOIN            TB_SE_M_RVO B                          /* 매출_수주기본            */
+             ON A.CORP_C       = B.CORP_C
+            AND A.BZPL_C       = B.BZPL_C
+            AND A.RVO_DT       = B.RVO_DT
+            AND A.RVO_SQNO     = B.RVO_SQNO
+            AND B.WK_DNTT_DT IS NULL
+           INNER JOIN           TB_CO_M_GDS  C                         /* 공통_물품기본            */
+             ON A.CORP_C       = C.CORP_C
+            AND A.BZPL_C       = C.BZPL_C
+            AND A.GDS_C        = C.GDS_C
+		  LEFT OUTER  JOIN            TB_PD_M_BOM_MFC   D                   /* BOM기본 */
+             ON A.CORP_C       = D.CORP_C
+            AND A.BZPL_C       = D.BZPL_C
+            AND A.GDS_C        = D.GDS_C
+            AND D.USE_YN       = 'Y'
+			AND D.BSC_BOM_YN   = 'Y'
+          WHERE 1 = 1
+            AND B.CORP_C       = #{CORP_C}
+            AND B.BZPL_C       = #{BZPL_C}
+            AND B.RVO_CLO_DT   = #{RVO_CLO_DT}
+            AND B.RVO_CLO_SQNO = #{RVO_CLO_SQNO}
+            AND C.GDS_TP_DSC   = '10'                                   /* 제품만                   */
+          GROUP BY A.CORP_C
+              , A.BZPL_C
+              , A.GDS_C
+              , B.RVO_DT
+              , B.RVO_SQNO
+              , C.BAS_BOM_C
+              , C.GDS_TP_DSC
+              , C.HST_AMN_DSC
+			  , D.BOM_C
+			  /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT
+              , A.RVO_SQNO
+              , A.RVO_DSQNO
+              ------------------------*/
+    )
+    ,    DNTT_MTRL1 AS
+    (    /* 생산_작업지시반제품1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 2                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+			  , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)   AS ORDER_SEQ  /* 정렬순서 */
+           FROM  DNTT_MFS  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+  		    AND D.GDS_TP_DSC   = '20'		/* 반제품 */
+    )
+    ,    DNTT_MTRL2 AS
+    (    /* 생산_작업지시반제품2TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+
+              , 3                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+			  /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+			  , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)   AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL1  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+  		    AND D.GDS_TP_DSC   = '20'		/* 반제품 */
+    )
+    ,    DNTT_MTRL3 AS
+    (    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 4                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+			  /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+			  , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL2  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+  		    AND D.GDS_TP_DSC   = '20'		/* 반제품 */
+    )
+    ,    DNTT_MTRL4 AS
+    (    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 안에 반제품 1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 5                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+			  /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              -----------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+			  , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL3  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+  		    AND D.GDS_TP_DSC   = '20'		/* 반제품 */
+    )
+         SELECT
+                A.CORP_C, A.ORDER_SEQ
+              , A.BZPL_C
+              , A.GDS_TP_DSC                                            /* 물품유형구분코드         */
+              , A.GDS_C                                                 /* 제품물품코드             */
+              , A.BPRW_GDS_C                                            /* 전공정물품코드           */
+              , B.GDS_DTL_NM                        AS GDS_NM           /* 물품명                   */
+              , B.UNT_C                                                 /* 단위                     */
+              , B.GDS_STD_NM                                            /* 규격                     */
+              , B.BAS_WHSE_C                        AS WHSE_C           /* 창고코드                 */
+              , A.BPRW_BOM_C                        AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , A.BAS_BOM_C                         AS BOM_C            /* BOM코드                  */
+              , C.PD_LINE_C                                             /* 주생산라인               */
+              , A.STP_DSC                                               /* 물품단계:색상처리용      */
+              , A.HST_AMN_DSC
+              , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C,'00000000') AS STPL_QT /* 현재고수량 */
+              , A.RVO_QT                                                /* 수주수량                 */
+              , A.MFS_DNTT_QT                                           /* 지수수량                 */
+              , A.RV_SLP_CN                                             /* 수주전표수               */
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                   */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호              */
+			  /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                                                /* 수주일자                 */
+              , A.RVO_SQNO                                              /* 수주일련번호             */
+              , A.RVO_DSQNO                                             /* 수주상세일련번호         */
+              ------------------------*/
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , A.ORDER_SEQ                    /* 정렬순서 */               
+           FROM (
+                SELECT CORP_C, BZPL_C, GDS_C,RVO_DT, RVO_SQNO, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT, ORDER_SEQ
+                  FROM DNTT_MFS                                         /* 생산_작업지시제품TEMP    */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C,RVO_DT, RVO_SQNO, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL1                                       /* 생산_작업지시반제품1TEMP */
+                UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C,RVO_DT, RVO_SQNO, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL2                                       /* 생산_작업지시반제품2TEMP */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C,RVO_DT, RVO_SQNO, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL3                                       /* 생산_작업지시반제품3TEMP */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C,RVO_DT, RVO_SQNO, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL4                                       /* 생산_작업지시반제품4TEMP */
+                ) A
+          INNER JOIN TB_CO_M_GDS B                                      /* 공통_물품기본            */
+             ON A.CORP_C    = B.CORP_C
+            AND A.BZPL_C    = B.BZPL_C
+            AND A.GDS_C     = B.GDS_C
+           LEFT OUTER JOIN TB_PD_M_BOM_MFC C
+             ON A.CORP_C    = C.CORP_C
+            AND A.BZPL_C    = C.BZPL_C
+            AND A.GDS_C     = C.GDS_C
+            AND A.BAS_BOM_C = C.BOM_C
+            AND C.USE_YN    = 'Y'
+          ORDER BY A.ORDER_SEQ
+    </select>
+
+    <!-- 작업지시자재상세 조회 -->
+    <select id="selectPd2021_Mtrl" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    SELECT /*+ select_TB_PD_D_BOM_MTRL */
+           A.CORP_C
+         , A.BZPL_C
+         , #{DNTT_DT}               AS DNTT_DT
+         , C.GDS_TP_DSC
+         , A.MTRL_GDS_C             AS GDS_C
+         , C.GDS_DTL_NM             AS GDS_NM
+         , C.GDS_STD_NM             
+         , A.PTIN_QT * (#{MFS_DNTT_QT} / B.BAS_QT)    AS MFS_DNTT_QT
+         , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.MTRL_GDS_C,'00000000') AS STPL_QT /* 현재고수량 */
+         , A.GDS_UNT_C              AS UNT_C
+         , A.MTRL_BOM_C             AS BOM_C
+         , #{PD_PLA_DT}             AS PD_PLA_DT
+         , #{PD_LINE_C}             AS PD_LINE_C
+         , #{MFC_DSC}               AS MFC_DSC
+         , '01'                     AS MFC_WK_STS_C
+         , #{DNTT_METH_C}           AS DNTT_METH_C
+         , C.BAS_WHSE_C             AS WHSE_C
+      FROM TB_PD_D_BOM_MTRL A
+     INNER JOIN TB_PD_M_BOM_MFC B
+        ON A.CORP_C     = B.CORP_C
+       AND A.BZPL_C     = B.BZPL_C
+       AND A.GDS_C      = B.GDS_C
+       AND A.BOM_C      = B.BOM_C
+      LEFT OUTER JOIN TB_CO_M_GDS C           /* 공통_물품기본         */
+        ON A.CORP_C     = C.CORP_C
+       AND A.BZPL_C     = C.BZPL_C
+       AND A.MTRL_GDS_C = C.GDS_C
+       AND C.USE_YN     = 'Y'
+     WHERE 1 = 1
+       AND A.USE_YN     = 'Y'
+       AND A.CORP_C     = #{CORP_C}
+       AND A.BZPL_C     = #{BZPL_C}
+       AND A.GDS_C      = #{pGDS_C}
+       AND A.BOM_C      = #{pBOM_C}
+     ORDER BY A.MTRL_GDS_C
+    </select>
+
+    <!-- 2021.10.27 서광석
+                투입지시량 계산시 BOM의 기준수량 반영
+         -->
+    <insert id="insert_TB_PD_D_WK_DNTT_MTRL_2021" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_D_WK_DNTT_MTRL */ TB_PD_D_WK_DNTT_MTRL
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DNTT_DT             /* 지시일자             */
+            , DNTT_SQNO           /* 지시일련번호         */
+            , DNTT_DNO            /* 지시상세번호         */
+            , GDS_C               /* 물품코드             */
+            , PTIN_DNTT_QT        /* 투입지시량           */
+            , PTIN_GDS_UNT_C      /* 물품단위코드         */
+            , WHSE_C              /* 창고코드             */
+            , ACP_MTR_DSC         /* 인수재료구분코드     */
+            , RMK_CNTN            /* 비고내용             */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+              SELECT /*+ select_TB_PD_D_BOM_MTRL */
+                     A.CORP_C
+                   , A.BZPL_C
+                   , #{DNTT_DT}               AS DNTT_DT
+                   , #{DNTT_SQNO}             AS DNTT_SQNO
+                   , #{DNTT_DNO}              AS DNTT_DNO
+                   , A.MTRL_GDS_C             AS GDS_C
+                   , A.PTIN_QT * (#{PQT} / B.BAS_QT) AS PTIN_DNTT_QT 
+                   , A.GDS_UNT_C              AS PTIN_GDS_UNT_C
+                   , A.WHSE_C
+                   , #{ACP_MTR_DSC}           AS ACP_MTR_DSC
+                   , A.RMK_CNTN
+                   , 'N'                      AS DEL_YN
+                   , A.ETC_DSC1
+                   , A.ETC_DSC2
+                   , A.ETC_DSC3
+                   , GETDATE()                AS FSRG_DTM
+                   , #{GUSRID}
+                   , GETDATE()                AS LSCHG_DTM
+                   , #{GUSRID} 
+                FROM TB_PD_D_BOM_MTRL A
+               INNER JOIN TB_PD_M_BOM_MFC B
+                  ON A.CORP_C = B.CORP_C
+                 AND A.BZPL_C = B.BZPL_C
+                 AND A.GDS_C  = B.GDS_C
+                 AND A.BOM_C  = B.BOM_C                
+               WHERE 1 = 1
+                 AND A.USE_YN            = 'Y'
+                 AND A.CORP_C            = #{CORP_C}
+                 AND A.BZPL_C            = #{BZPL_C}
+                 AND A.GDS_C             = #{GDS_C}
+                 AND A.BOM_C             = #{BOM_C}
+    </insert>
+
+    <update id="TB_PD_D_WK_DNTT_MFS_change_2021" parameterType="LinkedHashMap">
+        UPDATE /*+ TB_PD_D_WK_DNTT_MFS_change */ TB_PD_D_WK_DNTT_MFS
+           SET 
+               MFC_WK_STS_C        = #{MFC_WK_STS_C}          /* 가공작업상태코드     */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+           AND DNTT_DNO            = #{DNTT_DNO}
+    </update>
+
+    <!-- 물품이력번호 유효성체크 -->
+    <select id="selectPd2020_valid_01" parameterType="LinkedHashMap" resultType="Integer">
+		SELECT /*+ selectPd2020_valid_01 */
+		       COUNT(*) AS CNT
+		  FROM VMF_SRS_ALL_HST_NO      /* 물품이력번호관리 VIEW */
+		 WHERE CORP_C = #{CORP_C}
+		   AND lot_no = #{GDS_HST_NO}
+    </select>
+    
+     <!-- 작업지시제품상세 조회 수주건별 분할 체크 해제 -->
+    <select id="selectPd2021_Mfs_NON" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+WITH DNTT_MFS AS /*+ selectPd2021_Mfs_NON */
+    (    /* 생산_작업지시제품TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , A.GDS_C                         AS GDS_C                /* 제품물품코드             */
+              , A.GDS_C                         AS BPRW_GDS_C           /* 전공정물품코드           */
+              , A.GDS_C                         AS MTRL_GDS_C           /* 자재물품코드             */
+              , D.BOM_C                         AS BPRW_BOM_C           /* 전공정BOM코드            */
+              , D.BOM_C                         AS BAS_BOM_C            /* 기본BOM코드              */
+              , 1                               AS STP_DSC              /* 단계구분코드             */
+              , C.GDS_TP_DSC                    AS GDS_TP_DSC           /* 물품유형구분             */
+              , SUM(A.RVO_QT)                   AS RVO_QT               /* 수주수량                 */
+              , SUM(A.RVO_QT)                   AS MFS_DNTT_QT          /* 제품지시수량             */
+              , MAX(D.BAS_QT)                   AS BAS_QT               /* BOM기준수량           */
+              , COUNT(1)                        AS RV_SLP_CN            /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                        AS RVO_DT               /* 수주일자                 */
+              , A.RVO_SQNO                      AS RVO_SQNO             /* 수주일련번호             */
+              , A.RVO_DSQNO                     AS RVO_DSQNO            /* 수주상세일련번호         */
+              ------------------------*/
+              , C.HST_AMN_DSC                   AS HST_AMN_DSC          /* 이력관리구분코드 */ 
+              , CONVERT(FLOAT ,(SUM(A.RVO_QT) / MAX(D.BAS_QT))) AS PQT  /* BOM기준수량대비 증감 수량 */ 
+              , A.GDS_C                         AS ORDER_SEQ  /* 정렬순서 */
+           FROM TB_SE_D_RVO      A                                      /* 매출_수주상세            */
+           INNER JOIN            TB_SE_M_RVO B                          /* 매출_수주기본            */
+             ON A.CORP_C       = B.CORP_C
+            AND A.BZPL_C       = B.BZPL_C
+            AND A.RVO_DT       = B.RVO_DT
+            AND A.RVO_SQNO     = B.RVO_SQNO
+            AND B.WK_DNTT_DT IS NULL
+           INNER JOIN           TB_CO_M_GDS  C                         /* 공통_물품기본            */
+             ON A.CORP_C       = C.CORP_C
+            AND A.BZPL_C       = C.BZPL_C
+            AND A.GDS_C        = C.GDS_C
+          LEFT OUTER  JOIN            TB_PD_M_BOM_MFC   D                   /* BOM기본 */
+             ON A.CORP_C       = D.CORP_C
+            AND A.BZPL_C       = D.BZPL_C
+            AND A.GDS_C        = D.GDS_C
+            AND D.USE_YN       = 'Y'
+            AND D.BSC_BOM_YN   = 'Y'
+          WHERE 1 = 1
+            AND B.CORP_C       = #{CORP_C}
+            AND B.BZPL_C       = #{BZPL_C}
+            AND B.RVO_CLO_DT   = #{RVO_CLO_DT}
+            AND B.RVO_CLO_SQNO = #{RVO_CLO_SQNO}
+            AND C.GDS_TP_DSC   = '10'                                   /* 제품만                   */
+          GROUP BY A.CORP_C
+              , A.BZPL_C
+              , A.GDS_C
+              , C.BAS_BOM_C
+              , C.GDS_TP_DSC
+              , C.HST_AMN_DSC
+              , D.BOM_C
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT
+              , A.RVO_SQNO
+              , A.RVO_DSQNO
+              ------------------------*/
+    )
+    ,    DNTT_MTRL1 AS
+    (    /* 생산_작업지시반제품1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 2                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)   AS ORDER_SEQ  /* 정렬순서 */
+           FROM  DNTT_MFS  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+            AND D.GDS_TP_DSC   = '20'       /* 반제품 */
+    )
+    ,    DNTT_MTRL2 AS
+    (    /* 생산_작업지시반제품2TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+
+              , 3                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)   AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL1  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+            AND D.GDS_TP_DSC   = '20'       /* 반제품 */
+    )
+    ,    DNTT_MTRL3 AS
+    (    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 4                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              ------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL2  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+            AND D.GDS_TP_DSC   = '20'       /* 반제품 */
+    )
+    ,    DNTT_MTRL4 AS
+    (    /* 생산_작업지시 반제품 안에 반제품 안에 반제품 안에 반제품 1TEMP */
+         SELECT
+                A.CORP_C
+              , A.BZPL_C
+              , C.MTRL_GDS_C                        AS GDS_C            /* 제품물품코드             */
+              , C.BOM_C                             AS BAS_BOM_C        /* 제품BOM코드              */
+              , A.GDS_C                             AS BPRW_GDS_C       /* 전공정물품코드           */
+              , A.BAS_BOM_C                         AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , 5                                   AS STP_DSC          /* 단계구분코드             */
+              , D.GDS_TP_DSC                        AS GDS_TP_DSC       /* 제품유형구분             */
+              , A.PQT * C.PTIN_QT                   AS RVO_QT           /* 수주수량                 */
+              , A.PQT * C.PTIN_QT                   AS MFS_DNTT_QT      /* 제품지시수량             */
+              , A.RVO_QT                            AS MFS_RVO_QT       /* 제품수주수량             */
+              , 0                                   AS RV_SLP_CN        /* 수주전표건수             */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                            AS RVO_DT           /* 수주일자                 */
+              , A.RVO_SQNO                          AS RVO_SQNO         /* 수주일련번호             */
+              , A.RVO_DSQNO                         AS RVO_DSQNO        /* 수주상세일련번호         */
+              -----------------------------*/
+              , D.HST_AMN_DSC                       AS HST_AMN_DSC      /* 이력관리구분코드    */
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , CONCAT(A.ORDER_SEQ, C.MTRL_GDS_C)    AS ORDER_SEQ  /* 정렬순서 */
+           FROM DNTT_MTRL3  A
+           INNER JOIN TB_PD_D_BOM_MTRL   C
+              ON A.CORP_C       = C.CORP_C
+             AND A.BZPL_C       = C.BZPL_C
+             AND A.GDS_C        = C.GDS_C
+             AND A.BAS_BOM_C    = C.BOM_C
+           INNER JOIN  TB_CO_M_GDS  D                         /* 공통_물품기본            */
+              ON C.CORP_C       = D.CORP_C
+             AND C.BZPL_C       = D.BZPL_C
+             AND C.MTRL_GDS_C   = D.GDS_C
+          WHERE 1 = 1
+            AND C.USE_YN       = 'Y'
+            AND D.GDS_TP_DSC   = '20'       /* 반제품 */
+    )
+         SELECT
+                A.CORP_C, A.ORDER_SEQ
+              , A.BZPL_C
+              , A.GDS_TP_DSC                                            /* 물품유형구분코드         */
+              , A.GDS_C                                                 /* 제품물품코드             */
+              , A.BPRW_GDS_C                                            /* 전공정물품코드           */
+              , B.GDS_DTL_NM                        AS GDS_NM           /* 물품명                   */
+              , B.UNT_C                                                 /* 단위                     */
+              , B.GDS_STD_NM                                            /* 규격                     */
+              , B.BAS_WHSE_C                        AS WHSE_C           /* 창고코드                 */
+              , A.BPRW_BOM_C                        AS BPRW_BOM_C       /* 전공정BOM코드            */
+              , A.BAS_BOM_C                         AS BOM_C            /* BOM코드                  */
+              , C.PD_LINE_C                                             /* 주생산라인               */
+              , A.STP_DSC                                               /* 물품단계:색상처리용      */
+              , A.HST_AMN_DSC
+              , DBO.SF_GET_STPL_QT(A.CORP_C, A.BZPL_C, A.GDS_C,'00000000') AS STPL_QT /* 현재고수량 */
+              , A.RVO_QT                                                /* 수주수량                 */
+              , A.MFS_DNTT_QT                                           /* 지수수량                 */
+              , A.RV_SLP_CN                                             /* 수주전표수               */
+              /* 수주받은 물품의 합계로 가지고있지 않음 수주테이블에서 작업지시를 가지고있음 
+              , A.RVO_DT                                                /* 수주일자                 */
+              , A.RVO_SQNO                                              /* 수주일련번호             */
+              , A.RVO_DSQNO                                             /* 수주상세일련번호         */
+              ------------------------*/
+              , A.PQT                               AS PQT              /* BOM기준수량대비 증감 수량 */ 
+              , A.ORDER_SEQ                    /* 정렬순서 */               
+           FROM (
+                SELECT CORP_C, BZPL_C, GDS_C, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT, ORDER_SEQ
+                  FROM DNTT_MFS                                         /* 생산_작업지시제품TEMP    */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL1                                       /* 생산_작업지시반제품1TEMP */
+                UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL2                                       /* 생산_작업지시반제품2TEMP */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL3                                       /* 생산_작업지시반제품3TEMP */
+                 UNION ALL
+                SELECT CORP_C, BZPL_C, GDS_C, BPRW_GDS_C, BPRW_BOM_C, BAS_BOM_C, STP_DSC, GDS_TP_DSC, RVO_QT, MFS_DNTT_QT, RV_SLP_CN, HST_AMN_DSC, PQT,ORDER_SEQ
+                  FROM DNTT_MTRL4                                       /* 생산_작업지시반제품4TEMP */
+                ) A
+          INNER JOIN TB_CO_M_GDS B                                      /* 공통_물품기본            */
+             ON A.CORP_C    = B.CORP_C
+            AND A.BZPL_C    = B.BZPL_C
+            AND A.GDS_C     = B.GDS_C
+           LEFT OUTER JOIN TB_PD_M_BOM_MFC C
+             ON A.CORP_C    = C.CORP_C
+            AND A.BZPL_C    = C.BZPL_C
+            AND A.GDS_C     = C.GDS_C
+            AND A.BAS_BOM_C = C.BOM_C
+            AND C.USE_YN    = 'Y'
+          ORDER BY A.ORDER_SEQ
+    </select>
+
+</mapper>

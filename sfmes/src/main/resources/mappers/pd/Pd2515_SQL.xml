@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+    
+    <select id="select2515_List_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select2515_List_01 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.PRW_C                                             /* BOM(공정)코드             */
+             , (SELECT X.PRW_NM
+                  FROM TB_PD_M_PRW_REC X
+                 WHERE 1=1 
+                   AND A.BZPL_C  = X.BZPL_C
+                   AND A.CORP_C  = X.CORP_C
+                   AND A.PRW_C   = X.PRW_C  ) AS  PRW_NM           /* 공정명                    */
+             , A.BPRW_PRW_C                                        /* 전공정BOM코드             */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.PD_PLA_DT                                         /* 생산시작일자              */
+             , A.DNTT_METH_C                                       /* 지시방법코드              */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드          */
+             , A.PD_LINE_C                                         /* 생산라인코드              */
+             , A.DANI_PD_C                                         /* 주야생산코드              */
+             , A.DNTT_CNTN                                         /* 작업지시내용              */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호              */
+			 , B.GDS_C                                             /* 물품코드                  */
+			 , C.GDS_DTL_NM                                        /* 물품명                    */
+			 , C.GDS_STD_NM                                        /* 규격                      */
+             , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , C.WHT_QT                                            /* 기준단량                  */
+             , C.TXT_DSC                                           /* 과세구분코드              */
+             , C.UNT_C                                             /* 단위코드                  */
+             , C.BAS_WHSE_C                                        /* 기본창고코드              */
+             , C.HST_AMN_DSC                                       /* 이력관리구분코드          */
+             , B.SRA_HST_NO                                        /* 축산물이력번호            */
+             , B.MFS_DNTT_QT                                       /* 제품지시량                */
+             , B.WHSE_C                                            /* 창고코드                  */
+             , B.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자이름            */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자이름            */
+          FROM TB_PD_M_WK_DNTT_PRW     A
+		     , TB_PD_D_WK_DNTT_MFS_PRW B
+			 , TB_CO_M_GDS             C
+         WHERE 1=1 
+		   AND A.BZPL_C            = B.BZPL_C   
+           AND A.CORP_C            = B.CORP_C   
+           AND A.DNTT_DT           = B.DNTT_DT  
+           AND A.DNTT_SQNO         = B.DNTT_SQNO
+		   AND B.BZPL_C            = C.BZPL_C    
+		   AND B.CORP_C            = C.CORP_C    
+           AND B.GDS_C             = C.GDS_C 
+		   AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.DNTT_DT BETWEEN #{ST_DT} AND #{ED_DT}
+        <if test="GDS_C != '' and GDS_C != null" >
+           AND B.GDS_C             = #{GDS_C}
+        </if>
+        <if test="DEL_YN != '' and DEL_YN != null" >
+           AND A.DEL_YN            = #{DEL_YN}
+        </if>
+        <if test="MFC_DSC != '' and MFC_DSC != null" >
+           AND A.MFC_DSC           = #{MFC_DSC}
+        </if>
+        <if test="p_RPT_DSC == 1 " >
+           AND A.MFC_WK_STS_C IN ('01','02','03','04','05')
+        </if>
+    </select>
+
+</mapper>

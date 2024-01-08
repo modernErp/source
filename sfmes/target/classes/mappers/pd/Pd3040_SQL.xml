@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.pd">
+
+    <!-- 원가계산전 정합성 체크  -->
+    <select id="pd3040_ValidChk" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ pd3040_ValidChk */
+	          CASE WHEN 1 <= (SELECT COUNT(1) 
+	                            FROM TB_CP_D_MM_ACC_BAC 
+	                           WHERE CORP_C             = #{CORP_C}
+	                             AND BZPL_C             = #{BZPL_C}
+	                             AND PCS_CLC_YM         = #{PCS_CLC_YM}) THEN #{PCS_CLC_YM} +' 월에 등록된 노무비/제조경비 내역이 있습니다.'
+	               WHEN 1 <= (SELECT SUM(ACG_ACC_BAC)
+	                            FROM TB_CP_D_MM_ACC_BAC 
+	                           WHERE CORP_C             = #{CORP_C}
+	                             AND BZPL_C             = #{BZPL_C}
+	                             AND PCS_CLC_YM         = #{PCS_CLC_YM}
+	                             AND MFC_ACC_DSC        = '1' ) THEN #{PCS_CLC_YM} +' 월에 등록된 노무비합계 금액이 없습니다.'
+	               WHEN 1 <= (SELECT SUM(ACG_ACC_BAC)
+	                            FROM TB_CP_D_MM_ACC_BAC 
+	                           WHERE CORP_C             = #{CORP_C}
+	                             AND BZPL_C             = #{BZPL_C}
+	                             AND PCS_CLC_YM         = #{PCS_CLC_YM}
+	                             AND MFC_ACC_DSC        = '2' ) THEN #{PCS_CLC_YM} +' 월에 등록된 제조경비합계 금액이 없습니다.'
+	               WHEN 1 <= (SELECT COUNT(1) 
+	                            FROM TB_CP_M_PCS
+	                           WHERE 1=1
+	                             AND (PCS_CLC_ST_DT BETWEEN #{PCS_CLC_ST_DT} AND #{PCS_CLC_ED_DT}  OR  PCS_CLC_ED_DT BETWEEN #{PCS_CLC_ST_DT} AND #{PCS_CLC_ED_DT})
+	                             AND DEL_YN = 'N'  ) THEN '원가계산 시작일 ~ 종료일이 이미 등록된 내역이 있습니다. 원가계산 취소후 계산 가능합니다.'  
+	               ELSE 'OK' 
+	          END AS RESULT_MSG
+        ]]>
+    </select>
+
+    <!-- 배부차액계산전 정합성 체크  -->
+    <select id="pd3040_ValidChk_After" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+        SELECT /*+ pd3040_ValidChk_After */
+	          CASE WHEN 0  <> (SELECT MAX(A.TOT_LBR_CST_AM) - SUM(B.LBR_CST_AM)
+	                              FROM TB_CP_M_PCS    A
+				                     , TB_CP_D_PCS    B
+		                         WHERE A.CORP_C       = B.CORP_C
+		                           AND A.BZPL_C       = B.BZPL_C
+		                           AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		                           AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+                                   AND A.CORP_C       = #{CORP_C}
+                                   AND A.BZPL_C       = #{BZPL_C}
+                                   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}  
+		                        GROUP BY  A.CORP_C
+		                                , A.BZPL_C
+		    		                    , A.PCS_CLC_DT
+			    	                    , A.PCS_CLC_SQNO    ) THEN  '총노무비금액과 품목별 노무비 합계가 다릅니다.'	
+					WHEN 0  <> (SELECT MAX(A.TOT_MFT_XPN_AM) - SUM(B.MFT_XPN_AM)
+	                              FROM TB_CP_M_PCS    A
+				                     , TB_CP_D_PCS    B
+		                         WHERE A.CORP_C       = B.CORP_C
+		                           AND A.BZPL_C       = B.BZPL_C
+		                           AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		                           AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+                                   AND A.CORP_C       = #{CORP_C}
+                                   AND A.BZPL_C       = #{BZPL_C}
+                                   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+                                   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}  
+		                        GROUP BY  A.CORP_C
+		                                , A.BZPL_C
+		    		                    , A.PCS_CLC_DT
+			    	                    , A.PCS_CLC_SQNO    ) THEN  '총제조경비금액과 품목별 제조경비 합계가 다릅니다.'	
+			    	ELSE 'OK' 
+	          END AS RESULT_MSG
+        ]]>
+    </select>
+
+    <!-- 원가계산상세 조회 -->
+    <select id="select_pd3040List02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_pd3040List02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_DT                                        /* 원가계산일자              */
+             , A.PCS_CLC_SQNO                                      /* 원가계산일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , C.GDS_TP_DSC                                        /* 물품유형구분코드          */
+             , C.GDS_DTL_NM                                        /* 물품명상세     */
+             , C.GDS_STD_NM                                        /* 규격                      */
+             , C.UNT_C                                             /* 단위              */
+             , A.LBR_WK_HR                                         /* 노무작업시간              */
+             , A.PD_QT                                             /* 생산수량                  */
+             , A.PD_AM                                             /* 생산금액                  */
+             , A.PLA_PCS                                           /* 예정원가                  */
+             , A.ACTL_PCS_UPR                                      /* 실제원가단가              */
+             , A.MTR_CST_AM                                        /* 재료비금액                */
+             , A.LBR_CST_RT                                        /* 노무비비율               */
+             , A.LBR_CST_AM                                        /* 노무비금액                */
+             , A.MFT_XPN_RT                                        /* 제조경비비율             */
+             , A.MFT_XPN_AM                                        /* 제조경비금액              */
+             , A.PCS_CLC_AM                                        /* 원가계산금액(적수전)      */
+             , A.LBRCS_DSBN_RTO                                    /* 노무비배부비율(적수)      */
+             , A.MFT_XPN_DSBN_RTO                                  /* 제조경비배부비율(적수)    */
+             , A.BF_LBR_CST_AM                                     /* 전공정_노무비금액         */
+             , A.BF_MFT_XPN_AM                                     /* 전공정_제조경비금액       */
+             , A.ACTL_PCS_AM                                       /* 실제원가금액              */
+             , A.DSBN_DAM                                          /* 배부차액금액              */
+             , A.DSBN_OBJ_SL_QT                                    /* 배부차액대상매출수량      */
+             , A.DSBN_OBJ_SL_PCS                                   /* 배부차액대상매출원가      */
+             , A.DSBN_ARG_SL_PCS                                   /* 배부차액정리매출원가      */
+             , A.DSBN_OBJ_SM_QT                                    /* 배부차액대상재고수량      */
+             , A.DSBN_OBJ_SM_AM                                    /* 배부차액대상재고금액      */
+             , A.DSBN_ARG_SM_AM                                    /* 배부차액정리재고금액      */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+          FROM TB_CP_D_PCS        A
+	    	 , TB_CO_M_GDS        C
+         WHERE 1=1 
+           AND A.CORP_C            = C.CORP_C
+           AND A.BZPL_C            = C.BZPL_C
+           AND A.GDS_C             = C.GDS_C
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PCS_CLC_DT        = #{PCS_CLC_DT}
+           AND A.PCS_CLC_SQNO      = #{PCS_CLC_SQNO}
+    </select>
+           
+           
+    <!-- 원가계산 팝업 조회 -->
+    <select id="select_pd3040List04" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_pd3040List04 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_DT                                        /* 원가계산일자           */
+             , A.PCS_CLC_SQNO                                      /* 원가계산일련번호        */
+             , A.PCS_CLC_ST_DT                                     /* 원가계산시작일자 */
+             , A.PCS_CLC_ED_DT                                     /* 원가계산종료일자 */
+             , A.DEL_YN                                            /* 삭제여부                 */
+             , A.PCS_CLC_STSC                                      /* 원가계산상태코드      */
+             , (SELECT COUNT(1) 
+                  FROM TB_CP_D_PCS  X
+                 WHERE X.CORP_C       = A.CORP_C
+                   AND X.BZPL_C       = A.BZPL_C
+                   AND X.PCS_CLC_DT   = A.PCS_CLC_DT
+                   AND X.PCS_CLC_SQNO = A.PCS_CLC_SQNO  )  AS PD_CNT    /* 원가상세 품목건수 */             
+             , A.TOT_PD_AM                                         /* 총생산금액             */
+             , A.TOT_PTIN_AM                                       /* 총투입금액(재료비)   */
+             , A.TOT_LBR_CST_AM                                    /* 총노무비금액              */
+             , A.TOT_MFT_XPN_AM                                    /* 총제조경비금액       */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_CP_M_PCS   A    /* 원가계산기본 */
+         WHERE 1=1
+           AND A.CORP_C              = #{CORP_C}
+	       AND A.BZPL_C              = #{BZPL_C}
+	       AND A.PCS_CLC_DT BETWEEN #{ST_DT} AND #{ED_DT}
+	       AND ((A.PCS_CLC_STSC IN ('1','2','3','4') AND '1'= #{POPUP_DSC}) OR    /* 1.원가계산화면 */ 
+	            (A.PCS_CLC_STSC IN ('2','3','4')     AND A.DEL_YN = 'N' AND '2'= #{POPUP_DSC}))      /* 2.배부차액정리화면 */
+    </select>
+
+    <!-- 원가계정잔액 입력 -->
+    <insert id="insert_pd3040_01" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_pd3040_01 */ TB_CP_M_PCS_ACC_BAC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , ACG_ACC_C           /* 회계계정코드         */
+            , ACG_ACC_BAC         /* 회계계정잔액         */
+            , MFC_ACC_DSC         /* 제조계정구분코드     */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC             /* 기타구분             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT
+              CORP_C
+            , BZPL_C
+            , #{PCS_CLC_DT}
+            , #{PCS_CLC_SQNO}
+            , ACG_ACC_C
+            , SUM(ACG_ACC_BAC)  AS ACG_ACC_BAC   /* 회계계정잔액 */
+            , MFC_ACC_DSC
+            , ''
+            , ''
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+         FROM TB_CP_D_MM_ACC_BAC      /* 원가_월별계정잔액 */
+        WHERE CORP_C     = #{CORP_C}
+          AND BZPL_C     = #{BZPL_C}  
+          AND PCS_CLC_YM BETWEEN #{PCS_CLC_ST_YM} AND #{PCS_CLC_ED_YM}
+        GROUP BY CORP_C
+               , BZPL_C
+               , PCS_CLC_YM
+               , ACG_ACC_C
+               , MFC_ACC_DSC
+    </insert>
+    
+    <!-- 원가투입상세 입력 -->
+    <insert id="insert_pd3040_02" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_pd3040_02 */ TB_CP_D_PCS_PTIN
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , GDS_C               /* 물품코드             */
+            , PTIN_GDS_C          /* 투입물품코드         */
+            , PTIN_QT             /* 투입수량             */
+            , PTIN_AM             /* 투입금액             */
+            , ETC_DSC             /* 기타구분             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID    */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID    */
+        )
+        SELECT A.CORP_C
+             , A.BZPL_C
+             , #{PCS_CLC_DT}
+             , #{PCS_CLC_SQNO}
+             , C.GDS_C                               /* 생산물품 */
+             , B.GDS_C              AS PTIN_GDS_C    /* 투입물품 */
+             , SUM(B.MTRL_PTIN_QT)  AS PTIN_QT
+             , SUM(B.PTIN_AM)       AS PTIN_AM
+             , ''
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM TB_PD_M_WK_RPT        A   /* 작업보고 기본 */
+             , TB_PD_D_WK_RPT_MTRL   B   /* 작업보고 투입상세 */
+             , TB_PD_D_WK_RPT_MFS    c   /* 작어보고 생산상세 */
+         WHERE A.CORP_C   = B.CORP_C
+           AND A.BZPL_C   = B.BZPL_C
+           AND A.RPT_DT   = B.RPT_DT
+           AND A.RPT_SQNO = B.RPT_SQNO
+           and A.CORP_C   = C.CORP_C
+           AND A.BZPL_C   = C.BZPL_C
+           AND A.RPT_DT   = C.RPT_DT
+           AND A.RPT_SQNO = C.RPT_SQNO           
+           AND A.DEL_YN   = 'N'
+           AND B.DEL_YN   = 'N'
+           AND C.DEL_YN   = 'N'
+           AND A.ACG_DT   BETWEEN #{PCS_CLC_ST_DT} AND #{PCS_CLC_ED_DT}  
+        GROUP BY A.CORP_C
+               , A.BZPL_C
+               , C.GDS_C
+               , B.GDS_C
+    </insert>
+
+    <!-- 원가생산상세 입력 -->
+    <insert id="insert_pd3040_03" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_pd3040_03 */ TB_CP_D_PCS_PD
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호    */
+            , GDS_C               /* 물품코드             */
+            , PD_QT               /* 생산_수량            */
+            , PD_UPR              /* 생산_단가            */
+            , PD_AM               /* 생산_금액            */
+            , LS_PTIN_OFR_YN      /* 최종투입제공여부    */
+            , ETC_DSC             /* 기타구분             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID    */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID    */
+        )
+        SELECT A.CORP_C
+             , A.BZPL_C
+             , #{PCS_CLC_DT}
+             , #{PCS_CLC_SQNO}
+             , C.GDS_C                            /* 생산물품 */
+             , SUM(C.PD_QT)    AS PD_QT
+             , ROUND(SUM(C.PD_AM) / SUM(C.PD_QT),2)    AS PD_UPR 
+             , SUM(C.PD_AM)    AS PD_AM
+             , 'N'           
+             , ''
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM TB_PD_M_WK_RPT        A   /* 작업보고 기본 */
+             , TB_PD_D_WK_RPT_MFS    c   /* 작어보고 생산상세 */
+         WHERE A.CORP_C   = C.CORP_C
+           AND A.BZPL_C   = C.BZPL_C
+           AND A.RPT_DT   = C.RPT_DT
+           AND A.RPT_SQNO = C.RPT_SQNO           
+           AND A.DEL_YN   = 'N'
+           AND C.DEL_YN   = 'N'
+           AND A.CORP_C   = #{CORP_C}
+           AND A.BZPL_C   = #{BZPL_C}
+           AND A.ACG_DT   BETWEEN #{PCS_CLC_ST_DT} AND #{PCS_CLC_ED_DT}  
+        GROUP BY A.CORP_C
+               , A.BZPL_C
+               , C.GDS_C
+    </insert>
+    
+    <!-- 원가기본 입력 -->
+    <insert id="insert_pd3040_05" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_pd3040_05 */ TB_CP_M_PCS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , PCS_CLC_ST_DT       /* 원가계산시작일자     */
+            , PCS_CLC_ED_DT       /* 원가계산종료일자     */
+            , LBRCS_DSBN_BASCD    /* 노무비배부기준코드   */
+            , MFT_XPN_DSBN_BASCD  /* 제조경비배부기준코드 */
+            , OORD_MFCS           /* 외주가공비           */
+            , TOT_LBR_CST_AM      /* 총노무비금액         */
+            , TOT_MFT_XPN_AM      /* 총제조경비금액       */
+            , TOT_LBR_WK_HR       /* 총노무작업시간       */
+            , TOT_CONV_WT         /* 총환산중량       */
+            , TOT_PTIN_AM         /* 총투입금액           */
+            , TOT_PD_AM           /* 총생산금액           */
+            , TOT_LBRCS_DSBN_CAM  /* 총노무비배부적수     */
+            , TOT_MFT_XPN_DSBN_CAM/* 총제조경비배부적수   */
+            , PCS_CLC_STSC        /* 원가계산상태코드     */
+            , DSBN_ARG_DT         /* 배부차액정리일자     */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호         */
+            , DEL_YN              /* 삭제여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT #{CORP_C}
+             , #{BZPL_C}
+             , #{PCS_CLC_DT}
+             , #{PCS_CLC_SQNO}
+             , #{PCS_CLC_ST_DT}
+             , #{PCS_CLC_ED_DT}
+             , #{LBRCS_DSBN_BASCD}
+             , #{MFT_XPN_DSBN_BASCD}
+             , 0      /* 외주가공비 */
+             , (SELECT ISNULL(SUM(ACG_ACC_BAC),0)
+                  FROM TB_CP_M_PCS_ACC_BAC   /* 원가_월별계정잔액 */
+                 WHERE CORP_C       = #{CORP_C}
+                   AND BZPL_C       = #{BZPL_C}
+                   AND PCS_CLC_DT   = #{PCS_CLC_DT}
+                   AND PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+                   AND MFC_ACC_DSC = '1'      /* 1.노무비 */
+                )     /* 종노무비금액 */ 
+             , (SELECT ISNULL(SUM(ACG_ACC_BAC),0)  
+                  FROM TB_CP_M_PCS_ACC_BAC   /* 원가_월별계정잔액 */
+                 WHERE CORP_C       = #{CORP_C}
+                   AND BZPL_C       = #{BZPL_C}
+                   AND PCS_CLC_DT   = #{PCS_CLC_DT}
+                   AND PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+                   AND MFC_ACC_DSC = '2'     /* 2.제조경비 */ 
+                )     /* 총제조경비금액 */ 
+             , 0      /* 총노무작업시간 */
+             , 0      /* 총환산중량     */
+             , (SELECT ISNULL(SUM(PTIN_AM),0)  
+                  FROM TB_CP_D_PCS_PTIN   /* 원가_투입내역집계 */
+                 WHERE CORP_C       = #{CORP_C}
+                   AND BZPL_C       = #{BZPL_C}
+                   AND PCS_CLC_DT   = #{PCS_CLC_DT}
+                   AND PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+                )     /* 총투입금액 */
+             , (SELECT ISNULL(SUM(PD_AM),0)  
+                  FROM TB_CP_D_PCS_PD   /* 원가_생산내역집계 */
+                 WHERE CORP_C       = #{CORP_C}
+                   AND BZPL_C       = #{BZPL_C}
+                   AND PCS_CLC_DT   = #{PCS_CLC_DT}
+                   AND PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+                )     /* 총생산금액 */
+             , 100    /* 노무비배부적수 */
+             , 100    /* 제조경비배부적수 */
+             , '1'    /* 원가계산상태코드 1.원가계산 */   
+             , ''     /* 배부차액정리일자 */
+             , ''     /* 거래업무구분코드 */
+             , 0      /* 거래일련번호 */
+             , 'N'    /* 삭제여부 */
+             , ''     /* 비고내용 */   
+             , ''
+             , ''
+             , ''
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+    </insert>
+    
+    <!-- 원가상세 입력 -->
+    <insert id="insert_pd3040_06" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_pd3040_06 */ TB_CP_D_PCS
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_DT          /* 원가계산일자         */
+            , PCS_CLC_SQNO        /* 원가계산일련번호     */
+            , GDS_C               /* 물품코드             */
+            , LBR_WK_HR           /* 노무작업시간         */
+            , PD_QT               /* 생산수량             */
+            , PD_AM               /* 생산금액             */
+            , PLA_PCS             /* 예정원가             */
+            , ACTL_PCS_UPR        /* 실제원가단가         */
+            , MTR_CST_AM          /* 재료비금액           */
+            , LBR_CST_RT          /* 노무비비율          */
+            , LBR_CST_AM          /* 노무비금액           */
+            , MFT_XPN_RT          /* 제조경비비율        */
+            , MFT_XPN_AM          /* 제조경비금액         */
+            , PCS_CLC_AM          /* 원가계산금액(적수전) */
+            , LBRCS_DSBN_RTO      /* 노무비배부비율(적수) */
+            , MFT_XPN_DSBN_RTO    /* 제조경비배부비율(적  */
+            , BF_LBR_CST_AM       /* 전공정_노무비금액    */
+            , BF_MFT_XPN_AM       /* 전공정_제조경비금액  */
+            , ACTL_PCS_AM         /* 실제원가금액         */
+            , DSBN_DAM            /* 배부차액금액         */
+            , DSBN_OBJ_SL_QT      /* 배부차액대상매출수량 */
+            , DSBN_OBJ_SL_PCS     /* 배부차액대상매출원가 */
+            , DSBN_ARG_SL_PCS     /* 배부차액정리매출원가 */
+            , DSBN_OBJ_SM_QT      /* 배부차액대상재고수량 */
+            , DSBN_OBJ_SM_AM      /* 배부차액대상재고금액 */
+            , DSBN_ARG_SM_AM      /* 배부차액정리재고금액 */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT A.CORP_C
+             , A.BZPL_C
+             , A.PCS_CLC_DT
+             , A.PCS_CLC_SQNO
+             , A.GDS_C
+             , 0       /* 노무작업시간 */
+             , A.PD_QT
+             , A.PD_AM
+             , 0      /* 예정원가 */        
+             , 0      /* 실제원가단가         */
+             , SUM(B.PTIN_AM)       /* 재료비금액           */
+             , 0      /* 노무비비율           */
+             , 0      /* 노무비금액           */
+             , 0      /* 제조경비비율         */
+             , 0      /* 제조경비금액         */
+             , 0      /* 원가계산금액(적수전) */
+             , 100    /* 노무비배부비율(적수) */
+             , 100    /* 제조경비배부비율(적  */
+             , 0      /* 전공정_노무비금액    */
+             , 0      /* 전공정_제조경비금액  */
+             , 0      /* 실제원가금액         */
+             , 0      /* 배부차액금액         */
+             , 0      /* 배부차액대상매출수량 */
+             , 0      /* 배부차액대상매출원가 */
+             , 0      /* 배부차액정리매출원가 */
+             , 0      /* 배부차액대상재고수량 */
+             , 0      /* 배부차액대상재고금액 */
+             , 0      /* 배부차액정리재고금액 */
+             , ''
+             , ''
+             , ''
+             , GETDATE()
+             , #{GUSRID}
+             , GETDATE()
+             , #{GUSRID}
+          FROM TB_CP_D_PCS_PD     A   /* 원가_생산상세 */
+             , TB_CP_D_PCS_PTIN   B   /* 원가_투입상세  */
+         WHERE 1=1
+           AND A.CORP_C       = B.CORP_C
+           AND A.BZPL_C       = B.BZPL_C
+           AND A.PCS_CLC_DT   = B.PCS_CLC_DT 
+           AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+           AND A.GDS_C        = B.GDS_C 
+           AND A.CORP_C       = #{CORP_C}
+           AND A.BZPL_C       = #{BZPL_C}
+           AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+           AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+        GROUP BY A.CORP_C
+               , A.BZPL_C
+               , A.PCS_CLC_DT
+               , A.PCS_CLC_SQNO
+               , A.GDS_C
+               , A.PD_QT
+               , A.PD_AM
+    </insert>
+    
+    <!-- 원가계산 확정 -->
+    <update id="update_pd3040_01" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3040_01 */ TB_CP_M_PCS
+           SET PCS_CLC_STSC        = '2'                      /* 원가계산상태 2.원가계산확정       */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+
+    <!-- 원가계산 취소 -->
+    <update id="update_pd3040_02" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3040_02 */ TB_CP_M_PCS
+           SET DEL_YN              = 'Y'                      /* 삭제여부             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+    
+    <!-- 원가계산 노무비 제조경비 산정 상세내역 수정  -->
+    <update id="update_pd3040_03" parameterType="LinkedHashMap">
+        MERGE  /*+ update_pd3040_03 */ INTO TB_CP_D_PCS   A
+        USING (
+			  SELECT CORP_C
+			       , BZPL_C
+			   	   , PCS_CLC_DT
+				   , PCS_CLC_SQNO
+				   , GDS_C
+				   , LBR_CST_RT
+				   , MFT_XPN_RT
+				   , ROUND(TOT_LBR_CST_AM * LBR_CST_RT,0)   AS LBR_CST_AM
+				   , ROUND(TOT_MFT_XPN_AM * MFT_XPN_RT,0)   AS MFT_XPN_AM
+			   FROM (
+					SELECT A.CORP_C
+					     , A.BZPL_C
+					   	 , A.PCS_CLC_DT
+						 , A.PCS_CLC_SQNO
+						 , B.GDS_C
+						 , CASE WHEN  LBRCS_DSBN_BASCD = '01' THEN  ROUND(B.MTR_CST_AM / A.TOT_PTIN_AM, 6)     /* 01.가공재료비   재료비총액 비율 */ 
+						        WHEN  LBRCS_DSBN_BASCD = '02' THEN  ROUND(B.MTR_CST_AM / A.TOT_CONV_WT, 6)     /* 02.환산중량     총환산중량 비율 */ 
+						        WHEN  LBRCS_DSBN_BASCD = '03' THEN  ROUND(B.MTR_CST_AM / A.TOT_LBR_WK_HR, 6)   /* 02.노무시간     총노무시간 비율 */ 
+				   		        ELSE  0
+						   END 	AS LBR_CST_RT   /* 노무비비율 */
+						 , CASE WHEN  MFT_XPN_DSBN_BASCD = '01' THEN  ROUND(B.MTR_CST_AM / A.TOT_PTIN_AM, 6)     /* 01.가공재료비   재료비총액 비율 */ 
+						        WHEN  MFT_XPN_DSBN_BASCD = '02' THEN  ROUND(B.MTR_CST_AM / A.TOT_CONV_WT, 6)     /* 02.환산중량     총환산중량 비율 */ 
+							    ELSE  0
+						   END 	AS MFT_XPN_RT   /* 제조경비비율 */  
+						 , A.TOT_LBR_CST_AM  
+						 , A.TOT_MFT_XPN_AM
+					  FROM TB_CP_M_PCS  A
+					     , TB_CP_D_PCS  B
+				 	 WHERE A.CORP_C       = B.CORP_C
+					   AND A.BZPL_C       = B.BZPL_C
+					   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+					   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+					   AND A.CORP_C       = #{CORP_C}
+					   AND A.BZPL_C       = #{BZPL_C}
+					   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+					   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+			        )  A
+			   )  B      
+			 ON (  A.CORP_C       = B.CORP_C
+			   AND A.BZPL_C       = B.BZPL_C
+			   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+			   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+			   AND A.GDS_C        = B.GDS_C       )
+			WHEN MATCHED THEN
+			UPDATE
+			SET A.LBR_CST_RT  = B.LBR_CST_RT
+			  , A.MFT_XPN_RT  = B.MFT_XPN_RT
+			  , A.LBR_CST_AM  = B.LBR_CST_AM
+			  , A.MFT_XPN_AM  = B.MFT_XPN_AM
+		;	  
+    </update>
+
+    <!-- 원가상세 노무비금액 수정  -->
+    <!-- 원가기본 총노무비금액과 원가상세 노무비금액 합계에 차이금액을 계산하여 가장큰 노무비금액에 수정 계산 Update  -->
+    <update id="update_pd3040_04" parameterType="LinkedHashMap">
+		WITH CHA_AM AS
+		    (
+			SELECT  A.CORP_C
+			      , A.BZPL_C
+				  , A.PCS_CLC_DT
+				  , A.PCS_CLC_SQNO
+			      , MAX(A.TOT_LBR_CST_AM) - SUM(B.LBR_CST_AM)  AS CHA_LBR_CST_AM   /* 원기가본 총노무비금액과 원가상세 노무비금액합계의 차이금액 */
+			      , MAX(A.TOT_MFT_XPN_AM) - SUM(B.MFT_XPN_AM)  AS CHA_MFT_XPN_AM   /* 원기가본 총제조경비금액과 원가상세 제조경비금액합계의 차이금액 */
+				  , MAX(B.LBR_CST_AM)  AS MAX_LBR_CST_AM     /* 원가상세 노무비금액중 가장큰 금액 */
+				  , MAX(B.MFT_XPN_AM)  AS MAX_MFT_XPN_AM     /* 원가상세 제조경비금액중 가장큰 금액 */
+		      FROM TB_CP_M_PCS    A
+				 , TB_CP_D_PCS    B
+		     WHERE A.CORP_C       = B.CORP_C
+		       AND A.BZPL_C       = B.BZPL_C
+		       AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		       AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+			   AND A.CORP_C       = #{CORP_C}
+			   AND A.BZPL_C       = #{BZPL_C}
+			   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+			   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+		    GROUP BY  A.CORP_C
+		            , A.BZPL_C
+		    		, A.PCS_CLC_DT
+			    	, A.PCS_CLC_SQNO
+		     )
+		MERGE /*+ update_pd3040_04 */ INTO TB_CP_D_PCS A
+		USING (
+				SELECT  TOP 1
+				       A.CORP_C
+				     , A.BZPL_C
+					 , A.PCS_CLC_DT
+					 , A.PCS_CLC_SQNO     
+					 , A.GDS_C
+					 , A.LBR_CST_AM
+					 , B.CHA_LBR_CST_AM
+					 , A.LBR_CST_AM + B.CHA_LBR_CST_AM   AS NEW_LBR_CST_AM    /* 원노무비금액을 차감 계산하여 수정할금액 */
+				  FROM TB_CP_D_PCS    A
+				     , CHA_AM         B 
+				 WHERE A.CORP_C       = B.CORP_C
+				   AND A.BZPL_C       = B.BZPL_C
+				   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+				   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+				   AND A.LBR_CST_AM   = B.MAX_LBR_CST_AM
+				) B
+		  ON (    A.CORP_C        = B.CORP_C      
+			  AND A.BZPL_C        = B.BZPL_C      
+			  AND A.PCS_CLC_DT    = B.PCS_CLC_DT  
+		      AND A.PCS_CLC_SQNO  = B.PCS_CLC_SQNO 
+			  AND A.GDS_C         = B.GDS_C       
+			 )
+		WHEN MATCHED THEN
+		UPDATE
+		SET A.LBR_CST_AM = B.NEW_LBR_CST_AM   /* 원가상세 가장큰 금액에 차이금액 계산하여 맞줘줌 */		
+		;	      
+    </update>
+
+    <!-- 원가상세 제조경비금액 수정  -->
+    <!-- 원가기본 총ㅈ제조경비금액과 원가상세 제조경비금액 합계에 차이금액을 계산하여 가장큰 제조경비금액에 수정 계산 Update  -->
+    <update id="update_pd3040_05" parameterType="LinkedHashMap">
+		WITH CHA_AM AS
+		    (
+			SELECT  A.CORP_C
+			      , A.BZPL_C
+				  , A.PCS_CLC_DT
+				  , A.PCS_CLC_SQNO
+			      , MAX(A.TOT_LBR_CST_AM) - SUM(B.LBR_CST_AM)  AS CHA_LBR_CST_AM   /* 원기가본 총노무비금액과 원가상세 노무비금액합계의 차이금액 */
+			      , MAX(A.TOT_MFT_XPN_AM) - SUM(B.MFT_XPN_AM)  AS CHA_MFT_XPN_AM   /* 원기가본 총제조경비금액과 원가상세 제조경비금액합계의 차이금액 */
+				  , MAX(B.LBR_CST_AM)  AS MAX_LBR_CST_AM     /* 원가상세 노무비금액중 가장큰 금액 */
+				  , MAX(B.MFT_XPN_AM)  AS MAX_MFT_XPN_AM     /* 원가상세 제조경비금액중 가장큰 금액 */
+		      FROM TB_CP_M_PCS    A
+				 , TB_CP_D_PCS    B
+		     WHERE A.CORP_C       = B.CORP_C
+		       AND A.BZPL_C       = B.BZPL_C
+		       AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+		       AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+			   AND A.CORP_C       = #{CORP_C}
+			   AND A.BZPL_C       = #{BZPL_C}
+			   AND A.PCS_CLC_DT   = #{PCS_CLC_DT}
+			   AND A.PCS_CLC_SQNO = #{PCS_CLC_SQNO}
+		    GROUP BY  A.CORP_C
+		            , A.BZPL_C
+		    		, A.PCS_CLC_DT
+			    	, A.PCS_CLC_SQNO
+		     )
+		MERGE /*+ update_pd3040_05 */ INTO TB_CP_D_PCS A
+		USING (
+				SELECT  TOP 1
+				       A.CORP_C
+				     , A.BZPL_C
+					 , A.PCS_CLC_DT
+					 , A.PCS_CLC_SQNO     
+					 , A.GDS_C
+					 , A.MFT_XPN_AM
+					 , B.CHA_MFT_XPN_AM
+					 , A.MFT_XPN_AM + B.CHA_MFT_XPN_AM   AS NEW_MFT_XPN_AM    /* 원노무비금액을 차감 계산하여 수정할금액 */
+				  FROM TB_CP_D_PCS    A
+				     , CHA_AM         B 
+				 WHERE A.CORP_C       = B.CORP_C
+				   AND A.BZPL_C       = B.BZPL_C
+				   AND A.PCS_CLC_DT   = B.PCS_CLC_DT
+				   AND A.PCS_CLC_SQNO = B.PCS_CLC_SQNO
+				   AND A.MFT_XPN_AM   = B.MAX_MFT_XPN_AM
+			 ) B
+		  ON (    A.CORP_C        = B.CORP_C      
+			  AND A.BZPL_C        = B.BZPL_C      
+			  AND A.PCS_CLC_DT    = B.PCS_CLC_DT  
+		      AND A.PCS_CLC_SQNO  = B.PCS_CLC_SQNO 
+			  AND A.GDS_C         = B.GDS_C       
+			 )
+		WHEN MATCHED THEN
+		UPDATE
+		SET A.MFT_XPN_AM = B.NEW_MFT_XPN_AM   /* 원가상세 가장큰 금액에 차이금액 계산하여 맞줘줌 */		
+		;	      
+    </update>
+
+    <!-- 원가상세 실제원가, 실제단가, 배부차액금액 수정  -->
+    <update id="update_pd3040_06" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3040_06 */ TB_CP_D_PCS
+           SET 
+               ACTL_PCS_AM         = MTR_CST_AM + LBR_CST_AM + MFT_XPN_AM                      /* 실제원가금액  = 재료비금액 + 노무비금액 + 제조경비금액    */
+             , PCS_CLC_AM          = MTR_CST_AM + LBR_CST_AM + MFT_XPN_AM                      /* 원가계산금액(적수전)  = 재료비금액 + 노무비금액 + 제조경비금액    */
+             , ACTL_PCS_UPR        = ROUND((MTR_CST_AM + LBR_CST_AM + MFT_XPN_AM) / PD_QT,2)   /* 실제원가단가 = 실제원가금액 / 생산수량 */
+             , PLA_PCS             = ROUND((CASE WHEN PLA_PCS = 0 THEN PD_AM / PD_QT
+                                                 ELSE PLA_PCS
+                                            END ),2)                                           /* 예정원가 없으면 = 생산금액 / 수량 */     
+             , DSBN_DAM            = (MTR_CST_AM + LBR_CST_AM + MFT_XPN_AM) - PD_AM            /* 배부차액금액  = 실제원가금액 - 생산금액        */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+
+    <!-- 원가기본 수정 -->
+    <update id="update_pd3040_11" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3040_11 */ TB_CP_M_PCS
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PCS_CLC_DT          = #{PCS_CLC_DT}            /* 원가계산일자         */
+             , PCS_CLC_SQNO        = #{PCS_CLC_SQNO}          /* 원가계산일련번호     */
+             , PCS_CLC_ST_DT       = #{PCS_CLC_ST_DT}         /* 원가계산시작일자     */
+             , PCS_CLC_ED_DT       = #{PCS_CLC_ED_DT}         /* 원가계산종료일자     */
+             , LBRCS_DSBN_BASCD    = #{LBRCS_DSBN_BASCD}      /* 노무비배부기준코드   */
+             , MFT_XPN_DSBN_BASCD  = #{MFT_XPN_DSBN_BASCD}    /* 제조경비배부기준코드 */
+             , OORD_MFCS           = #{OORD_MFCS}             /* 외주가공비           */
+             , TOT_LBR_CST_AM      = #{TOT_LBR_CST_AM}        /* 총노무비금액         */
+             , TOT_MFT_XPN_AM      = #{TOT_MFT_XPN_AM}        /* 총제조경비금액       */
+             , TOT_LBR_WK_HR       = #{TOT_LBR_WK_HR}         /* 총노무작업시간       */
+             , TOT_CONV_WT         = #{TOT_CONV_WT}           /* 총환산중량          */
+             , TOT_PTIN_AM         = #{TOT_PTIN_AM}           /* 총투입금액           */
+             , TOT_PD_AM           = #{TOT_PD_AM}             /* 총생산금액           */
+             , TOT_LBRCS_DSBN_CAM  = #{TOT_LBRCS_DSBN_CAM}    /* 총노무비배부적수     */
+             , TOT_MFT_XPN_DSBN_CAM= #{TOT_MFT_XPN_DSBN_CAM}  /* 총제조경비배부적수   */
+             , PCS_CLC_STSC        = #{PCS_CLC_STSC}          /* 원가계산상태코드     */
+             , DSBN_ARG_DT         = #{DSBN_ARG_DT}           /* 배부차액정리일자     */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+
+    <!-- 원가상세 수정 -->
+    <update id="update_pd3040_12" parameterType="LinkedHashMap">
+        UPDATE /*+ update_pd3040_12 */ TB_CP_D_PCS
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , PCS_CLC_DT          = #{PCS_CLC_DT}            /* 원가계산일자         */
+             , PCS_CLC_SQNO        = #{PCS_CLC_SQNO}          /* 원가계산일련번호     */
+             , GDS_C               = #{GDS_C}                 /* 물품코드             */
+             , LBR_WK_HR           = #{LBR_WK_HR}             /* 노무작업시간         */
+             , PD_QT               = #{PD_QT}                 /* 생산수량             */
+             , PD_AM               = #{PD_AM}                 /* 생산금액             */
+             , PLA_PCS             = #{PLA_PCS}               /* 예정원가             */
+             , ACTL_PCS_UPR        = #{ACTL_PCS_UPR}          /* 실제원가단가         */
+             , MTR_CST_AM          = #{MTR_CST_AM}            /* 재료비금액           */
+             , LBR_CST_RT          = #{LBR_CST_RT}            /* 노무비비율           */
+             , LBR_CST_AM          = #{LBR_CST_AM}            /* 노무비금액           */
+             , MFT_XPN_RT          = #{MFT_XPN_RT}            /* 제조경비비율         */
+             , MFT_XPN_AM          = #{MFT_XPN_AM}            /* 제조경비금액         */
+             , PCS_CLC_AM          = #{PCS_CLC_AM}           /* 원가계산금액(적수전) */
+             , LBRCS_DSBN_RTO      = #{LBRCS_DSBN_RTO}        /* 노무비배부비율(적수) */
+             , MFT_XPN_DSBN_RTO    = #{MFT_XPN_DSBN_RTO}      /* 제조경비배부비율(적  */
+             , BF_LBR_CST_AM       = #{BF_LBR_CST_AM}         /* 전공정_노무비금액    */
+             , BF_MFT_XPN_AM       = #{BF_MFT_XPN_AM}         /* 전공정_제조경비금액  */
+             , ACTL_PCS_AM         = #{ACTL_PCS_AM}           /* 실제원가금액         */
+             , DSBN_DAM            = #{DSBN_DAM}              /* 배부차액금액         */
+             , DSBN_OBJ_SL_QT      = #{DSBN_OBJ_SL_QT}        /* 배부차액대상매출수량 */
+             , DSBN_OBJ_SL_PCS     = #{DSBN_OBJ_SL_PCS}       /* 배부차액대상매출원가 */
+             , DSBN_ARG_SL_PCS     = #{DSBN_ARG_SL_PCS}       /* 배부차액정리매출원가 */
+             , DSBN_OBJ_SM_QT      = #{DSBN_OBJ_SM_QT}        /* 배부차액대상재고수량 */
+             , DSBN_OBJ_SM_AM      = #{DSBN_OBJ_SM_AM}        /* 배부차액대상재고금액 */
+             , DSBN_ARG_SM_AM      = #{DSBN_ARG_SM_AM}        /* 배부차액정리재고금액 */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND GDS_C               = #{GDS_C}
+           AND PCS_CLC_DT          = #{PCS_CLC_DT}
+           AND PCS_CLC_SQNO        = #{PCS_CLC_SQNO}
+    </update>
+
+
+</mapper>

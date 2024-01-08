@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.co">
+
+    <select id="selectCo0000Gvno" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_GET_GVNO (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{GVNO_TBL_ID, mode=IN, jdbcType=VARCHAR},
+        #{BZPL_C, mode=IN, jdbcType=VARCHAR},
+        #{GVNO_DT, mode=IN, jdbcType=VARCHAR},
+        #{GVNO_LEN, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_GVNO_NO, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <select id="selectCo0000TrGvno" statementType="CALLABLE" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+    { call SP_GET_TR_GVNO (
+        #{CORP_C, mode=IN, jdbcType=VARCHAR},
+        #{GVNO_LEN, mode=IN, jdbcType=VARCHAR},
+        #{OUT_RESULT_YN, mode=OUT, jdbcType=VARCHAR},
+        #{OUT_TRGVNO_NO, mode=OUT, jdbcType=VARCHAR}
+        )
+    }
+    </select>
+    
+    <select id="selectCo0000Cvs_Qt" parameterType="LinkedHashMap" resultType="DOUBLE">
+    SELECT 
+           dbo.RTN_CVS_QT(
+            #{BAS_UNT_C},
+            #{CAL_UNT_C},
+            ${UNT_QT},
+            ${DOT_POINT}
+           ) AS CVS_QT 
+      FROM DUAL
+    </select>  
+    
+    <!-- 환산기준 정보 조회 -->
+    <select id="selectUnitConversionTable" resultType="LinkedHashMap">
+        SELECT /*+ selectUnitConversionTable */
+               A.BAS_UNT_C                                         /* 기준단위코드              */
+             , A.CAL_UNT_C                                         /* 계산단위코드              */
+             , A.UNT_CVS_QT                                        /* 단위환산수량              */
+             , A.WNMTP_CVS_BAS_C                                   /* 도량형환산기준코드        */
+             , A.BAS_UNT_CNM2                                      /* 기준단위한글명            */
+             , A.CAL_UNT_CNM2                                      /* 계산단위한글명            */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+          FROM TB_CO_M_GDS_WNMTP A
+    </select>  
+    
+    <!-- 마감상태 체크 -->
+    <select id="selectDdlCheck" parameterType="LinkedHashMap"  resultType="String">
+		SELECT /*+ selectDdlCheck */
+		       CASE 
+                    WHEN ISNULL(#{CORP_C},'') = '' THEN '회사코드는 필수 입력항목입니다.전산 담당자에게 문의하세요'
+                    WHEN ISNULL(#{BZPL_C},'') = '' THEN '사업장코드는 필수 입력항목입니다.전산 담당자에게 문의하세요'
+                    WHEN ISNULL(#{TR_DSC},'') = '' THEN '업무구분코드는 필수 입력항목입니다.전산 담당자에게 문의하세요'
+                    WHEN ISNULL(#{ACG_DT} ,'') = '' THEN '회계일자는 필수 입력항목입니다.전산 담당자에게 문의하세요'		            
+		            WHEN #{TR_DSC} = 'BY' AND 'Y' = ISNULL(MAX(BY_DDL_YN),'N') THEN #{ACG_DT} + '일자 매입마감 상태입니다.매입 마감 취소 또는 확인 후 다시 처리하세요'
+		            WHEN #{TR_DSC} = 'PD' AND 'Y' = ISNULL(MAX(PD_DDL_YN),'N') THEN #{ACG_DT} + '일자 생산마감 상태입니다.생산 마감 취소 또는 확인 후 다시 처리하세요'
+		            WHEN #{TR_DSC} = 'SE' AND 'Y' = ISNULL(MAX(SE_DDL_YN),'N') THEN #{ACG_DT} + '일자 매출마감 상태입니다.매출 마감 취소 또는 확인 후 다시 처리하세요'
+		            WHEN 'Y' = ISNULL(MAX(ED_DDL_YN),'N') THEN #{ACG_DT} + '일자 최종마감 상태입니다.최종 마감 취소 또는 확인 후 다시 처리하세요'
+		            ELSE 'OK' END RESULT_MSG
+		  FROM TB_DL_M_DAY_DDL
+		 WHERE CORP_C = #{CORP_C}
+		   AND BZPL_C = #{BZPL_C}
+		   AND DDL_DT = #{ACG_DT} 
+    </select>  
+
+    <!-- 마감여부 체크 전 null check -->
+    <select id="selectDdlYn_valid" parameterType="LinkedHashMap"  resultType="String">
+        SELECT /*+ selectDdlYn_valid */
+               CASE WHEN ISNULL(#{CORP_C}, '') = ''  THEN '회사코드는 필수 입력항목입니다.'
+                    WHEN ISNULL(#{BZPL_C}, '') = ''  THEN '사업장코드는 필수 입력항목입니다.'
+                    WHEN ISNULL(#{BAS_DT}, '') = ''  THEN '기준일자는 필수 입력항목입니다.'
+                    WHEN ISNULL(#{BSN_DSC}, '') = '' THEN '업무구분코드는 필수 입력항목입니다.'
+                    ELSE 'OK' END RESULT_MSG
+          FROM DUAL
+    </select>  
+
+    <!-- 마감상태 체크 -->
+    <select id="selectDdlYn" parameterType="LinkedHashMap"  resultType="String">
+        SELECT /*+ selectDdlCheck */
+               DBO.SF_GET_DDL_YN(#{CORP_C}, #{BZPL_C}, #{BAS_DT}, #{BSN_DSC}) AS DDL_YN 
+          FROM DUAL
+    </select>  
+
+</mapper>

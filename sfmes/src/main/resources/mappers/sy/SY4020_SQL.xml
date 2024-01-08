@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+
+    <!-- 시스템오류이력 조회 -->
+    <select id="selectSy4020ErrList" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy4020ErrList */
+               A.CORP_C                                          /* 회사코드     */
+             , A.ERR_SQNO                                        /* 에러일련번호 */
+             , (CASE SUBSTRING(A.LOG_DSC_NM,4, 6) WHEN 'Select' THEN
+                     '조회(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Insert' THEN
+                     '신규(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Update' THEN
+                     '수정(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Delete' THEN
+                     '삭제(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Save'   THEN
+                     '신규/수정/삭제(' + A.LOG_DSC_NM + ')' 
+                END) AS LOG_DSC_NM                               /* 로그구분명   */
+             , CONVERT(CHAR(23), A.ERR_DTM, 20)  AS   ERR_DTM    /* 에러발생일시 */
+             , A.USR_ID                                          /* 사용자아이디 */
+              , (
+                 SELECT X.USR_NM
+                   FROM TB_SY_M_USR X
+                   WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.USR_ID
+               ) AS USR_NM                                       /* 사용자명     */
+             , A.CONN_IP                                         /* 접속IP       */
+             , A.PGM_ID                                          /* 프로그램ID   */
+              , (
+                 SELECT Y.PGM_NM
+                   FROM TB_SY_M_PGID Y
+                  WHERE Y.CORP_C = A.CORP_C
+                    AND Y.PGM_ID = A.PGM_ID
+               ) AS PGM_NM                                       /* 프로그램명   */
+             , A.CLASS_NM                                        /* 클래스명     */
+             , A.METHOD_NM                                       /* 메쏘드명     */
+             , A.SRC_FILE_NM                                     /* 소스파일명   */
+             , A.LINE_NO                                         /* 소스라인NO   */
+             , CONVERT(NVARCHAR(1000), A.ERR_MSG) AS ERR_MSG     /* 에러메세지   */      
+             , A.FSRG_DTM                                        /* 최초등록일시 */  
+             , A.FSRG_ID                                         /* 최초등록자ID */ 
+             , A.LSCHG_DTM                                       /* 최종변경일시 */  
+             , A.LSCHG_ID                                        /* 최종변경자ID */
+          FROM TB_SY_L_ERR_LOG A   
+         WHERE 1 = 1
+           AND A.CORP_C    = #{CORP_C}
+        <if test='SEARCH_USE_DSC != null and SEARCH_USE_DSC != ""'>
+           AND A.LOG_DSC_NM  = #{SEARCH_USE_DSC}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == 0">
+                    AND A.CLASS_NM + A.METHOD_NM       LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 1">
+                    AND A.CLASS_NM                     LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2">
+                    AND A.METHOD_NM                    LIKE '%' + #{searchKeyword} + '%'
+                </when>
+            </choose>
+        </if>
+        <if test='SEARCH_ID != null and SEARCH_ID != ""'>
+            AND A.USR_ID      = #{SEARCH_ID}
+        </if>
+        <if test='ST_DT != null and ST_DT != ""'>
+            AND CONVERT(CHAR(8), A.ERR_DTM, 112)  <![CDATA[>=]]> #{ST_DT}
+        </if>
+        <if test='ED_DT != null and ED_DT != ""'>
+            AND CONVERT(CHAR(8), A.ERR_DTM, 112)  <![CDATA[<=]]> #{ED_DT}
+        </if>
+    </select>
+    
+    <!-- 시스템오류이력상세 조회 -->
+    <select id="selectSy4020ErrDetail" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy4020ErrDetail */
+               A.CORP_C                                          /* 회사코드     */
+             , A.ERR_SQNO                                        /* 에러일련번호 */
+             , (CASE SUBSTRING(A.LOG_DSC_NM,4, 6) WHEN 'Select' THEN
+                     '조회(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Insert' THEN
+                     '신규(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Update' THEN
+                     '수정(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Delete' THEN
+                     '삭제(' + A.LOG_DSC_NM + ')' 
+                WHEN 'Save'   THEN
+                     '신규/수정/삭제(' + A.LOG_DSC_NM + ')' 
+                END) AS LOG_DSC_NM                               /* 로그구분명   */
+             , CONVERT(CHAR(23), A.ERR_DTM, 20)  AS   ERR_DTM    /* 에러발생일시 */
+             , A.USR_ID                                          /* 사용자아이디 */
+              , (
+                 SELECT X.USR_NM
+                   FROM TB_SY_M_USR X
+                   WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.USR_ID
+               ) AS USR_NM                                       /* 사용자명     */
+             , A.CONN_IP                                         /* 접속IP       */
+             , A.PGM_ID                                          /* 프로그램ID   */
+              , (
+                 SELECT Y.PGM_NM
+                   FROM TB_SY_M_PGID Y
+                  WHERE Y.CORP_C = A.CORP_C
+                    AND Y.PGM_ID = A.PGM_ID
+               ) AS PGM_NM                                       /* 프로그램명   */
+             , A.CLASS_NM                                        /* 클래스명     */
+             , A.METHOD_NM                                       /* 메쏘드명     */
+             , A.SRC_FILE_NM                                     /* 소스파일명   */
+             , A.LINE_NO                                         /* 소스라인NO   */
+             , CONVERT(NVARCHAR(4000), A.ERR_MSG) AS ERR_MSG     /* 에러메세지   */
+             , A.FSRG_DTM                                        /* 최초등록일시 */  
+             , A.FSRG_ID                                         /* 최초등록자ID */ 
+             , A.LSCHG_DTM                                       /* 최종변경일시 */  
+             , A.LSCHG_ID                                        /* 최종변경자ID */
+          FROM TB_SY_L_ERR_LOG A  
+         WHERE 1 = 1
+           AND A.CORP_C    = #{CORP_C}
+           AND A.ERR_SQNO  = #{ERR_SQNO}
+    </select>
+</mapper>

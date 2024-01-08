@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_WK_DNTT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_WK_DNTT */ TB_PD_M_WK_DNTT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , DNTT_DT             /* 지시일자             */
+            , DNTT_SQNO           /* 지시일련번호         */
+            , PRW_C               /* BOM(공정)코드(육가공) */
+            , BPRW_PRW_C          /* 전공정BOM코드(육가공) */
+            , MFC_DSC             /* 가공구분코드         */
+            , PRT_LBL_C           /* 인쇄라벨코드        */
+            , PRT_LBL_SQNO        /* 인쇄라벨번호        */
+            , PD_PLA_DT           /* 생산시작일자         */
+            , DNTT_METH_C         /* 지시방법코드         */
+            , MFC_WK_STS_C        /* 가공작업상태코드(육가공)  */
+            , RVO_CLO_DT          /* 수주마감일자         */
+            , RVO_CLO_SQNO        /* 수주마감일련번호(차  */
+            , ETR_MFC_RC_DT       /* 수탁위탁가공접수일자 */
+            , ETR_MFC_RC_SQNO     /* 수탁위탁가공접수일련 */
+            , PLN_YY              /* 생산계획년           */
+            , PLN_MM              /* 생산계획월           */
+            , PLN_WEEK            /* 생산계획주           */
+            , PD_LINE_C           /* 생산라인코드(육가공) */
+            , DANI_PD_C           /* 주야생산코드         */
+            , DNTT_CNTN           /* 작업지시내용         */
+            , RMK_CNTN            /* 비고내용             */
+            , TR_BSN_DSC          /* 거래업무구분코드     */
+            , TR_SQNO             /* 거래일련번호(육가공) */
+            , DEL_YN              /* 삭제여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{DNTT_DT}
+            , #{DNTT_SQNO}
+            , #{PRW_C}
+            , #{BPRW_PRW_C}
+            , #{MFC_DSC}
+            , #{PRT_LBL_C}
+            , DBO.SF_GET_NUMERIC(#{PRT_LBL_SQNO})
+            , #{PD_PLA_DT}
+            , #{DNTT_METH_C}
+            , #{MFC_WK_STS_C}
+            , #{RVO_CLO_DT}
+            , DBO.SF_GET_NUMERIC(#{RVO_CLO_SQNO})
+            , #{ETR_MFC_RC_DT}
+            , DBO.SF_GET_NUMERIC(#{ETR_MFC_RC_SQNO})
+            , #{PLN_YY}
+            , #{PLN_MM}
+            , #{PLN_WEEK}
+            , #{PD_LINE_C}
+            , #{DANI_PD_C}
+            , #{DNTT_CNTN}
+            , #{RMK_CNTN}
+            , #{TR_BSN_DSC}
+            , DBO.SF_GET_NUMERIC(#{TR_SQNO})
+            , 'N'
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_WK_DNTT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_WK_DNTT */ TB_PD_M_WK_DNTT
+           SET 
+               PRW_C               = #{PRW_C}                 /* BOM(공정)코드(육가공 */
+             , BPRW_PRW_C          = #{BPRW_PRW_C}            /* 전공정BOM코드(육가공 */
+             , MFC_DSC             = #{MFC_DSC}               /* 가공구분코드         */
+             , PD_PLA_DT           = #{PD_PLA_DT}             /* 생산시작일자         */
+             , DNTT_METH_C         = #{DNTT_METH_C}           /* 지시방법코드         */
+             , PRT_LBL_C           = #{PRT_LBL_C}             /* 인쇄라벨코드         */
+             , PRT_LBL_SQNO        = #{PRT_LBL_SQNO}          /* 인쇄라벨번호         */
+             , MFC_WK_STS_C        = #{MFC_WK_STS_C}          /* 가공작업상태코드(육  */
+             , RVO_CLO_DT          = #{RVO_CLO_DT}            /* 수주마감일자         */
+             , RVO_CLO_SQNO        = #{RVO_CLO_SQNO}          /* 수주마감일련번호(차  */
+             , ETR_MFC_RC_DT       = #{ETR_MFC_RC_DT}         /* 수탁위탁가공접수일자 */
+             , ETR_MFC_RC_SQNO     = #{ETR_MFC_RC_SQNO}       /* 수탁위탁가공접수일련 */
+             , PLN_YY              = #{PLN_YY}                /* 생산계획년           */
+             , PLN_MM              = #{PLN_MM}                /* 생산계획월           */
+             , PLN_WEEK            = #{PLN_WEEK}              /* 생산계획주           */
+             , PD_LINE_C           = #{PD_LINE_C}             /* 생산라인코드(육가공) */
+             , DANI_PD_C           = #{DANI_PD_C}             /* 주야생산코드         */
+             , DNTT_CNTN           = #{DNTT_CNTN}             /* 작업지시내용         */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호(육가공) */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+    </update>
+
+    <delete id="delete_TB_PD_M_WK_DNTT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_WK_DNTT */ FROM TB_PD_M_WK_DNTT
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND BZPL_C              = #{BZPL_C}
+           AND DNTT_DT             = #{DNTT_DT}
+           AND DNTT_SQNO           = #{DNTT_SQNO}
+    </delete>
+
+    <select id="select_TB_PD_M_WK_DNTT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_WK_DNTT */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.DNTT_DT                                           /* 지시일자                  */
+             , A.DNTT_SQNO                                         /* 지시일련번호              */
+             , A.PRW_C                                             /* BOM(공정)코드(육가공)     */
+             , A.BPRW_PRW_C                                        /* 전공정BOM코드(육가공)     */
+             , A.MFC_DSC                                           /* 가공구분코드              */
+             , A.PRT_LBL_C                                         /* 인쇄라벨코드              */
+             , A.PRT_LBL_SQNO                                      /* 인쇄라벨번호              */
+             , A.PD_PLA_DT                                         /* 생산시작일자              */
+             , A.DNTT_METH_C                                       /* 지시방법코드              */
+             , A.MFC_WK_STS_C                                      /* 가공작업상태코드(육가공)  */
+             , A.RVO_CLO_DT                                        /* 수주마감일자              */
+             , A.RVO_CLO_SQNO                                      /* 수주마감일련번호(차수)    */
+             , A.ETR_MFC_RC_DT                                     /* 수탁위탁가공접수일자      */
+             , A.ETR_MFC_RC_SQNO                                   /* 수탁위탁가공접수일련번호  */
+             , A.PLN_YY                                            /* 생산계획년                */
+             , A.PLN_MM                                            /* 생산계획월                */
+             , A.PLN_WEEK                                          /* 생산계획주                */
+             , A.PD_LINE_C                                         /* 생산라인코드(육가공)      */
+             , A.DANI_PD_C                                         /* 주야생산코드              */
+             , A.DNTT_CNTN                                         /* 작업지시내용              */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드          */
+             , A.TR_SQNO                                           /* 거래일련번호(육가공)      */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , A.ETC_DSC2                                          /* 기타구분2                 */
+             , A.ETC_DSC3                                          /* 기타구분3                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_WK_DNTT A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.DNTT_DT           = #{DNTT_DT}
+           AND A.DNTT_SQNO         = #{DNTT_SQNO}
+    </select>
+</mapper>

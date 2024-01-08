@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_DL_L_ACG" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_DL_L_ACG */ TB_DL_L_ACG
+        (
+              CORP_C              /* 회사코드             */
+            , HST_SQNO            /* 이력일련번호         */
+            , ACG_ACC_C           /* 회계계정코드         */
+            , ACG_ACC_NM          /* 회계계정코드명       */
+            , ACC_TPC             /* 계정유형코드         */
+            , ACG_ACC_DSC         /* 회계계정구분코드     */
+            , BGT_DSC             /* 예산구분코드         */
+            , BAC_AMN_DSC         /* 잔액관리코드         */
+            , DB_CR_DSC           /* 차대변구분코드       */
+            , UP_ACC_C            /* 상위계정코드         */
+            , FILP_ACC_YN         /* 기표계정여부         */
+            , OFS_YN              /* 상계여부             */
+            , PCS_FCTR_C          /* 원가요소구분코드         */
+            , MFC_ACC_DSC         /* 제조계정구분코드     */
+            , USE_YN              /* 사용여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            ,  (SELECT ISNULL(MAX(HST_SQNO),0)+1 
+                FROM TB_DL_L_ACG
+               WHERE 1 = 1
+                 AND CORP_C    = #{CORP_C})
+            , #{ACG_ACC_C}
+            , #{ACG_ACC_NM}
+            , #{ACC_TPC}
+            , #{ACG_ACC_DSC}
+            , #{BGT_DSC}
+            , #{BAC_AMN_DSC}
+            , #{DB_CR_DSC}
+            , #{UP_ACC_C}
+            , #{FILP_ACC_YN}
+            , #{OFS_YN}
+            , #{PCS_FCTR_C}
+            , #{MFC_ACC_DSC}
+            , #{USE_YN}
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_DL_L_ACG " parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_DL_L_ACG  */ TB_DL_L_ACG 
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , HST_SQNO            = #{HST_SQNO}              /* 이력일련번호         */
+             , ACG_ACC_C           = #{ACG_ACC_C}             /* 회계계정코드         */
+             , ACG_ACC_NM          = #{ACG_ACC_NM}            /* 회계계정코드명       */
+             , ACC_TPC             = #{ACC_TPC}               /* 계정유형코드         */
+             , ACG_ACC_DSC         = #{ACG_ACC_DSC}           /* 회계계정구분코드     */
+             , BGT_DSC             = #{BGT_DSC}               /* 예산구분코드         */
+             , BAC_AMN_DSC         = #{BAC_AMN_DSC}           /* 잔액관리코드         */
+             , DB_CR_DSC           = #{DB_CR_DSC}             /* 차대변구분코드       */
+             , UP_ACC_C            = #{UP_ACC_C}              /* 상위계정코드         */
+             , FILP_ACC_YN         = #{FILP_ACC_YN}           /* 기표계정여부         */
+             , OFS_YN              = #{OFS_YN}                /* 상계여부             */
+             , PCS_FCTR_C          = #{PCS_FCTR_C}            /* 원가요소구분코드         */
+             , MFC_ACC_DSC         = #{MFC_ACC_DSC}           /* 제조계정구분코드     */
+             , USE_YN              = #{USE_YN}                /* 사용여부             */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </update>
+
+    <delete id="delete_TB_DL_L_ACG " parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_DL_L_ACG  */ FROM TB_DL_L_ACG 
+         WHERE 1=1 
+           AND CORP_C              = #{CORP_C}
+           AND HST_SQNO            = #{HST_SQNO}
+    </delete>
+
+    <select id="select_TB_DL_L_ACG " parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_DL_L_ACG  */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.HST_SQNO                                          /* 이력일련번호              */
+             , A.ACG_ACC_C                                         /* 회계계정코드              */
+             , A.ACG_ACC_NM                                        /* 회계계정코드명            */
+             , A.ACC_TPC                                           /* 계정유형코드              */
+             , A.ACG_ACC_DSC                                       /* 회계계정구분코드          */
+             , A.BGT_DSC                                           /* 예산구분코드              */
+             , A.BAC_AMN_DSC                                       /* 잔액관리코드              */
+             , A.DB_CR_DSC                                         /* 차대변구분코드            */
+             , A.UP_ACC_C                                          /* 상위계정코드              */
+             , A.FILP_ACC_YN                                       /* 기표계정여부              */
+             , A.OFS_YN                                            /* 상계여부                  */
+             , A.PCS_FCTR_C                                        /* 원가요소구분코드         */
+             , A.MFC_ACC_DSC                                       /* 제조계정구분코드     */
+             , A.USE_YN                                            /* 사용여부                  */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.ETC_DSC1                                          /* 기타구분1                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_DL_L_ACG  A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.HST_SQNO          = #{HST_SQNO}
+    </select>
+</mapper>

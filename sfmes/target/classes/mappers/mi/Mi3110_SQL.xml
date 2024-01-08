@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.mi">
+
+    <!-- 전년대비매입실적 -->
+    <select id="selectMi3110_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+	SELECT /*+ selectMi3110_01 */
+	       A.CORP_C                                                                    /* 회사코드           */
+	     , A.BZPL_C                                                                    /* 사업장코드         */
+	     , B.BZPL_NM                                                                   /* 사업장명           */
+	     , A.TY_BY_QT                                                                  /* 당년매입수량       */
+	     , A.LY_BY_QT                                                                  /* 전년매입수량       */
+	     , CASE WHEN A.LY_BY_QT = 0 THEN 0
+	            ELSE                     ((A.TY_BY_QT-A.LY_BY_QT)/A.LY_BY_QT)*100
+	       END  AS INDRT                                                               /* 전년대비증감율     */
+	     , A.TM_BY_QT                                                                  /* 당월매입수량       */
+	     , A.LM_BY_QT                                                                  /* 전년동월매입수량   */
+	     , CASE WHEN A.LM_BY_QT = 0 THEN 0
+	            ELSE                     ((A.TM_BY_QT-A.LM_BY_QT)/A.LM_BY_QT)*100
+	       END AS INDRT2                                                               /* 전년동월대비증감율 */    
+	   <if test='VAT_YN == "Y"'>
+	     , A.TY_BY_AM                                                                  /* 당년매입금액       */
+	     , A.LY_BY_AM                                                                  /* 전년매입금액       */
+	     , CASE WHEN A.LY_BY_AM = 0 THEN 0
+	            ELSE                     ((A.TY_BY_AM-A.LY_BY_AM)/A.LY_BY_AM)*100
+	       END AS INDRT3                                                               /* 전년대비증감율     */
+	     , A.TM_BY_AM                                                                  /* 당월매입금액       */    
+	     , A.LM_BY_AM                                                                  /* 전년동월매입금액   */
+	     , CASE WHEN A.LM_BY_AM = 0 THEN 0
+	            ELSE                     ((A.TM_BY_AM-A.LM_BY_AM)/A.LM_BY_AM)*100
+	       END AS INDRT4                                                               /* 전년동월대비증감율 */
+	   </if>
+	   <if test='VAT_YN == "N"'>
+	     , A.TY_SPY_AM AS TY_BY_AM                                                     /* 당년매입금액       */
+	     , A.LY_SPY_AM AS LY_BY_AM                                                     /* 전년매입금액       */
+	     , CASE WHEN A.LY_SPY_AM = 0 THEN 0
+	            ELSE                      ((A.TY_SPY_AM-A.LY_SPY_AM)/A.LY_SPY_AM)*100
+	       END AS INDRT3                                                               /* 전년대비증감율     */
+	     , A.TM_SPY_AM AS TM_BY_AM                                                     /* 당월매입금액       */
+	     , A.LM_SPY_AM AS LM_BY_AM                                                     /* 전년동월매입금액   */
+	     , CASE WHEN A.LM_SPY_AM = 0 THEN 0
+	            ELSE                      ((A.TM_SPY_AM-A.LM_SPY_AM)/A.LM_SPY_AM)*100
+	       END AS INDRT4                                                               /* 전년동월대비증감율 */
+	   </if>
+	  FROM (
+	        SELECT 
+	               A.CORP_C
+	             , A.BZPL_C
+	             , SUM(A.TY_BY_QT)  AS TY_BY_QT
+	             , SUM(A.LY_BY_QT)  AS LY_BY_QT
+	             , SUM(A.TM_BY_QT)  AS TM_BY_QT
+	             , SUM(A.LM_BY_QT)  AS LM_BY_QT
+	             , SUM(A.TY_SPY_AM) AS TY_SPY_AM
+	             , SUM(A.TY_BY_AM)  AS TY_BY_AM
+	             , SUM(A.LY_SPY_AM) AS LY_SPY_AM
+	             , SUM(A.LY_BY_AM)  AS LY_BY_AM
+	             , SUM(A.TM_SPY_AM) AS TM_SPY_AM
+	             , SUM(A.TM_BY_AM)  AS TM_BY_AM
+	             , SUM(A.LM_SPY_AM) AS LM_SPY_AM
+	             , SUM(A.LM_BY_AM)  AS LM_BY_AM
+	          FROM (
+	                SELECT 
+	                       A.CORP_C                                                                         
+	                     , A.BZPL_C                                                                          
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.BY_QT)  AS TY_BY_QT                                                  
+	                     , 0                   AS LY_BY_QT                                                  
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                     ELSE                           -1
+	                                                                                END * B.BY_QT)
+	                                ELSE                                           0
+	                           END)            AS TM_BY_QT                                                  
+	                     , 0                   AS LM_BY_QT                                                  
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.SPY_AM) AS TY_SPY_AM                  
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.BY_AM)  AS TY_BY_AM                                                  
+	                     , 0                   AS LY_SPY_AM
+	                     , 0                   AS LY_BY_AM                                                  
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                     ELSE                           -1
+	                                                                                END * B.SPY_AM)
+	                                ELSE                                           0
+	                            END)          AS TM_SPY_AM
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                     ELSE                           -1
+	                                                                                END * B.BY_AM)
+	                                ELSE                                           0
+	                            END)          AS TM_BY_AM                                                                
+	                     , 0                  AS LM_SPY_AM
+	                     , 0                  AS LM_BY_AM                                                   
+	                  FROM TB_BY_M_BUY      A
+	                 INNER JOIN TB_BY_D_BUY B
+	                    ON A.CORP_C     = B.CORP_C
+	                   AND A.BZPL_C     = B.BZPL_C
+	                   AND A.BY_DT      = B.BY_DT
+	                   AND A.BY_SQNO    = B.BY_SQNO
+	                 WHERE 1=1
+	                   AND A.CORP_C     = #{CORP_C}
+                       AND A.SLP_NML_YN = 'Y'	                   
+	                   AND A.ACG_DT LIKE SUBSTRING(#{ACG_DT}, 1,4)+'%'  
+	                 GROUP BY A.CORP_C, A.BZPL_C   
+	                UNION
+	                SELECT 
+	                       A.CORP_C
+	                     , A.BZPL_C
+	                     , 0                  AS TY_BY_QT
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.BY_QT) AS LY_BY_QT               
+	                     , 0                  AS TM_BY_QT
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{L_ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                       ELSE                           -1
+	                                                                                  END * B.BY_QT) 
+	                                ELSE                                             0
+	                           END)           AS LM_BY_QT    
+	                     , 0                  AS TY_SPY_AM
+	                     , 0                  AS TY_BY_AM
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.SPY_AM) AS LY_SPY_AM                  
+	                     , SUM(CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                ELSE                           -1
+	                           END * B.BY_AM) AS LY_BY_AM                  
+	                     , 0                  AS TM_SPY_AM
+	                     , 0                  AS TM_BY_AM
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{L_ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                       ELSE                           -1
+	                                                                                  END * B.SPY_AM) 
+	                                ELSE                                             0
+	                           END)           AS LM_BY_AM                  
+	                     , SUM(CASE WHEN SUBSTRING(A.ACG_DT, 1,6) = #{L_ACG_DT} THEN (CASE WHEN A.TR_BSN_DSC = 'BY10' THEN 1
+	                                                                                       ELSE                           -1
+	                                                                                  END * B.BY_AM) 
+	                                ELSE                                             0
+	                           END)           AS LM_BY_AM                  
+	                  FROM TB_BY_M_BUY      A
+	                 INNER JOIN TB_BY_D_BUY B
+	                    ON A.CORP_C  = B.CORP_C
+	                   AND A.BZPL_C  = B.BZPL_C
+	                   AND A.BY_DT   = B.BY_DT
+	                   AND A.BY_SQNO = B.BY_SQNO
+	                 WHERE 1=1
+	                   AND A.CORP_C     = #{CORP_C}
+	                   AND A.SLP_NML_YN = 'Y'
+	                   AND A.ACG_DT LIKE CONVERT(VARCHAR, SUBSTRING(#{ACG_DT}, 1,4) -1)+'%'
+	                 GROUP BY A.CORP_C, A.BZPL_C
+	               ) A
+	         GROUP BY A.CORP_C, A.BZPL_C
+	       )                       A
+	  LEFT OUTER JOIN TB_CO_M_BZPL B
+	    ON A.CORP_C = B.CORP_C
+	   AND A.BZPL_C = B.BZPL_C
+	 WHERE 1 = 1
+	   AND A.CORP_C = #{CORP_C}
+	 <if test="searchKeyword != null and searchKeyword != ''">
+	   AND A.BZPL_C IN (${searchKeyword})
+	 </if>
+    </select>    
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">
+
+<!--=====================================================================================
+    매입반품 기본 조회
+    =====================================================================================-->
+    <select id="selectBy3020_01" parameterType="LinkedHashMap" resultType="String">
+        
+    </select>
+
+<!--=====================================================================================
+    매입반품 상세 조회
+    =====================================================================================-->
+    <select id="selectBy3020_02" parameterType="LinkedHashMap" resultType="String">
+        
+    </select>
+    
+<!--=====================================================================================
+    매입반품 상세 조회
+    =====================================================================================-->
+    <select id="selectBy3020_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+		 SELECT /*+ selectBy3020_03 */
+		       A.CORP_C                                                          /* 회사코드             */
+		     , A.BZPL_C                                                          /* 사업장코드           */
+		     , A.STDV_DT                                                         /* 입출고일자           */
+		     , A.STDV_SQNO                                                       /* 입출고일련번호       */
+		     , A.STDV_DSC                                                        /* 입출고구분코드       */
+		     , A.STDV_DSQNO                                                      /* 입출고상세일련번호   */
+		     , A.GDS_C                                                           /* 물품코드             */
+		     , B.GDS_DTL_NM                                                      /* 물품명규격           */
+		     , B.GDS_STD_NM                                                      /* 물품규격             */
+		     , B.GDS_NM                                                          /* 물품명               */
+		     , ISNULL(B.OEM_YN, 'N')                             AS OEM_YN       /* OEM여부              */
+		     , ISNULL(A.UNT_C, B.UNT_C)                          AS UNT_C        /* 관리단위             */
+		     , A.STDV_QT                                         AS TR_BY_QT     /* 입출고수량           */
+		     , A.STDV_BOX_QT                                     AS BY_BOX_QT    /* 입출고박스수량       */
+		     , A.TR_UNT_C                                                        /* 거래단위코드         */
+		     , A.SPY_AM                                                          /* 공급금액             */
+		     , A.VAT                                                             /* 부가세               */
+		     , A.STDV_AM                                         AS BY_AM        /* 입출고금액           */
+		     , A.WHSE_C                                                          /* 창고코드             */
+		     , A.STDV_UPR                                        AS BY_UPR       /* 입출고단가           */
+		     , DBO.SF_GET_WHSE_NM(A.CORP_C, A.BZPL_C, A.WHSE_C)  AS WHSE_NM      /* 창고명               */
+		     , B.DSTR_TER_AMN_YN                                                 /* 유통기한관리여부     */   
+		     , A.DSTR_TERDT                                                      /* 유통기한일자         */
+		     , A.HST_AMN_DSC                                                     /* 이력관리구분코드     */
+		     , A.GDS_HST_NO                                                      /* 물품이력번호         */
+		     , A.CONDU_NO                                                        /* 도체(지육)번호       */
+		     , A.TOTE_CODE                                                       /* TOTE_CODE            */
+		     , A.QT_WT_DSC                                                       /* 수(중)량형구분코드   */
+		     , A.WHT_QT                                                          /* 단량                 */
+		     , A.WHT_UNT_C                                                       /* 단량단위코드         */
+		     , A.STDV_WT                                                         /* 입출고중량           */
+		     , A.TXT_DSC                                                         /* 과세구분코드         */
+		     , A.RMK_CNTN                                                        /* 비고내용             */
+		     , A.DEL_YN                                                          /* 삭제여부             */
+		     , CONVERT(CHAR(23), A.FSRG_DTM, 20)                 AS FSRG_DTM     /* 최초등록일시         */
+		     , A.FSRG_ID                                                         /* 최초등록자ID         */
+		     , CONVERT(CHAR(23), A.LSCHG_DTM, 20)                AS LSCHG_DTM    /* 최종변경일시         */
+		     , A.LSCHG_ID                                                        /* 최종변경자ID         */
+		     , A.TR_STDV_QT
+		     , ISNULL(B.OEM_YN, 'N')                             AS OEM_YN
+		  FROM TB_SM_D_GDS_RL_STDV A     /* 재고_물품실재고입출고상세 */
+		  LEFT OUTER JOIN TB_CO_M_GDS B  /* 공통_물품기본             */
+		    ON A.CORP_C    = B.CORP_C 
+		   AND A.BZPL_C    = B.BZPL_C
+		   AND A.GDS_C     = B.GDS_C
+		 WHERE 1=1 
+		   AND A.CORP_C    = #{CORP_C}      
+		   AND A.BZPL_C    = #{BZPL_C}
+		   AND A.STDV_DT   = #{OGN_BY_DT}        
+		   AND A.STDV_DSC  = 'O'
+		   AND A.STDV_SQNO = #{OGN_BY_SQNO}
+		   AND A.DEL_YN    = 'N'       
+    </select>
+
+<!--=====================================================================================
+    VALIDATION_01 : BY3020 매입반품등록 / [4]입고반품(환출) 반품처리 NULL 체크
+    =====================================================================================-->
+    <select id="selectBy3020_valid01" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+
+    ]]>                  
+    </select>
+    
+<!--=====================================================================================
+    VALIDATION_02 : BY3020 매입반품등록 / [4]입고반품(환출) 유효성 체크
+    =====================================================================================-->
+    <select id="selectBy3020_valid02" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+
+    ]]>                           
+    </select>  
+    
+<!--=====================================================================================
+    VALIDATION_03 : 입고반품 사후체크
+    =====================================================================================-->
+    <select id="selectBy3020_valid03" parameterType="LinkedHashMap" resultType="String">
+        <![CDATA[
+
+        ]]> 
+    </select>
+</mapper>

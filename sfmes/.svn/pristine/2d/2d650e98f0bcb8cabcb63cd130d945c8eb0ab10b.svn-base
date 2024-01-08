@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.se">
+
+    <!-- 매출(덤)기본내역 사전 정합성 체크 -->
+    <select id="selectSe3040Valid" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[    
+     SELECT /*+ selectSe3040Valid */
+       CASE WHEN #{CORP_C} = '' THEN '회사코드는 필수 입력항목입니다.'
+            WHEN #{BZPL_C} = '' THEN '사업장코드는 필수 입력항목입니다.'
+            WHEN #{RLTR_DT} = '' THEN '출고일자는 필수 입력항목입니다.'
+            WHEN #{ACG_DT} = '' THEN '매출일자는 필수 입력항목입니다.'
+            WHEN #{TRPL_C} = '' THEN '거래처코드는 필수 입력항목입니다.'
+            WHEN #{ADJPL_C} = '' THEN '정산처코드는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{PRC_AM}) = 0 THEN '합계금액이 0원입니다. 합계금액을 확인하십시요.'
+            WHEN #{GUSRID} = '' THEN '사용자ID는 필수 입력항목입니다.'
+            ELSE 'OK' 
+        END AS RESULT_MSG 
+    ]]>                  
+    </select>
+    
+    <!-- 매출(덤)상세내역 사전 정합성 체크 -->
+    <select id="selectSe3040ValidDet" parameterType="LinkedHashMap" resultType="String">
+    <![CDATA[     
+     SELECT /*+ selectSe3040ValidDet */
+       CASE WHEN #{GDS_C} = '' THEN '물품코드는 필수 입력항목입니다.'
+            WHEN #{UNT_C} = '' THEN '관리단위코드는 필수 입력항목입니다.'
+            WHEN #{TR_UNT_C} = '' THEN '거래단위코드는 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{PRC_QT}) = 0 THEN '수(중)량은 필수 입력항목입니다.'
+            WHEN DBO.SF_GET_NUMERIC(#{PRC_UPR}) = 0 THEN '단가가 0원입니다. 단가를 확인하십시요.'
+            WHEN DBO.SF_GET_NUMERIC(#{SPY_AM}) = 0 THEN '공급가액이 0원입니다. 공급가액을 확인하십시요.'
+            WHEN (#{TXT_DSC} = '1' AND DBO.SF_GET_NUMERIC(#{VAT}) = 0) THEN '과세물품의 세액이 0원입니다. 세액을 확인하십시요.'
+            WHEN DBO.SF_GET_NUMERIC(#{PRC_AM}) = 0 THEN '합계금액이 0원입니다. 합계금액을 확인하십시요.'
+            WHEN #{WHSE_C} = '' THEN '창고코드는 필수 입력항목입니다.'
+            WHEN #{TXT_DSC} = '' THEN '과세구분코드는 필수 입력항목입니다.'
+            WHEN #{DEL_YN} NOT IN ('Y','N') THEN '삭제여부(Y,N)가 형식에 맞지 않습니다. 입력값 : ' + #{DEL_YN}
+            ELSE 'OK' 
+        END AS RESULT_MSG    
+    ]]>
+    </select>
+    
+    <!-- 매출(덤)기본내역 등록 시 중복체크 -->
+    <select id="selectSe3040Cnt" parameterType="LinkedHashMap" resultType="Integer">
+        SELECT /*+ selectSe3040Cnt */
+               COUNT(1)
+          FROM TB_SE_M_SL_DUM A
+         WHERE 1 = 1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PRC_DT            = #{SL_DT}
+           AND A.PRC_SQNO          = DBO.SF_GET_NUMERIC(#{PRC_SQNO})
+           AND A.SLP_NML_YN        = #{SLP_NML_YN}
+    </select>  
+
+    <!-- 매출(덤)기본내역조회 -->
+    <select id="selectSe3040_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe3040_01 */
+               A.CORP_C                                            /* 회사코드                 */
+             , A.BZPL_C                                            /* 사업장코드               */
+             , A.PRC_DT                                            /* 처리일자                 */
+             , A.PRC_SQNO                                          /* 처리일련번호             */
+             , A.SLP_NML_YN                                        /* 전표정상여부             */
+             , A.RLTR_DT                                           /* 실거래일자               */ 
+             , A.ACG_DT                                            /* 회계일자                 */   
+             , A.TRPL_C                                            /* 거래처코드               */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                 */
+             , A.ADJPL_C                                           /* 정산처코드               */   
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1=1
+                   AND CORP_C  = A.CORP_C
+                   AND ADJPL_C = A.ADJPL_C
+               ) AS ADJPL_NM                                       /* 정산처명                 */
+             , A.PRC_AM                                            /* 처리금액                 */
+             , A.SL_UPR_VAT_INCD_YN                                /* 매출단가부가세포함여부   */     
+             , A.RMK_CNTN                                          /* 비고내용                 */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시             */
+             , A.FSRG_ID                                           /* 최초등록자ID             */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시             */
+             , A.LSCHG_ID                                          /* 최종변경자ID             */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명             */
+          FROM TB_SE_M_SL_DUM A    
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PRC_DT            = #{PRC_DT}
+           AND A.PRC_SQNO          = #{PRC_SQNO}
+    </select>
+        
+    <!-- 매출(덤)상세내역조회 -->    
+    <select id="selectSe3040_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe3040_02 */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PRC_DT                                            /* 처리일자                  */
+             , A.PRC_SQNO                                          /* 처리일련번호              */
+             , A.PRC_DSQNO                                         /* 처리상세일련번호          */
+             , A.GDS_C                                             /* 물품코드                  */
+             , B.GDS_DTL_NM                                        /* 물품명                    */ 
+             , B.GDS_STD_NM                                        /* 물품규격                  */ 
+             , B.UNT_C                                             /* 물품관리단위              */             
+             , A.PRC_QT                                            /* 처리수량                  */
+             , A.PRC_BOX_QT                                        /* 처리박스수량              */
+             , A.TR_UNT_C                                          /* 거래단위코드              */
+             , A.PRC_UPR                                           /* 처리단가                  */
+             , A.SPY_AM                                            /* 공급금액                  */
+             , A.VAT                                               /* 부가세                    */
+             , A.PRC_AM                                            /* 처리금액                  */
+             , A.WHSE_C                                            /* 창고코드                  */
+             , (
+                SELECT WHSE_NM
+                  FROM TB_CO_M_WHSE
+                 WHERE 1 = 1
+                   AND CORP_C = A.CORP_C
+                   AND BZPL_C = A.BZPL_C
+                   AND WHSE_C = A.WHSE_C
+               ) AS WHSE_NM                                        /* 창고명                    */              
+             , A.DSTR_TERDT                                        /* 유통기한일자              */ 
+             , A.HST_AMN_DSC                                       /* 이력관리구분              */ 
+             , A.GDS_HST_NO                                        /* 물품이력번호              */ 
+             , A.QT_WT_DSC                                         /* 수(중)량형구분코드        */
+             , A.WHT_QT                                            /* 단량                      */
+             , A.WHT_UNT_C                                         /* 단량단위코드              */
+             , A.TXT_DSC                                           /* 과세구분코드              */     
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , A.DEL_YN                                            /* 삭제여부                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */ 
+          FROM TB_SE_D_SL_DUM         A
+          LEFT OUTER JOIN TB_CO_M_GDS B
+            ON A.CORP_C = B.CORP_C
+           AND A.BZPL_C = B.BZPL_C
+           AND A.GDS_C  = B.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}          
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.PRC_DT            = #{PRC_DT}
+           AND A.PRC_SQNO          = #{PRC_SQNO}
+           AND A.DEL_YN            = 'N'
+    </select>
+    
+    <!-- 매출(덤)내역찾기팝업조회 -->    
+    <select id="selectSe3040_03" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSe3040_03 */
+               A.CORP_C                                            /* 회사코드                 */
+             , A.BZPL_C                                            /* 사업장코드               */
+             , A.PRC_DT                                            /* 처리일자                 */
+             , A.PRC_SQNO                                          /* 처리일련번호             */
+             , A.SLP_NML_YN                                        /* 전표정상여부             */
+             , A.RLTR_DT                                           /* 실거래일자               */ 
+             , A.ACG_DT                                            /* 회계일자                 */   
+             , A.TRPL_C                                            /* 거래처코드               */
+             , (SELECT TRPL_NM 
+                  FROM TB_CO_M_TRPL 
+                 WHERE 1=1
+                   AND CORP_C = A.CORP_C 
+                   AND TRPL_C = A.TRPL_C
+               ) AS TRPL_NM                                        /* 거래처명                 */
+             , A.ADJPL_C                                           /* 정산처코드               */   
+             , (SELECT TRPL_NM
+                  FROM TB_CO_M_TRPL
+                 WHERE 1=1
+                   AND CORP_C  = A.CORP_C
+                   AND ADJPL_C = A.ADJPL_C
+               ) AS ADJPL_NM                                       /* 정산처명                 */
+             , A.PRC_AM                                            /* 처리금액                 */
+             , A.SL_UPR_VAT_INCD_YN                                /* 매출단가부가세포함여부   */   
+             , A.RMK_CNTN                                          /* 비고내용                 */ 
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시             */
+             , A.FSRG_ID                                           /* 최초등록자ID             */
+             , A.FSRG_ID AS FSRG_NM                                /* 최초등록자명             */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시             */
+             , A.LSCHG_ID                                          /* 최종변경자ID             */
+             , A.LSCHG_ID AS LSCHG_NM                              /* 최종변경자명             */
+          FROM TB_SE_M_SL_DUM A
+         WHERE 1=1
+           AND A.CORP_C      = #{CORP_C}
+           AND A.BZPL_C      = #{BZPL_C}
+           AND A.SLP_NML_YN  = #{SLP_NML_YN}                                                   
+      <choose>
+        <when test="DT_GUBUN == 1">            
+           AND A.PRC_DT BETWEEN #{ST_DT} AND #{ED_DT}                   
+        </when>
+        <when  test="DT_GUBUN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}         
+        </when>
+        <when  test="DT_GUBUN == 3">
+           AND A.ACG.DT BETWEEN #{ST_DT} AND #{ED_DT}         
+        </when>
+      </choose> 
+          <if test="TRPL_C != null and TRPL_C != ''">
+           AND A.TRPL_C      = #{TRPL_C}
+          </if> 
+    </select>   
+    
+</mapper>

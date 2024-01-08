@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_L_PRW_REC_PTIN" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_L_PRW_REC_PTIN */ TB_PD_L_PRW_REC_PTIN
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PRW_C               /* 공정코드             */
+            , SQNO                /* 일련번호             */
+            , HST_SQNO            /* 이력일련번호         */
+            , GDS_C               /* 물품코드             */
+            , PTIN_GDS_UNT_C      /* 물품단위코드         */
+            , PTIN_QT             /* 투입수량             */
+            , PTIN_WT             /* 투입중량             */
+            , LSTR                /* 손실율               */
+            , NED_WT              /* 소요량               */
+            , ACP_MTR_DSC         /* 인수재료구분코드     */
+            , RMK_CNTN            /* 비고내용(비고)       */
+            , USE_YN              /* 사용여부             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분3            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        SELECT
+               A.CORP_C                                            
+             , A.BZPL_C                                            
+             , A.PRW_C                                             
+             , A.SQNO       
+             , (SELECT ISNULL(MAX(HST_SQNO),0)+1
+			      FROM TB_PD_L_PRW_REC_PTIN
+			     WHERE 1=1
+			       AND BZPL_C = A.BZPL_C
+                   AND CORP_C = A.CORP_C
+                   AND PRW_C  = A.PRW_C
+				   AND SQNO   = A.SQNO)					 
+             , GDS_C                                             
+             , A.PTIN_GDS_UNT_C                                    
+             , A.PTIN_QT                                           
+             , A.PTIN_WT                                           
+             , A.LSTR                                              
+             , A.NED_WT                                            
+             , A.PD_YLD_OBJ_YN                                     
+             , A.RMK_CNTN                                          
+             , A.USE_YN                                            
+             , A.ETC_DSC1                                          
+             , A.ETC_DSC2                                          
+             , A.ETC_DSC3                                          
+             , A.FSRG_DTM    
+             , A.FSRG_ID                                           
+             , A.LSCHG_DTM   
+             , A.LSCHG_ID                                          
+          FROM TB_PD_D_PRW_REC_PTIN   A
+         WHERE 1=1 
+           AND BZPL_C            = #{BZPL_C}
+           AND CORP_C            = #{CORP_C}
+           AND PRW_C             = #{PRW_C}
+    </insert>
+</mapper>

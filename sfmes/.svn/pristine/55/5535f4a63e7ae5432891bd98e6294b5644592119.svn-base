@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.by">
+
+    <!-- 거래처별매입현황 -->
+    <select id="selectBy3110_01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy3110_01 */
+               MAX(A.TRPL_C)  AS TRPL_C                                 /* 거래처코드               */
+             , MAX(B.TRPL_NM) AS TRPL_NM                                /* 거래처명                 */
+             , MAX(A.ADJPL_C) AS ADJPL_C                                /* 정산처코드               */   
+             , MAX(C.TRPL_NM) AS ADJPL_NM                               /* 정산처명                 */
+             , SUM(A.BY_AM  * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS BY_AM                           /* 매입금액                 */
+             , SUM(A.SPY_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS SPY_AM                          /* 공급금액                 */
+             , SUM(A.VAT    * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS VAT                             /* 부가세                   */
+             , SUM(A.BY_CST * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS BY_CST                          /* 매입비용                 */
+             , SUM(A.CSH_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS CSH_AM                          /* 현금금액                 */
+             , SUM(A.CRE_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) AS CRE_AM                          /* 외상금액                 */
+             , SUM(A.TFR_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) TFR_AM                             /* 대체금액                 */ 
+             , SUM(A.PRY_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                               ELSE                                  1
+                               END)) PRY_AM                             /* 선급금액                 */
+          FROM TB_BY_M_BUY             A 
+          LEFT OUTER JOIN TB_CO_M_TRPL B
+            ON A.CORP_C  = B.CORP_C
+           AND A.TRPL_C  = B.TRPL_C
+          LEFT OUTER JOIN TB_CO_M_TRPL C
+            ON A.CORP_C  = C.CORP_C
+           AND A.ADJPL_C = C.ADJPL_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SLP_NML_YN        = 'Y'
+         <choose>
+          <when test="DT_GBN == 1">
+           AND A.BY_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 3">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>   
+          <when test="DT_GBN == 4">
+           AND A.PY_PLA_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>          
+         </choose>
+       <if test="TRPL_C != null and TRPL_C != ''">            
+         <choose>
+          <when test="CD_GBN == 1">
+           AND A.TRPL_C            = #{TRPL_C}
+          </when>   
+          <when test="CD_GBN == 2">
+           AND A.ADJPL_C           = #{ADJPL_C}
+          </when>  
+         </choose>         
+       </if>    
+        GROUP BY A.TRPL_C
+               , A.ADJPL_C              
+    </select>
+
+    <!-- 물품별매입현황 -->    
+    <select id="selectBy3110_02" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectBy3110_02 */
+               MAX(B.GDS_C) AS GDS_C                                       /* 물품코드                 */ 
+             , MAX(C.GDS_DTL_NM) AS GDS_DTL_NM                             /* 물품명                   */
+             , MAX(C.GDS_STD_NM) AS GDS_STD_NM                             /* 물품규격                 */ 
+             , MAX(C.UNT_C) AS UNT_C                                       /* 관리단위                 */ 
+             , SUM(B.BY_QT     * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS BY_QT                           /* 매입수량                 */ 
+             , MAX(B.TR_UNT_C) AS TR_UNT_C                                 /* 거래단위                 */ 
+             , SUM(B.BY_BOX_QT * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS BY_BOX_QT                       /* 매입박스수량             */ 
+             , MAX(B.BY_UPR) AS BY_UPR                                     /* 매입단가                 */ 
+             , SUM(B.SPY_AM    * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS SPY_AM                          /* 공급가액                 */ 
+             , SUM(B.VAT       * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS VAT                             /* 부가세                   */
+             , SUM(B.BY_AM     * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS BY_AM                           /* 매입금액                 */  
+             , SUM(B.BY_CST_AM * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS BY_CST                          /* 매입비용                 */
+             , SUM(B.TR_BY_QT  * (CASE WHEN A.TR_BSN_DSC = 'BY11' THEN -1
+                                  ELSE                                  1
+                                  END)) AS TR_BY_QT                        /* 거래매입수량                 */                                   
+          FROM TB_BY_M_BUY            A
+          INNER JOIN TB_BY_D_BUY      B
+            ON A.CORP_C  = B.CORP_C
+           AND A.BZPL_C  = B.BZPL_C
+           AND A.BY_DT   = B.BY_DT
+           AND A.BY_SQNO = B.BY_SQNO
+          LEFT OUTER JOIN TB_CO_M_GDS C
+            ON B.CORP_C  = C.CORP_C
+           AND B.BZPL_C  = C.BZPL_C
+           AND B.GDS_C   = C.GDS_C
+         WHERE 1=1
+           AND A.CORP_C            = #{CORP_C}
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.SLP_NML_YN        = 'Y'           
+         <choose>
+          <when test="DT_GBN == 1">
+           AND A.BY_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 2">
+           AND A.RLTR_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>
+          <when test="DT_GBN == 3">
+           AND A.ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>   
+          <when test="DT_GBN == 4">
+           AND A.PY_PLA_DT BETWEEN #{ST_DT} AND #{ED_DT}
+          </when>          
+         </choose>   
+       <if test="TRPL_C != null and TRPL_C != ''">            
+         <choose>
+          <when test="CD_GBN == 1">
+           AND A.TRPL_C            = #{TRPL_C}
+          </when>   
+          <when test="CD_GBN == 2">
+           AND A.ADJPL_C           = #{ADJPL_C}
+          </when>  
+         </choose>         
+       </if>   
+       <if test="GDS_C != null and GDS_C != ''">
+           AND B.GDS_C             = #{GDS_C}
+       </if>   
+         GROUP BY B.GDS_C
+    </select>
+
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_PD_M_PCS_CLC_ACC_BAC" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_PD_M_PCS_CLC_ACC_BAC */ TB_PD_M_PCS_CLC_ACC_BAC
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , PCS_CLC_YM          /* 원가_계산_년월       */
+            , ACG_DT              /* 회계일자             */
+            , ACG_ACC_C           /* 회계계정코드         */
+            , DSBN_DAM_ARG_DSC    /* 배부차액정리구분코드 */
+            , ACG_ACC_BAC         /* 회계계정잔액         */
+            , MFC_ACC_DSC         /* 제조계정구분코드     */
+            , RMK_CNTN            /* 비고내용             */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{PCS_CLC_YM}
+            , #{ACG_DT}
+            , #{ACG_ACC_C}
+            , #{DSBN_DAM_ARG_DSC}
+            , #{ACG_ACC_BAC}
+            , #{MFC_ACC_DSC}
+            , #{RMK_CNTN}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_PD_M_PCS_CLC_ACC_BAC" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_PD_M_PCS_CLC_ACC_BAC */ TB_PD_M_PCS_CLC_ACC_BAC
+           SET 
+               DSBN_DAM_ARG_DSC    = #{DSBN_DAM_ARG_DSC}      /* 배부차액정리구분코드 */
+             , ACG_ACC_BAC         = #{ACG_ACC_BAC}           /* 회계계정잔액         */
+             , MFC_ACC_DSC         = #{MFC_ACC_DSC}           /* 제조계정구분코드     */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_YM          = #{PCS_CLC_YM}
+           AND ACG_DT              = #{ACG_DT}
+		   AND ACG_ACC_C            = #{ACG_ACC_C}
+    </update>
+
+    <delete id="delete_TB_PD_M_PCS_CLC_ACC_BAC" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_PD_M_PCS_CLC_ACC_BAC */ FROM TB_PD_M_PCS_CLC_ACC_BAC
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND PCS_CLC_YM          = #{PCS_CLC_YM}
+           AND ACG_DT              = #{ACG_DT}
+		   AND ACG_ACC_C           = #{ACG_ACC_C}
+    </delete>
+
+    <select id="select_TB_PD_M_PCS_CLC_ACC_BAC" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_PD_M_PCS_CLC_ACC_BAC */
+               A.CORP_C                                            /* 회사코드                  */
+             , A.BZPL_C                                            /* 사업장코드                */
+             , A.PCS_CLC_YM                                        /* 원가_계산_년월            */
+             , A.ACG_DT                                            /* 회계일자                  */
+             , A.ACG_ACC_C                                         /* 회계계정코드              */
+             , A.DSBN_DAM_ARG_DSC                                  /* 배부차액정리구분코드      */
+             , A.ACG_ACC_BAC                                       /* 회계계정잔액              */
+             , A.MFC_ACC_DSC                                       /* 제조계정구분코드          */
+             , A.RMK_CNTN                                          /* 비고내용                  */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시              */
+             , A.FSRG_ID                                           /* 최초등록자ID              */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시              */
+             , A.LSCHG_ID                                          /* 최종변경자ID              */
+          FROM TB_PD_M_PCS_CLC_ACC_BAC A
+         WHERE 1=1 
+           AND A.BZPL_C              = #{BZPL_C}
+           AND A.CORP_C              = #{CORP_C}
+           AND A.PCS_CLC_YM          = #{PCS_CLC_YM}
+           AND A.ACG_DT              = #{ACG_DT}
+		   AND A.ACG_ACC_C           = #{ACG_ACC_C}
+    </select>
+</mapper>

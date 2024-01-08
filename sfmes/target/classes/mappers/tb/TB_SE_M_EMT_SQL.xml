@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_SE_M_EMT" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_SE_M_EMT */ TB_SE_M_EMT
+        (
+              CORP_C              /* 회사코드             */
+            , BZPL_C              /* 사업장코드           */
+            , ESMT_DT             /* 견적일자             */
+            , ESMT_SQNO           /* 견적일련번호         */
+            , SLPL_C              /* 매출처코드           */
+            , TR_ST_DT            /* 거래시작일자         */
+            , TR_ED_DT            /* 거래종료일자         */
+            , FAX_SND_DSC         /* FAX송신구분코드      */
+            , FAX_SND_DTM         /* FAX송신일시          */
+            , DEL_YN              /* 삭제여부             */
+            , RMK_CNTN            /* 비고내용             */
+            , ETC_DSC1            /* 기타구분1            */
+            , ETC_DSC2            /* 기타구분2            */
+            , ETC_DSC3            /* 기타구분3            */
+            , FSRG_DTM            /* 최초등록일시         */
+            , FSRG_ID             /* 최초등록자ID         */
+            , LSCHG_DTM           /* 최종변경일시         */
+            , LSCHG_ID            /* 최종변경자ID         */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{ESMT_DT}
+            , #{ESMT_SQNO}
+            , #{SLPL_C}
+            , #{TR_ST_DT}
+            , #{TR_ED_DT}
+            , #{FAX_SND_DSC}
+            , #{FAX_SND_DTM}
+            , 'N' <!-- 삭제여부 기본값 N -->
+            , #{RMK_CNTN}
+            , #{ETC_DSC1}
+            , #{ETC_DSC2}
+            , #{ETC_DSC3}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_SE_M_EMT" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_SE_M_EMT */ TB_SE_M_EMT
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , ESMT_DT             = #{ESMT_DT}               /* 견적일자             */
+             , ESMT_SQNO           = #{ESMT_SQNO}             /* 견적일련번호         */
+             , SLPL_C              = #{SLPL_C}                /* 매출처코드           */
+             , TR_ST_DT            = #{TR_ST_DT}              /* 거래시작일자         */
+             , TR_ED_DT            = #{TR_ED_DT}              /* 거래종료일자         */
+             , FAX_SND_DSC         = #{FAX_SND_DSC}           /* FAX송신구분코드      */
+             , FAX_SND_DTM         = #{FAX_SND_DTM}           /* FAX송신일시          */
+             <!-- , DEL_YN              = #{DEL_YN}                /* 삭제여부             */ 수정 시 삭제여부 업데이트X -->
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , ETC_DSC1            = #{ETC_DSC1}              /* 기타구분1            */
+             , ETC_DSC2            = #{ETC_DSC2}              /* 기타구분2            */
+             , ETC_DSC3            = #{ETC_DSC3}              /* 기타구분3            */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ESMT_DT             = #{ESMT_DT}
+           AND ESMT_SQNO           = #{ESMT_SQNO}
+    </update>
+
+    <delete id="delete_TB_SE_M_EMT" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_SE_M_EMT */ FROM TB_SE_M_EMT
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND ESMT_DT             = #{ESMT_DT}
+           AND ESMT_SQNO           = #{ESMT_SQNO}
+    </delete>
+
+    <select id="select_TB_SE_M_EMT" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_SE_D_EMT */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.ESMT_DT                                           /* 견적일자             */
+             , A.ESMT_SQNO                                         /* 견적일련번호         */
+             , A.ESMT_DSQNO                                        /* 견적상세일련번호     */
+             , A.GDS_C                                             /* 물품코드             */
+             , A.ESMT_UPR                                          /* 견적단가             */
+             , A.ESMT_QT                                           /* 견적수량             */
+             , A.ESMT_WT                                           /* 견적중량             */
+             , A.ESMT_AM                                           /* 견적금액             */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.ETC_DSC1                                          /* 기타구분1            */
+             , A.ETC_DSC2                                          /* 기타구분2            */
+             , A.ETC_DSC3                                          /* 기타구분3            */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SE_D_EMT A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.ESMT_DT           = #{ESMT_DT}
+           AND A.ESMT_SQNO         = #{ESMT_SQNO}
+    </select>
+</mapper>

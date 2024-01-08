@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.tb">
+    <insert id="insert_TB_BD_M_ETC_ACRV" parameterType="LinkedHashMap">
+        INSERT INTO /*+ insert_TB_BD_M_ETC_ACRV */ TB_BD_M_ETC_ACRV
+        (
+              CORP_C              /* 회사코드                  */
+            , BZPL_C              /* 사업장코드                */
+            , REG_DT              /* 등록일자                  */
+            , REG_SQNO            /* 등록일련번호              */
+            , SLP_NML_YN          /* 전표정상여부              */
+            , RLTR_DT             /* 실거래일자                */
+            , ACG_DT              /* 회계일자                  */
+            , WDR_PLA_DT          /* 회수예정일자              */
+            , ADJPL_C             /* 정산처코드                */
+            , REG_DSC             /* 등록구분코드              */
+            , CRE_SL_AM           /* 외상매출금                */
+            , STL_ACNO            /* 결제계좌번호              */
+            , BNK_C               /* 은행코드                  */
+            , DPR_NM              /* 예금주명                  */
+            , PY_STL_DSC          /* 지급결제구분코드          */
+            , RMK_CNTN            /* 비고내용                  */
+            , DEL_YN              /* 삭제여부                  */
+            , TR_BSN_DSC          /* 거래업무구분코드          */
+            , TR_SQNO             /* 거래일련번호              */
+            , FSRG_DTM            /* 최초등록일시              */
+            , FSRG_ID             /* 최초등록자ID              */
+            , LSCHG_DTM           /* 최종변경일시              */
+            , LSCHG_ID            /* 최종변경자ID              */
+        )
+        VALUES
+        (
+              #{CORP_C}
+            , #{BZPL_C}
+            , #{REG_DT}
+            , #{REG_SQNO}
+            , #{SLP_NML_YN}
+            , #{RLTR_DT}
+            , #{ACG_DT}
+            , #{WDR_PLA_DT}
+            , #{ADJPL_C}
+            , #{REG_DSC}
+            , #{CRE_SL_AM}
+            , #{STL_ACNO}
+            , #{BNK_C}
+            , #{DPR_NM}
+            , #{PY_STL_DSC}
+            , #{RMK_CNTN}
+            , #{DEL_YN}
+            , #{TR_BSN_DSC}
+            , #{TR_SQNO}
+            , GETDATE()
+            , #{GUSRID}
+            , GETDATE()
+            , #{GUSRID}
+        )
+    </insert>
+
+    <update id="update_TB_BD_M_ETC_ACRV" parameterType="LinkedHashMap">
+        UPDATE /*+ update_TB_BD_M_ETC_ACRV */ TB_BD_M_ETC_ACRV
+           SET 
+               CORP_C              = #{CORP_C}                /* 회사코드             */
+             , BZPL_C              = #{BZPL_C}                /* 사업장코드           */
+             , REG_DT              = #{REG_DT}                /* 등록일자             */
+             , REG_SQNO            = #{REG_SQNO}              /* 등록일련번호         */
+             , SLP_NML_YN          = #{SLP_NML_YN}            /* 전표정상여부         */
+             , RLTR_DT             = #{RLTR_DT}               /* 실거래일자           */
+             , ACG_DT              = #{ACG_DT}                /* 회계일자             */
+             , WDR_PLA_DT          = #{WDR_PLA_DT}            /* 회수예정일자         */
+             , ADJPL_C             = #{ADJPL_C}               /* 정산처코드           */
+             , REG_DSC             = #{REG_DSC}               /* 등록구분코드         */
+             , CRE_SL_AM           = #{CRE_SL_AM}             /* 외상매출금           */
+             , STL_ACNO            = #{STL_ACNO}              /* 결제계좌번호         */
+             , BNK_C               = #{BNK_C}                 /* 은행코드             */
+             , DPR_NM              = #{DPR_NM}                /* 예금주명             */
+             , PY_STL_DSC          = #{PY_STL_DSC}            /* 지급결제구분코드     */
+             , RMK_CNTN            = #{RMK_CNTN}              /* 비고내용             */
+             , DEL_YN              = #{DEL_YN}                /* 삭제여부             */
+             , TR_BSN_DSC          = #{TR_BSN_DSC}            /* 거래업무구분코드     */
+             , TR_SQNO             = #{TR_SQNO}               /* 거래일련번호         */
+             , LSCHG_DTM           = GETDATE()                /* 최종변경일시         */
+             , LSCHG_ID            = #{GUSRID}                /* 최종변경자ID         */
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND REG_DT              = #{REG_DT}
+           AND REG_SQNO            = #{REG_SQNO}
+    </update>
+
+    <delete id="delete_TB_BD_M_ETC_ACRV" parameterType="LinkedHashMap">
+        DELETE /*+ delete_TB_BD_M_ETC_ACRV */ FROM TB_BD_M_ETC_ACRV
+         WHERE 1=1 
+           AND BZPL_C              = #{BZPL_C}
+           AND CORP_C              = #{CORP_C}
+           AND REG_DT              = #{REG_DT}
+           AND REG_SQNO            = #{REG_SQNO}
+    </delete>
+
+    <select id="select_TB_BD_M_ETC_ACRV" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ select_TB_BD_M_ETC_ACRV */
+               A.CORP_C                                            /* 회사코드             */
+             , A.BZPL_C                                            /* 사업장코드           */
+             , A.REG_DT                                            /* 등록일자             */
+             , A.REG_SQNO                                          /* 등록일련번호         */
+             , A.SLP_NML_YN                                        /* 전표정상여부         */
+             , A.RLTR_DT                                           /* 실거래일자           */
+             , A.ACG_DT                                            /* 회계일자             */
+             , A.WDR_PLA_DT                                        /* 회수예정일자         */
+             , A.ADJPL_C                                           /* 정산처코드           */
+             , A.REG_DSC                                           /* 등록구분코드         */
+             , A.CRE_SL_AM                                         /* 외상매출금           */
+             , A.STL_ACNO                                          /* 결제계좌번호         */
+             , A.BNK_C                                             /* 은행코드             */
+             , A.DPR_NM                                            /* 예금주명             */
+             , A.PY_STL_DSC                                        /* 지급결제구분코드     */
+             , A.RMK_CNTN                                          /* 비고내용             */
+             , A.DEL_YN                                            /* 삭제여부             */
+             , A.TR_BSN_DSC                                        /* 거래업무구분코드     */
+             , A.TR_SQNO                                           /* 거래일련번호         */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_BD_M_ETC_ACRV A
+         WHERE 1=1 
+           AND A.BZPL_C            = #{BZPL_C}
+           AND A.CORP_C            = #{CORP_C}
+           AND A.REG_DT            = #{REG_DT}
+           AND A.REG_SQNO          = #{REG_SQNO}
+    </select>
+</mapper>

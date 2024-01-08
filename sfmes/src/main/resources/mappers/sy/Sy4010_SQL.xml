@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.sy">
+    <select id="selectSy4010UgList" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy4010UgList */
+               A.CORP_C                                            /* 회사코드             */
+             , A.USR_ID                                            /* 사용자ID             */
+             , (
+                 SELECT X.USR_NM
+                   FROM TB_SY_M_USR X
+                   WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.USR_ID
+               ) AS USR_NM                                         /* 사용자명             */
+             , A.UG_DTM           AS UG_DTM                        /* 사용일시             */
+             , A.PGM_ID                                            /* 프로그램ID           */
+             , A.CLASS_NM                                          /* CLASS명              */
+             , A.METHOD_NM                                         /* METHOD명             */
+             , A.CONN_IP                                           /* 접속IP               */
+             , A.PARA_DSC_NM                                       /* 파라미터구분명       */
+             , (CASE SUBSTRING(A.PARA_DSC_VAL,1, 2) WHEN 'SE' THEN
+                     '조회(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'IN' THEN
+                     '신규(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'UP' THEN
+                     '수정(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'DE' THEN
+                     '삭제(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'SA'   THEN
+                     '신규/수정/삭제(' + A.PARA_DSC_VAL + ')' 
+                END) AS PARA_DSC_VAL                               /* 파라미터구분값       */
+             , A.PARA1_NM                                          /* 파라미터명1          */
+             , CONVERT(NVARCHAR(1000), A.PARA1_VAL) AS PARA1_VAL   /* 파라미터값1          */
+             , A.PARA2_NM                                          /* 파라미터명2          */
+             , CONVERT(NVARCHAR(1000), A.PARA2_VAL) AS PARA2_VAL   /* 파라미터값2          */
+             , A.PARA3_NM                                          /* 파라미터명3          */
+             , CONVERT(NVARCHAR(1000), A.PARA3_VAL) AS PARA3_VAL   /* 파라미터값3          */
+             , A.PARA4_NM                                          /* 파라미터명4          */
+             , CONVERT(NVARCHAR(1000), A.PARA4_VAL) AS PARA4_VAL   /* 파라미터값4          */
+             , A.PARA5_NM                                          /* 파라미터명5          */
+             , CONVERT(NVARCHAR(1000), A.PARA5_VAL) AS PARA5_VAL   /* 파라미터값5          */
+             , A.PARA6_NM                                          /* 파라미터명6          */
+             , CONVERT(NVARCHAR(1000), A.PARA6_VAL) AS PARA6_VAL   /* 파라미터값6          */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_L_PGM_UG A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.UG_DTM BETWEEN CONVERT(DATETIME, STUFF(STUFF(STUFF(#{ST_DT}, 9, 0, ' '), 12, 0, ':'), 15, 0, ':')) 
+                            AND CONVERT(DATETIME, STUFF(STUFF(STUFF(#{ED_DT}, 9, 0, ' '), 12, 0, ':'), 15, 0, ':')) /* 문자열형식 datetime형식으로 변경 */
+         <if test = "SEARCH_USE_DSC != null and SEARCH_USE_DSC != ''">
+           AND A.PARA_DSC_VAL LIKE '%' + #{SEARCH_USE_DSC} + '%'
+         </if>
+         <if test = "SEARCH_ID != null and SEARCH_ID != ''">
+           AND A.USR_ID            = #{SEARCH_ID}
+         </if>
+         <if test = "searchKeyword != null and searchKeyword != ''"> 
+            <choose>
+                <when test="searchCondition == '0'"> 
+                    AND (A.CLASS_NM LIKE '%' + #{searchKeyword} + '%'
+                        OR A.METHOD_NM LIKE '%' + #{searchKeyword} + '%')
+                </when>
+                <when test="searchCondition == 1"> 
+                    AND A.CLASS_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>
+                <when test="searchCondition == 2"> 
+                    AND A.METHOD_NM LIKE '%' + #{searchKeyword} + '%'
+                </when>                
+            </choose>
+        </if>
+    </select>
+    
+    <select id="selectSy4010UgDetail" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectSy4010UgDetail */
+               A.CORP_C                                            /* 회사코드             */
+             , CONVERT(CHAR(23), A.UG_DTM, 20)  AS   UG_DTM        /* 사용일시             */
+             , A.PGM_ID                                            /* 프로그램ID           */
+             , A.CLASS_NM                                          /* CLASS명              */
+             , A.METHOD_NM                                         /* METHOD명             */
+             , A.USR_ID                                            /* 사용자아이디         */
+             , (
+                 SELECT X.USR_NM
+                   FROM TB_SY_M_USR X
+                   WHERE X.CORP_C = A.CORP_C
+                   AND X.USR_ID = A.USR_ID
+               ) AS USR_NM                                         /* 사용자명             */
+             , A.CONN_IP                                           /* 접속IP               */
+             , A.PARA_DSC_NM                                       /* 파라미터구분명       */
+             , (CASE SUBSTRING(A.PARA_DSC_VAL,1, 1) WHEN 'S' THEN
+                     '조회(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'I' THEN
+                     '신규(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'U' THEN
+                     '수정(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'D' THEN
+                     '삭제(' + A.PARA_DSC_VAL + ')' 
+                WHEN 'S'   THEN
+                     '신규/수정/삭제(' + A.PARA_DSC_VAL + ')' 
+                END) AS PARA_DSC_VAL                               /* 파라미터구분값       */
+             , A.PARA1_NM                                          /* 파라미터명1          */
+             , CONVERT(NVARCHAR(4000), A.PARA1_VAL) AS PARA1_VAL   /* 파라미터값1          */
+             , A.PARA2_NM                                          /* 파라미터명2          */
+             , CONVERT(NVARCHAR(4000), A.PARA2_VAL) AS PARA2_VAL   /* 파라미터값2          */
+             , A.PARA3_NM                                          /* 파라미터명3          */
+             , CONVERT(NVARCHAR(4000), A.PARA3_VAL) AS PARA3_VAL   /* 파라미터값3          */
+             , A.PARA4_NM                                          /* 파라미터명4          */
+             , CONVERT(NVARCHAR(4000), A.PARA4_VAL) AS PARA4_VAL   /* 파라미터값4          */
+             , A.PARA5_NM                                          /* 파라미터명5          */
+             , CONVERT(NVARCHAR(4000), A.PARA5_VAL) AS PARA5_VAL   /* 파라미터값5          */
+             , A.PARA6_NM                                          /* 파라미터명6          */
+             , CONVERT(NVARCHAR(4000), A.PARA6_VAL) AS PARA6_VAL   /* 파라미터값6          */
+             , CONVERT(CHAR(23), A.FSRG_DTM, 20)  AS   FSRG_DTM    /* 최초등록일시         */
+             , A.FSRG_ID                                           /* 최초등록자ID         */
+             , CONVERT(CHAR(23), A.LSCHG_DTM, 20) AS   LSCHG_DTM   /* 최종변경일시         */
+             , A.LSCHG_ID                                          /* 최종변경자ID         */
+          FROM TB_SY_L_PGM_UG A
+         WHERE 1=1 
+           AND A.CORP_C            = #{CORP_C}
+           AND A.UG_DTM            = #{UG_DTM}
+    </select>
+</mapper>

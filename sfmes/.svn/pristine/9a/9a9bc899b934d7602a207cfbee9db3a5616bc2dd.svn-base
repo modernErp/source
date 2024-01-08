@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sfmes.sqlmap.ca">
+
+    <!-- 기타미지급금지급내역 등록 정보 조회 -->
+    <select id="selectCa5010List01" parameterType="LinkedHashMap" resultType="LinkedHashMap">
+        SELECT /*+ selectCa2010List01 */
+              ED_DT            
+            , ADJPL_C          
+			, PY_STL_DSC       
+			, STL_ACNO         
+			, BNK_C            
+			, DPR_NM           
+			, ADJPL_NM         
+			, BAS_BAC
+			, ORG_STL_ACNO     
+			, ORG_BNK_C        
+			, ORG_DPR_NM   
+	     FROM (		    
+		        SELECT 
+		               CONVERT(CHAR(8), GETDATE(),112)                                     AS ED_DT                /* 기준일자         */
+		             , ADJPL_C                                                             AS ADJPL_C              /* 정산처코드       */
+		             , ISNULL(C.COMN_C, '')                                                AS PY_STL_DSC           /* 지급결제구분코드 */
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DCZ_ACNO   END   AS STL_ACNO             /* 결제계좌번호     */
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DCZ_BNK_C  END   AS BNK_C                /* 은행코드         */
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DPR_NM     END   AS DPR_NM               /* 예금주명         */
+		             , dbo.SF_GET_TRPL_NM(A.CORP_C, A.ADJPL_C)                             AS ADJPL_NM             /* 정산처명  */   
+		             , (SELECT dbo.SF_GET_ETC_UPY_BAC(A.CORP_C,#{BZPL_C},A.ADJPL_C,CONVERT(CHAR(8), GETDATE(),112)))   AS  BAS_BAC          /* 기타미지급금 현재잔액  */ 
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DCZ_ACNO   END   AS ORG_STL_ACNO         /* 결제계좌번호     */
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DCZ_BNK_C  END   AS ORG_BNK_C            /* 은행코드         */
+		             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN '' ELSE B.DPR_NM     END   AS ORG_DPR_NM           /* 예금주명         */
+		          FROM (
+		                SELECT CORP_C
+		                     , ADJPL_C 
+		                  FROM TB_CO_M_TRPL
+		                 WHERE 1=1
+		                   AND CORP_C = #{CORP_C}
+		                   AND BY_CTR_YN = 'Y'   /* 매입계약여부 */
+		                   AND USE_YN    = 'Y'   
+			               <if test = "ADJPL_C != null and ADJPL_C != ''">
+			                  AND ADJPL_C = #{ADJPL_C}
+			               </if>
+		                GROUP BY CORP_C
+		                       , ADJPL_C      
+				        )      A  
+		          LEFT OUTER JOIN TB_CO_M_TRPL_CTR B
+		            ON B.CORP_C    = A.CORP_C
+		           AND B.TRPL_C    = A.ADJPL_C
+		           AND B.BY_SL_DSC = 2
+		          LEFT OUTER JOIN TB_SY_D_COMNC C
+		            ON C.CORP_C     = A.CORP_C
+		           AND C.COMN_GRP_C = 'PY_STL_DSC'
+		           AND C.COMN_CNM   = '계좌이체'
+		           AND C.USE_YN     = 'Y'
+		         WHERE 1=1  
+		         GROUP BY
+		                A.CORP_C
+		              , A.ADJPL_C
+		              , C.COMN_C
+		              , B.DCZ_ACNO               
+		              , B.DCZ_BNK_C
+		              , B.DPR_NM
+	       )  A       
+	     WHERE 1=1
+	    <if test='ZERO_YN.equals("N")'>   /* 잔액 0 포함여부 */ 
+		    AND A.BAS_BAC <![CDATA[  <>  ]]> 0
+		</if>
+    </select>                                     
+
+     <!--  현재고잔액 수정 2022.01.18 rchkorea  
+        SELECT /*+ selectCa5010List01 */
+               #{ED_DT}                                             AS ED_DT                /* 기준일자  */
+             , ADJPL_C                                              AS ADJPL_C              /* 정산처코드 */
+             , ISNULL(C.COMN_C, '')                                 AS PY_STL_DSC           /* 지급결제구분코드 */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DCZ_ACNO
+               END                                                  AS STL_ACNO             /* 결제계좌번호     */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DCZ_BNK_C
+               END                                                  AS BNK_C                /* 은행코드         */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DPR_NM
+               END                                                  AS DPR_NM               /* 예금주명         */
+             , (SELECT X.TRPL_NM
+                  FROM TB_CO_M_TRPL X
+                 WHERE X.CORP_C = #{CORP_C}
+                   AND X.TRPL_C = A.ADJPL_C)                        AS ADJPL_NM             /* 정산처명   */
+             , SUM(BAS_BAC)                                         AS BAS_BAC              /* 잔액       */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DCZ_ACNO
+               END                                                  AS ORG_STL_ACNO         /* 결제계좌번호     */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DCZ_BNK_C
+               END                                                  AS ORG_BNK_C            /* 은행코드         */
+             , CASE WHEN ISNULL(C.COMN_C, '') = '' THEN ''
+                    ELSE B.DPR_NM
+               END                                                  AS ORG_DPR_NM           /* 예금주명         */
+          FROM (
+               /* 기초잔액 구하기 */
+               SELECT 
+                      CORP_C
+                    , ADJPL_C               /* 정산처코드            */
+                    , BAS_BAC               /* 기초잔액              */
+                 FROM TB_DT_S_ETC_UPY_MON
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_MN = SUBSTRING( #{ED_DT}, 1, 6 )
+               <if test = "ADJPL_C != null and ADJPL_C != ''">
+                  AND ADJPL_C = #{ADJPL_C}
+               </if>
+
+               UNION ALL
+               SELECT 
+                      CORP_C
+                    , ADJPL_C                                                        AS ADJPL_C      /* 정산처코드 */
+                    /* 01일부터 조회 기준일까지 거래 잔액 계산 */
+                    , ISNULL(
+                              SUM( CASE WHEN REG_DSC = 'N' THEN CRE_BY_AM
+                                        ELSE CRE_BY_AM * -1
+                                    END
+                              ), 0
+                      )                                                              AS BAS_BAC      /* 기초잔액 */
+                 FROM TB_DT_M_ETC_UPY
+                WHERE 1=1
+                  AND CORP_C = #{CORP_C}
+                  AND BZPL_C = #{BZPL_C}
+                  AND ACG_DT BETWEEN #{ST_DT} AND #{ED_DT}
+               <if test = "ADJPL_C != null and ADJPL_C != ''">
+                  AND ADJPL_C = #{ADJPL_C}
+               </if>
+                  AND SLP_NML_YN = 'Y'
+                  AND DEL_YN = 'N'
+                GROUP BY 
+                        CORP_C 
+                      , ADJPL_C
+               ) A
+          LEFT OUTER JOIN TB_CO_M_TRPL_CTR B
+            ON B.CORP_C    = A.CORP_C
+           AND B.TRPL_C    = A.ADJPL_C
+           AND B.BY_SL_DSC = 1 
+          LEFT OUTER JOIN TB_SY_D_COMNC C
+            ON C.CORP_C     = A.CORP_C
+           AND C.COMN_GRP_C = 'PY_STL_DSC'
+           AND C.COMN_CNM   = '계좌이체'
+           AND C.USE_YN     = 'Y'
+         WHERE 1=1  
+         GROUP BY
+                A.ADJPL_C
+              , C.COMN_C
+              , B.DCZ_ACNO               
+              , B.DCZ_BNK_C
+              , B.DPR_NM   
+     -->         
+
+</mapper>
